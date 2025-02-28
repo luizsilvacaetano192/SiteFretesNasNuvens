@@ -59,8 +59,8 @@ Route::get('/freights/{freight}', [FreightController::class, 'show'])->name('fre
 
 Route::get('/freight-statuses', [FreightStatusController::class, 'index'])->name('freight_statuses.index');
 Route::get('/freight-statuses/data', [FreightStatusController::class, 'getData'])->name('freight_statuses.data');
-Route::get('/freight-statuses/store', [FreightStatusController::class, 'store'])->name('freight_statuses.store');
 Route::get('/freight-statuses/create', [FreightStatusController::class, 'create'])->name('freight_statuses.create');
+Route::post('/freight-statuses/store', [FreightStatusController::class, 'store'])->name('freight-statuses.store');
 
 
 
