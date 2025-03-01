@@ -10,6 +10,8 @@ use App\Http\Controllers\FreightController;
 use App\Http\Controllers\FreightStatusController;
 use App\Models\Shipment;
 use App\Models\Freight;
+use App\Http\Controllers\DashboardController;
+
 
 
 /*
@@ -93,4 +95,8 @@ Route::get('/freights/{id}/position', function ($id) {
     }
     return response()->json(['success' => false, 'position' => null]);
 });
+
+
+
+Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 

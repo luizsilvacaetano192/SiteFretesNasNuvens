@@ -133,10 +133,7 @@
     <div class="content">
         @yield('content', '<div class="title-container">Bem-vindo ao Gestão de Fretes 🚛</div>')
         
-        <!-- Exemplo de botões alinhados à esquerda -->
-        <div class="btn-left mt-3">
-            <button class="btn btn-primary"><i class="fas fa-plus"></i> Adicionar</button>
-        </div>
+   
     </div>
 
     <!-- Scripts -->
