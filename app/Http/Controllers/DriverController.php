@@ -4,13 +4,28 @@ namespace App\Http\Controllers;
 
 use App\Models\Driver;
 use Illuminate\Http\Request;
+use Yajra\DataTables\DataTables;
 
 class DriverController extends Controller
 {
     public function index()
     {
-        $drivers = Driver::all();
-        return view('drivers.index', compact('drivers'));
+        return view('drivers.index');
+    }
+
+    public function getData()
+    {
+        $drivers = Driver::select(['id', 'name', 'phone', 'license_number']);
+
+        return DataTables::of($drivers)
+            ->addColumn('actions', function ($driver) {
+                return '
+                    <a href="'.route('shipments.index', ['driver_id' => $driver->id]).'" class="btn btn-primary btn-sm">🚚 Ver Fretes</a>
+                   
+                ';
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 
     public function create()

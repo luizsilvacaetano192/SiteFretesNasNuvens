@@ -40,8 +40,17 @@ Route::get('/shipments/create', [ShipmentController::class, 'create'])->name('sh
 Route::get('/shipments/index', [ShipmentController::class, 'index'])->name('shipments.index');
 Route::get('/shipments/edit', [ShipmentController::class, 'edit'])->name('shipments.edit');
 Route::get('/shipments/destroy', [ShipmentController::class, 'destroy'])->name('shipments.destroy');
-Route::resource('companies', CompanyController::class);
-Route::resource('drivers', DriverController::class);
+
+Route::get('/companies/create', [CompanyController::class, 'create'])->name('companies.create');
+Route::post('/companies/store', [CompanyController::class, 'store'])->name('companies.store');
+Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
+Route::get('/companies/data', [CompanyController::class, 'getData'])->name('companies.data');
+
+Route::post('/drivers/store', [DriverController::class, 'store'])->name('drivers.store');
+Route::get('/drivers/create', [DriverController::class, 'create'])->name('drivers.create');
+Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
+Route::get('/drivers/data', [DriverController::class, 'getData'])->name('drivers.data');
+
 //Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 

@@ -4,14 +4,37 @@ namespace App\Http\Controllers;
 
 use App\Models\Company;
 use Illuminate\Http\Request;
+use Yajra\DataTables\Facades\DataTables;
+
 
 class CompanyController extends Controller
 {
     public function index()
     {
-        $companies = Company::all();
-        return view('companies.index', compact('companies'));
+        return view('companies.index');
     }
+
+    public function show($id)
+    {
+        $company = Company::findOrFail($id);
+        return view('companies.show', compact('company'));
+    }
+
+    public function getData()
+    {
+        $companies = Company::query();
+
+        return DataTables::of($companies)
+            ->addColumn('actions', function ($company) {
+                return '
+                    <a href="'.route('shipments.index', ['company_id' => $company->id]).'" class="btn btn-primary btn-sm">🚚 Ver Fretes</a>
+                    <a href="'.route('shipments.index', ['company_id' => $company->id]).'" class="btn btn-secondary btn-sm">📦 Ver Cargas</a>
+                ';
+            })
+            ->rawColumns(['actions'])
+            ->make(true);
+    }
+
 
     public function create()
     {
