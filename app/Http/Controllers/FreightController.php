@@ -8,6 +8,7 @@ use App\Models\Driver;
 use App\Models\FreightStatus;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
+use App\Models\Address;
 
 class FreightController extends Controller
 {
@@ -164,6 +165,27 @@ class FreightController extends Controller
             'directions' => $request->directions,
         ]);
 
+        $startAddress = Address::firstOrCreate(
+            [
+                'address' => $request->start_address,
+            ],
+            [
+                'latitude' => $request->start_lat,
+                'longitude' => $request->start_lng,
+            ]
+        );
+    
+        // Verificar se o endereço de destino já existe, senão criar um novo
+        $destinationAddress = Address::firstOrCreate(
+            [
+                'address' => $request->destination_address,
+            ],
+            [
+                'latitude' => $request->destination_lat,
+                'longitude' => $request->destination_lng,
+            ]
+        );
+    
         // Retornar uma resposta de sucesso
         return response()->json(['message' => 'Frete criado com sucesso!'], 201);
     }
