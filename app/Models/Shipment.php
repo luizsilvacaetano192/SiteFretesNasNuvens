@@ -12,18 +12,9 @@ class Shipment extends Model
 
     protected $fillable = [
         'company_id',
-        'driver_id',
         'weight',
         'cargo_type',
         'dimensions',
-        'volume',
-        'truck_type',
-        'start_address',
-        'destination_address',
-        'expected_start_date',
-        'expected_delivery_date',
-        'deadline',
-        'start_time',
     ];
 
     public function company()
@@ -31,10 +22,6 @@ class Shipment extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function driver()
-    {
-        return $this->belongsTo(Driver::class);
-    }
 
     public function freight(): HasOne
     {

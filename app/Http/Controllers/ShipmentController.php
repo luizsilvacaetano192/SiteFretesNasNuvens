@@ -49,7 +49,7 @@ class ShipmentController extends Controller
     {
         if ($request->ajax()) {
         
-            $shipments = Shipment::with(['freight', 'company', 'driver'])->select('*')->get();
+            $shipments = Shipment::with(['freight', 'company'])->select('*')->get();
          
             return DataTables::of($shipments)
                 ->addColumn('action', function ($shipment) {
@@ -80,21 +80,24 @@ class ShipmentController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'company_id' => 'required',
-            'driver_id' => 'required',
+            'company_id' => 'required|exists:companies,id',
             'weight' => 'required|numeric',
-            'cargo_type' => 'required|string',
-            'start_address' => 'required|string',
-            'destination_address' => 'required|string',
-            'expected_start_date' => 'required|date',
-            'expected_delivery_date' => 'required|date',
-            'deadline' => 'required|integer',
-            'start_time' => 'required|date_format:H:i',
+            'cargo_type' => 'required|string|max:255',
+            'dimensions' => 'required|string|max:255',
         ]);
-
-        Shipment::create($request->all());
-
-        return redirect()->route('shipments.index')->with('success', 'Carga criada com sucesso!');
+    
+        // Criar a carga com os dados informados
+        $shipment = new Shipment([
+            'company_id' => $request->input('company_id'),
+            'weight' => $request->input('weight'),
+            'cargo_type' => $request->input('cargo_type'),
+            'dimensions' => $request->input('dimensions'),
+        ]);
+        
+        $shipment->save();
+    
+        return redirect()->route('shipments.index')->with('success', 'Carga cadastrada com sucesso!');
+       
     }
 
     public function edit($id)
@@ -131,4 +134,17 @@ class ShipmentController extends Controller
 
         return response()->json(['success' => 'Carga excluída com sucesso!']);
     }
+
+    public function requestFreight($id)
+    {
+        // Buscar o shipment pelo ID
+        $shipment = Shipment::findOrFail($id);
+
+        // Retornar a view de solicitação de frete
+        return view('shipments.requestFreight', compact('shipment'));
+    }
+
+    
+
+    
 }
