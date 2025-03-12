@@ -190,6 +190,17 @@ class FreightController extends Controller
         return response()->json(['message' => 'Frete criado com sucesso!'], 201);
     }
 
+    public function deleteAll()
+    {
+        try {
+            // Exclui todos os registros da tabela 'freights'
+            Freight::truncate();
+            return response()->json(['message' => 'Todos os fretes foram excluídos com sucesso!']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Erro ao excluir os fretes.', 'error' => $e->getMessage()], 500);
+        }
+    }
+
     public function destroy($id)
     {
         $freight = Freight::findOrFail($id);

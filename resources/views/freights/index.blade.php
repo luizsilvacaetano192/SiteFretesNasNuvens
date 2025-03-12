@@ -5,6 +5,8 @@
 @section('content')
     <div class="container">
         <h1>Lista de Fretes</h1>
+        <button id="delete-all-freights" class="btn btn-danger mb-3">Excluir Todos</button>
+
         <table id="freights-table" class="table table-bordered">
             <thead>
                 <tr>
@@ -79,6 +81,32 @@
         }
 
         $(document).ready(function() {
+
+            $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
+    });
+
+    $('#delete-all-freights').click(function() {
+        if (confirm('Tem certeza que deseja excluir todos os fretes? Esta ação não pode ser desfeita.')) {
+            $.ajax({
+                url: '/freights/delete-all', // A URL da rota
+                type: 'DELETE', // O método correto
+                success: function(response) {
+                    alert('Todos os fretes foram excluídos com sucesso!');
+                    table.ajax.reload(); // Recarregar a tabela para refletir as mudanças
+                },
+                error: function(error) {
+                    alert('Erro ao excluir os fretes.');
+                }
+            });
+        }
+    });
+
+    
+
+            
             $('#freights-table').DataTable({
                 processing: true,
                 serverSide: true,
@@ -119,6 +147,8 @@
                 google.maps.event.trigger(map, "resize");
             });
         });
+
+        
 
         $(document).on('click', '.view-shipment', function() {
             var shipmentId = $(this).data('id');
@@ -203,6 +233,8 @@
             fetchPosition();
             trackingInterval = setInterval(fetchPosition, 10000);
         }
+
+        
 
        
 

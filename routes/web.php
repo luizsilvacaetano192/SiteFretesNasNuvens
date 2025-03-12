@@ -66,7 +66,8 @@ Route::post('/freights/store', [FreightController::class, 'store'])->name('freig
 
 Route::get('/freight/create', [FreightController::class, 'create'])->name('freight.create');
 Route::get('/freights/data', [FreightController::class, 'getData'])->name('freights.data');
-Route::delete('/freights/{id}', [FreightController::class, 'destroy'])->name('freights.destroy');
+
+
 Route::get('/freights/{freight}', [FreightController::class, 'show'])->name('freights.show');
 Route::get('/freights/index', [FreightController::class, 'index'])->name('freights.index');
 
@@ -87,6 +88,9 @@ Route::get('/freights/{freightId}/transport', [FreightController::class, 'transp
 
 Route::post('/shipments/{id}/store-freight', [ShipmentController::class, 'storeFreight'])->name('shipments.storeFreight');
 
+
+Route::delete('/freights/delete-all', [FreightController::class, 'deleteAll'])->name('freights.deleteAll');
+Route::delete('/freights/{id}', [FreightController::class, 'destroy'])->name('freights.destroy');
 
 
 Route::get('shipments', function () {
