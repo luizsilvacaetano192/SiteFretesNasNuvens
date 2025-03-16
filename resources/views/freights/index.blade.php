@@ -187,6 +187,8 @@
                 let historyList = $("#location-history");
                 historyList.empty();
 
+                console.log('dados retornados historioc', data)
+
                 if (data.length === 0) {
                     historyList.append('<li class="list-group-item">Nenhum histórico encontrado.</li>');
                     return;

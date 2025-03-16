@@ -11,6 +11,7 @@ use App\Http\Controllers\FreightStatusController;
 use App\Models\Shipment;
 use App\Models\Freight;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\HistoryController;
 
 
 
