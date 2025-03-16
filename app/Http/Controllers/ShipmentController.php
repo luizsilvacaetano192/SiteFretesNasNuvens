@@ -96,7 +96,7 @@ class ShipmentController extends Controller
         
         $shipment->save();
     
-        return redirect()->route('shipments.index')->with('success', 'Carga cadastrada com sucesso!');
+        return redirect()->route('shipments')->with('success', 'Carga cadastrada com sucesso!');
        
     }
 

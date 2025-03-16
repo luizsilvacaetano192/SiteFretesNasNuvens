@@ -17,7 +17,7 @@
                     <th>Motorista</th>
                     <th>Posição Atual</th>
                     <th>Duração</th>
-                    <th>Distancia</th>
+                    <th>Distância</th>
                     <th>Status</th>
                     <th>Ações</th>
                 </tr>
@@ -28,7 +28,7 @@
         </table>
     </div>
 
-    <!-- Modal para visualização do mapa -->
+    <!-- Modal para visualização do mapa e histórico -->
     <div class="modal fade" id="freightMapModal" tabindex="-1" aria-labelledby="freightMapModalLabel" aria-hidden="true">
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
@@ -36,21 +36,28 @@
                     <h5 class="modal-title" id="freightMapModalLabel">Detalhes do Frete</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
-                <div class="modal-body">
-                    <!-- Descrição da localização -->
-                    <div id="location-info" style="text-align: center; font-size: 16px; font-weight: bold; padding: 10px; background-color: #f8f9fa; border-bottom: 2px solid #ddd;">
-                        📍 Localização Atual: <span id="user-location">Obtendo localização...</span>
-                    </div>
+                <div class="modal-body d-flex">
                     <!-- Mapa -->
-                    <div id="map" style="width: 100%; height: 350px;"></div>
-                    <!-- Endereços -->
-                    <div style="margin-top: 15px; text-align: center; font-size: 16px;">
-                        <strong>🚚 Endereço de Partida:</strong> <span id="start-address">Carregando...</span><br>
-                        <strong>🏁 Endereço de Destino:</strong> <span id="destination-address">Carregando...</span>
+                    <div style="width: 70%;">
+                        <div id="location-info" style="text-align: center; font-size: 16px; font-weight: bold; padding: 10px; background-color: #f8f9fa; border-bottom: 2px solid #ddd;">
+                            📍 Localização Atual: <span id="user-location">Obtendo localização...</span>
+                        </div>
+                        <div id="map" style="width: 100%; height: 350px;"></div>
+                        <div style="margin-top: 15px; text-align: center; font-size: 16px;">
+                            <strong>🚚 Endereço de Partida:</strong> <span id="start-address">Carregando...</span><br>
+                            <strong>🏁 Endereço de Destino:</strong> <span id="destination-address">Carregando...</span>
+                        </div>
+                        <p><strong>Distância:</strong> <span id="distance"></span></p>
+                        <p><strong>Tempo Estimado:</strong> <span id="duration"></span></p>
                     </div>
-                    <!-- Distância e Tempo -->
-                    <p><strong>Distância:</strong> <span id="distance"></span></p>
-                    <p><strong>Tempo Estimado:</strong> <span id="duration"></span></p>
+
+                    <!-- Histórico de Localização -->
+                    <div style="width: 30%; padding-left: 15px;">
+                        <h5>📜 Histórico</h5>
+                        <ul id="location-history" class="list-group" style="max-height: 350px; overflow-y: auto;">
+                            <li class="list-group-item">Carregando...</li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -58,13 +65,10 @@
 @endsection
 
 @push('scripts')
-    <!-- jQuery e DataTables -->
     <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-    <link href="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/datatables.net@1.11.5/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/datatables.net-bs5@1.11.5/js/dataTables.bootstrap5.min.js"></script>
-
-    <!-- API do Google Maps -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/jquery.dataTables.min.css">
+    <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+   
     <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&callback=initMap&libraries=places,directions"></script>
 
     <script>
@@ -73,7 +77,7 @@
         function initMap() {
             map = new google.maps.Map(document.getElementById("map"), {
                 zoom: 7,
-                center: { lat: -15.7801, lng: -47.9292 } // Brasília como centro padrão
+                center: { lat: -15.7801, lng: -47.9292 }
             });
 
             directionsService = new google.maps.DirectionsService();
@@ -81,32 +85,6 @@
         }
 
         $(document).ready(function() {
-
-            $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-
-    $('#delete-all-freights').click(function() {
-        if (confirm('Tem certeza que deseja excluir todos os fretes? Esta ação não pode ser desfeita.')) {
-            $.ajax({
-                url: '/freights/delete-all', // A URL da rota
-                type: 'DELETE', // O método correto
-                success: function(response) {
-                    alert('Todos os fretes foram excluídos com sucesso!');
-                    table.ajax.reload(); // Recarregar a tabela para refletir as mudanças
-                },
-                error: function(error) {
-                    alert('Erro ao excluir os fretes.');
-                }
-            });
-        }
-    });
-
-    
-
-            
             $('#freights-table').DataTable({
                 processing: true,
                 serverSide: true,
@@ -126,7 +104,7 @@
                         name: 'actions',
                         render: function(data) {
                             return `
-                                <button class="btn btn-info btn-sm view-shipment" data-id="${data}">View</button>
+                                <button class="btn btn-info btn-sm view-shipment" data-id="${data}">Ver</button>
                                 <button class="btn btn-danger btn-sm" onclick="deleteFreight(${data})">Excluir</button>
                             `;
                         },
@@ -135,33 +113,18 @@
                     }
                 ]
             });
-
-            $('#freightMapModal').on('hidden.bs.modal', function () {
-                if (trackingInterval) {
-                    clearInterval(trackingInterval);
-                    trackingInterval = null;
-                }
-            });
-
-            $('#freightMapModal').on('shown.bs.modal', function () {
-                google.maps.event.trigger(map, "resize");
-            });
         });
 
-        
+        $(document).on("click", ".view-shipment", function() {
+            var shipmentId = $(this).data("id");
 
-        $(document).on('click', '.view-shipment', function() {
-            var shipmentId = $(this).data('id');
-            console.log("Abrindo modal para ID:", shipmentId);
-
-            $.get('/freights/' + shipmentId, function(data) {
-                console.log("Dados recebidos:", data);
-
+            $.get(`/freights/${shipmentId}`, function(data) {
                 $('#start-address').text(data.start_address);
                 $('#destination-address').text(data.destination_address);
                 $('#user-location').text(data.current_position);
 
-                loadMap(data.start_lat, data.start_lng, data.destination_lat, data.destination_lng, data.current_lat, data.current_lng, data.freight_id);
+                loadMap(data.start_lat, data.start_lng, data.destination_lat, data.destination_lng, data.current_lat, data.current_lng, shipmentId);
+                loadFreightHistory(shipmentId);
                 $('#freightMapModal').modal('show');
             });
         });
@@ -171,28 +134,19 @@
                 initMap();
             }
 
-            console.log("Carregando mapa para ID:", freightId);
+            directionsService.route({
+                origin: { lat: parseFloat(startLat), lng: parseFloat(startLng) },
+                destination: { lat: parseFloat(destinationLat), lng: parseFloat(destinationLng) },
+                travelMode: google.maps.TravelMode.DRIVING
+            }, (response, status) => {
+                if (status === "OK") {
+                    directionsRenderer.setDirections(response);
+                    let route = response.routes[0].legs[0];
 
-            map.setCenter({ lat: parseFloat(startLat), lng: parseFloat(startLng) });
-
-            directionsService.route(
-                {
-                    origin: { lat: parseFloat(startLat), lng: parseFloat(startLng) },
-                    destination: { lat: parseFloat(destinationLat), lng: parseFloat(destinationLng) },
-                    travelMode: google.maps.TravelMode.DRIVING
-                },
-                (response, status) => {
-                    if (status === "OK") {
-                        directionsRenderer.setDirections(response);
-                        let route = response.routes[0].legs[0];
-
-                        document.getElementById("distance").innerText = route.distance.text;
-                        document.getElementById("duration").innerText = route.duration.text;
-                    } else {
-                        console.error("Erro ao calcular rota:", status);
-                    }
+                    document.getElementById("distance").innerText = route.distance.text;
+                    document.getElementById("duration").innerText = route.duration.text;
                 }
-            );
+            });
 
             updateTruckPosition(freightId);
         }
@@ -204,28 +158,22 @@
 
             function fetchPosition() {
                 $.get(`/freights/${freightId}/position`, function(data) {
-                    console.log("Posição atualizada:", data);
-
                     if (data.success && data.current_lat && data.current_lng) {
-                        alert
                         let truckLatLng = new google.maps.LatLng(parseFloat(data.current_lat), parseFloat(data.current_lng));
 
                         if (!truckMarker) {
                             truckMarker = new google.maps.Marker({
                                 position: truckLatLng,
                                 map: map,
-                                icon: {
-                                    url: "https://img.icons8.com/ios-filled/50/000000/truck.png",
-                                    scaledSize: new google.maps.Size(40, 40),
-                                },
+                                icon: { url: "https://img.icons8.com/ios-filled/50/000000/truck.png", scaledSize: new google.maps.Size(40, 40) }
                             });
                         } else {
                             truckMarker.setPosition(truckLatLng);
                         }
 
-                        console.log('posicao', data.position)
-
                         document.getElementById("user-location").innerText = data.position;
+
+                        loadFreightHistory(freightId);
                     }
                 });
             }
@@ -234,9 +182,20 @@
             trackingInterval = setInterval(fetchPosition, 10000);
         }
 
-        
+        function loadFreightHistory(freightId) {
+            $.get(`/freights/${freightId}/history`, function(data) {
+                let historyList = $("#location-history");
+                historyList.empty();
 
-       
+                if (data.length === 0) {
+                    historyList.append('<li class="list-group-item">Nenhum histórico encontrado.</li>');
+                    return;
+                }
 
+                data.forEach(entry => {
+                    historyList.append(`<li class="list-group-item">📍 ${entry.address} - ${entry.date} ${entry.time}</li>`);
+                });
+            });
+        }
     </script>
 @endpush

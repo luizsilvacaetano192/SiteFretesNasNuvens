@@ -111,6 +111,8 @@ Route::get('/freights/{id}/position', function ($id) {
     return response()->json(['success' => false, 'position' => null]);
 });
 
+Route::get('/freights/{freight}/history', [HistoryController::class, 'getHistory']);
+
 
 
 Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
