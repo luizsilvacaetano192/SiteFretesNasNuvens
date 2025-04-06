@@ -77,6 +77,24 @@
   </div>
 </div>
 
+<!-- Modal de Alerta de Ativação -->
+<div class="modal fade" id="activateModal" tabindex="-1" aria-labelledby="activateModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">⚠️ Ativação de Motorista</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Por favor, realize a análise do motorista antes de ativá-lo.
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Estilos e Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -131,7 +149,7 @@ function renderImageColumn(title, src) {
         <div class="col-md-3 text-center mb-3">
             <p><strong>${title}</strong></p>
             <img src="${src}" class="img-fluid rounded" style="max-height:150px;"
-                 onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';"/>
+                 onerror="this.onerror=null;this.outerHTML='<div class='text-danger'>Imagem não disponível</div>';"/>
             <br>
             <a href="${src}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
             <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${src}')">🔍 Ampliar</button>
@@ -148,6 +166,14 @@ function togglePassword(id, password) {
 }
 
 function activateDriver(driverId) {
+    const row = $('#drivers-table').DataTable().row(function (idx, data) {
+        return data.id === driverId;
+    }).data();
+    if (!row || !row.analysis_done) {
+        const modal = new bootstrap.Modal(document.getElementById('activateModal'));
+        modal.show();
+        return;
+    }
     alert(`Ativar motorista ID: ${driverId}`);
 }
 
@@ -184,6 +210,8 @@ function analyzeDriver(driverId) {
                     ${renderImageColumn('Foto do Rosto', row.face_photo)}
                 </div>
             `);
+            // Marca como analisado
+            row.analysis_done = true;
         },
         error: function () {
             $('#analysisContent').html(`<div class="alert alert-danger">❌ Erro na análise com IA.</div>`);
