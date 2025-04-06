@@ -255,7 +255,7 @@ $(document).ready(function () {
             row.child.hide();
             tr.removeClass('shown');
         } else {
-            row.child(`<div class="p-3"><strong>Mais detalhes aqui...</strong></div>`).show();
+            row.child(format(row.data())).show();
             tr.addClass('shown');
         }
     });
