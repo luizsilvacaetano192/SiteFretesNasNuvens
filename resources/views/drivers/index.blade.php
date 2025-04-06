@@ -22,13 +22,54 @@
     </table>
 </div>
 
-<!-- Toast container -->
-<div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1055">
-  <div id="toastContainer"></div>
+<!-- Modal de Imagem Ampliada -->
+<div class="modal fade" id="imageModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered modal-xl">
+    <div class="modal-content bg-dark">
+      <div class="modal-body text-center p-0">
+        <img id="modalImage" src="" class="img-fluid w-100" style="max-height:90vh; object-fit:contain;">
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
 </div>
 
-<!-- Modal de Imagem Ampliada -->
-<!-- ... (os modais permanecem iguais, sem mudanças) ... -->
+<!-- Modal de Análise por IA -->
+<div class="modal fade" id="analyzeModal" tabindex="-1">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">🕵️ Análise de Motorista com IA</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="analysisContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Bloqueio -->
+<div class="modal fade" id="blockModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">🔒 Bloqueio de Motorista</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body text-center">
+        <p>Escolha o tipo de bloqueio a ser aplicado ao motorista.</p>
+        <div class="d-grid gap-2">
+          <button class="btn btn-danger" id="blockUserBtn">🚫 Bloquear Usuário</button>
+          <button class="btn btn-warning" id="blockTransferBtn">📵 Bloquear Transferências</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Estilos e Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -36,6 +77,9 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <style>
 td.dt-control::before {
@@ -57,38 +101,49 @@ tr.shown td.dt-control::before {
 <script>
 let selectedDriverId = null;
 
-function showToast(message, type = 'success') {
-    const toastId = `toast-${Date.now()}`;
-    const color = type === 'success' ? 'bg-success' : 'bg-danger';
-    const icon = type === 'success' ? '✅' : '❌';
+function maskRG(value) {
+    if (!value) return '';
+    return value.replace(/^(\d{1,2})(\d{3})(\d{3})([\dxX])?$/, (_, p1, p2, p3, p4) => `${p1}.${p2}.${p3}${p4 ? '-' + p4 : ''}`);
+}
 
-    const toastHTML = `
-      <div class="toast align-items-center text-white ${color} border-0 show" id="${toastId}" role="alert" aria-live="assertive" aria-atomic="true">
-        <div class="d-flex">
-          <div class="toast-body">${icon} ${message}</div>
-          <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast"></button>
+function maskPhone(value) {
+    if (!value) return '';
+    return value.replace(/\D/g, '').replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+}
+
+function maskCPF(cpf) {
+    return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+}
+
+function formatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR');
+}
+
+function openImageModal(src) {
+    $('#modalImage').attr('src', src);
+    new bootstrap.Modal('#imageModal').show();
+}
+
+function renderImageColumn(title, src) {
+    return `
+        <div class="col-md-3 text-center mb-3">
+            <p><strong>${title}</strong></p>
+            <img src="${src}" class="img-fluid rounded" style="max-height:150px;" onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';"/>
+            <br>
+            <a href="${src}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
+            <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${src}')">🔍 Ampliar</button>
         </div>
-      </div>
     `;
-    $('#toastContainer').append(toastHTML);
-
-    const toastEl = document.getElementById(toastId);
-    const bsToast = new bootstrap.Toast(toastEl, { delay: 4000 });
-    bsToast.show();
 }
 
 function updateDriverStatus(id, status) {
     $.post(`/drivers/${id}/update-status`, { status, _token: '{{ csrf_token() }}' }, () => {
         $('#drivers-table').DataTable().ajax.reload(null, false);
         bootstrap.Modal.getInstance(document.getElementById('blockModal'))?.hide();
-
-        let msg = 'Status atualizado com sucesso!';
-        if (status === 'active') msg = 'Motorista ativado!';
-        else if (status === 'block') msg = 'Usuário bloqueado!';
-        else if (status === 'transfer_block') msg = 'Transferências bloqueadas!';
-
-        showToast(msg, 'success');
-    }).fail(() => showToast("Erro ao atualizar status.", 'error'));
+        toastr.success(`Status atualizado para ${status}`);
+    }).fail(() => toastr.error("Erro ao atualizar status."));
 }
 
 function activateDriver(id, status) {
@@ -100,7 +155,74 @@ function activateDriver(id, status) {
     }
 }
 
-// ... (demais funções como analyzeDriver, openImageModal, format, etc. permanecem iguais) ...
+function analyzeDriver(driverId) {
+    const modal = new bootstrap.Modal('#analyzeModal');
+    $('#analysisContent').html(`
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
+        </div>
+    `);
+    modal.show();
+
+    $.get(`/drivers/${driverId}/analyze`, result => {
+        $('#analysisContent').html(`
+            <div class="alert alert-info">
+                <h5>🧠 Resultado da Análise via IA:</h5>
+                <p>${result.message.replace(/\n/g, "<br>")}</p>
+            </div>
+            <div class="row">
+                ${renderImageColumn('Frente CNH', result.driver_license_front)}
+                ${renderImageColumn('Comprovante de Endereço', result.address_proof)}
+                ${renderImageColumn('Foto do Rosto', result.face_photo)}
+            </div>
+        `);
+    }).fail(() => {
+        $('#analysisContent').html(`<div class="alert alert-danger">❌ Erro na análise com IA.</div>`);
+    });
+}
+
+function format(d) {
+    let reason = '';
+    if (d.status === 'block' || d.status === 'transfer_block') {
+        reason = `<p><strong>Motivo:</strong> ${d.reason || 'Não informado'}</p>`;
+    }
+
+    return `
+        <div class="p-3 bg-light rounded">
+            <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
+            <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
+            <p><strong>CPF:</strong> ${maskCPF(d.cpf)}</p>
+            <p><strong>CNH:</strong> ${d.driver_license_number}</p>
+            <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
+            <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
+            <p><strong>Status:</strong> ${getStatusLabel(d.status)[0]}</p>
+            ${reason}
+            <div class="row">
+                ${renderImageColumn('Frente CNH', d.driver_license_front)}
+                ${renderImageColumn('Verso CNH', d.driver_license_back)}
+                ${renderImageColumn('Foto do Rosto', d.face_photo)}
+                ${renderImageColumn('Comprovante de Endereço', d.address_proof)}
+            </div>
+        </div>
+    `;
+}
+
+function getStatusLabel(status) {
+    const labels = {
+        'create': ['Aguardando Ativação', 'warning'],
+        'active': ['Ativo', 'success'],
+        'block': ['Bloqueado', 'danger'],
+        'transfer_block': ['Transferências Bloqueadas', 'danger'],
+    };
+    return labels[status] || ['Desconhecido', 'secondary'];
+}
+
+function openWhatsApp(phone) {
+    if (!phone) return alert("Número de telefone não disponível.");
+    const formatted = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/55${formatted}`, '_blank');
+}
 
 $(document).ready(function () {
     const table = $('#drivers-table').DataTable({
