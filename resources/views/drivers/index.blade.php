@@ -46,6 +46,20 @@
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <style>
+    td.dt-control::before {
+        content: "+";
+        font-weight: bold;
+        font-size: 18px;
+        color: #198754; /* Verde Bootstrap */
+        display: inline-block;
+        text-align: center;
+        width: 20px;
+        cursor: pointer;
+    }
+    tr.shown td.dt-control::before {
+        content: "−";
+        color: #dc3545; /* Vermelho Bootstrap */
+    }
     /* Estilo personalizado para o botão de detalhes */
     td.dt-control {
         text-align: center;
@@ -107,6 +121,7 @@
 </style>
 
 <script>
+
 function format(d) {
     return `
         <div class="p-3 bg-light rounded">
@@ -119,58 +134,39 @@ function format(d) {
             <p><strong>Senha:</strong> ${d.password}</p>
             <p><strong>Termos Aceitos:</strong> ${d.terms_accepted ? 'Sim' : 'Não'}</p>
             <div class="row">
-                <div class="col-md-3">
-                    <div class="image-container">
-                        <p class="text-center"><strong>Frente CNH</strong></p>
-                        <img src="${d.driver_license_front}" class="img-thumbnail w-100" 
-                             onclick="showImageModal('${d.driver_license_front}', 'Frente da CNH')"
-                             onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger text-center\'>Imagem não disponível</div>';">
-                        <div class="image-actions">
-                            <a href="${d.driver_license_front}" download="frente-cnh-${d.name}.jpg">Baixar</a>
-                            <a href="#" onclick="showImageModal('${d.driver_license_front}', 'Frente da CNH'); return false;">Ampliar</a>
-                        </div>
-                    </div>
+                <div class="col-md-3 text-center">
+                    <p><strong>Frente CNH</strong></p>
+                    <img src="${d.driver_license_front}" class="img-fluid rounded" style="max-height:150px;" 
+                        onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
+                    <br>
+                    <a href="${d.driver_license_front}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
                 </div>
-                <div class="col-md-3">
-                    <div class="image-container">
-                        <p class="text-center"><strong>Verso CNH</strong></p>
-                        <img src="${d.driver_license_back}" class="img-thumbnail w-100" 
-                             onclick="showImageModal('${d.driver_license_back}', 'Verso da CNH')"
-                             onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger text-center\'>Imagem não disponível</div>';">
-                        <div class="image-actions">
-                            <a href="${d.driver_license_back}" download="verso-cnh-${d.name}.jpg">Baixar</a>
-                            <a href="#" onclick="showImageModal('${d.driver_license_back}', 'Verso da CNH'); return false;">Ampliar</a>
-                        </div>
-                    </div>
+                <div class="col-md-3 text-center">
+                    <p><strong>Verso CNH</strong></p>
+                    <img src="${d.driver_license_back}" class="img-fluid rounded" style="max-height:150px;" 
+                        onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
+                    <br>
+                    <a href="${d.driver_license_back}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
                 </div>
-                <div class="col-md-3">
-                    <div class="image-container">
-                        <p class="text-center"><strong>Foto do Rosto</strong></p>
-                        <img src="${d.face_photo}" class="img-thumbnail w-100 rounded-circle" 
-                             onclick="showImageModal('${d.face_photo}', 'Foto do Rosto')"
-                             onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger text-center\'>Imagem não disponível</div>';">
-                        <div class="image-actions">
-                            <a href="${d.face_photo}" download="rosto-${d.name}.jpg">Baixar</a>
-                            <a href="#" onclick="showImageModal('${d.face_photo}', 'Foto do Rosto'); return false;">Ampliar</a>
-                        </div>
-                    </div>
+                <div class="col-md-3 text-center">
+                    <p><strong>Foto do Rosto</strong></p>
+                    <img src="${d.face_photo}" class="img-fluid rounded-circle" style="max-height:150px;" 
+                        onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
+                    <br>
+                    <a href="${d.face_photo}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
                 </div>
-                <div class="col-md-3">
-                    <div class="image-container">
-                        <p class="text-center"><strong>Comprovante de Endereço</strong></p>
-                        <img src="${d.address_proof}" class="img-thumbnail w-100" 
-                             onclick="showImageModal('${d.address_proof}', 'Comprovante de Endereço')"
-                             onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger text-center\'>Imagem não disponível</div>';">
-                        <div class="image-actions">
-                            <a href="${d.address_proof}" download="comprovante-${d.name}.jpg">Baixar</a>
-                            <a href="#" onclick="showImageModal('${d.address_proof}', 'Comprovante de Endereço'); return false;">Ampliar</a>
-                        </div>
-                    </div>
+                <div class="col-md-3 text-center">
+                    <p><strong>Comprovante de Endereço</strong></p>
+                    <img src="${d.address_proof}" class="img-fluid rounded" style="max-height:150px;" 
+                        onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
+                    <br>
+                    <a href="${d.address_proof}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
                 </div>
             </div>
         </div>
     `;
 }
+
 
 function showImageModal(imageSrc, title) {
     const modal = new bootstrap.Modal(document.getElementById('imageModal'));
