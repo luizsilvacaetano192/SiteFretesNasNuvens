@@ -44,14 +44,7 @@
         <h5 class="modal-title">🕵️ Análise de Motorista com IA</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-      <div class="modal-body" id="analysisContent">
-        <div class="text-center">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Analisando...</span>
-          </div>
-          <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
-        </div>
-      </div>
+      <div class="modal-body" id="analysisContent"></div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
@@ -59,10 +52,23 @@
   </div>
 </div>
 
-<!-- Estilos e Scripts -->
+<!-- Modal WhatsApp Web -->
+<div class="modal fade" id="whatsAppModal" tabindex="-1" aria-labelledby="whatsAppModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 1000px;">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">💬 Conversar no WhatsApp</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body" style="height: 80vh;">
+        <iframe id="whatsAppIframe" src="" frameborder="0" style="width:100%; height:100%;" allow="camera; microphone"></iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
@@ -82,6 +88,15 @@ tr.shown td.dt-control::before {
     content: "−";
     color: #dc3545;
 }
+.status-label {
+    font-weight: bold;
+    padding: 5px 10px;
+    border-radius: 8px;
+    display: inline-block;
+}
+.status-pending { background-color: #ffc107; color: #000; }
+.status-blocked, .status-transfer-blocked { background-color: #dc3545; color: #fff; }
+.status-active { background-color: #28a745; color: #fff; }
 </style>
 
 <script>
@@ -103,10 +118,30 @@ function maskPhone(phone) {
     return phone?.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3") || '';
 }
 
+function getStatusLabel(status) {
+    switch (status) {
+        case null:
+        case '':
+        case 'create': return '<span class="status-label status-pending">Aguardando ativação</span>';
+        case 'active': return '<span class="status-label status-active">Ativo</span>';
+        case 'block': return '<span class="status-label status-blocked">Bloqueado</span>';
+        case 'transfer_block': return '<span class="status-label status-transfer-blocked">Transferências Bloqueadas</span>';
+        default: return status;
+    }
+}
+
 function openImageModal(src) {
     document.getElementById('modalImage').src = src;
-    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
-    modal.show();
+    new bootstrap.Modal(document.getElementById('imageModal')).show();
+}
+
+function openWhatsAppModal(phone) {
+    if (!phone) return alert("Telefone não disponível.");
+    const cleaned = phone.replace(/\D/g, '');
+    const full = `55${cleaned.slice(-11)}`;
+    const url = `https://web.whatsapp.com/send?phone=${full}&text=Ol%C3%A1%2C%20gostaria%20de%20falar%20com%20voc%C3%AA.`;
+    $('#whatsAppIframe').attr('src', url);
+    new bootstrap.Modal(document.getElementById('whatsAppModal')).show();
 }
 
 function renderImageColumn(title, src) {
@@ -123,8 +158,10 @@ function renderImageColumn(title, src) {
 }
 
 function format(d) {
-    const passwordFieldId = `password-${d.id}`;
-    const toggleBtnId = `toggle-${d.id}`;
+    let reason = '';
+    if (d.status === 'block' || d.status === 'transfer_block') {
+        reason = `<p><strong>Motivo:</strong> ${d.reason || 'Não informado'}</p>`;
+    }
 
     return `
         <div class="p-3 bg-light rounded">
@@ -134,14 +171,8 @@ function format(d) {
             <p><strong>CNH:</strong> ${d.driver_license_number}</p>
             <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
             <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
-            <p><strong>Senha:</strong> 
-                <span id="${passwordFieldId}">${'•'.repeat(d.password.length)}</span>
-                <button class="btn btn-sm btn-outline-secondary" id="${toggleBtnId}" onclick="togglePassword('${d.id}', '${d.password}')">👁 Mostrar</button>
-            </p>
-            <p><strong>Termos Aceitos:</strong> ${d.terms_accepted ? 'Sim' : 'Não'}</p>
-            ${(d.status === 'block' || d.status === 'transfer_block') && d.reason ? `
-                <p><strong>Motivo:</strong> <span class="text-danger">${d.reason}</span></p>
-            ` : ''}
+            <p><strong>Status:</strong> ${getStatusLabel(d.status)}</p>
+            ${reason}
             <div class="row">
                 ${renderImageColumn('Frente CNH', d.driver_license_front)}
                 ${renderImageColumn('Verso CNH', d.driver_license_back)}
@@ -150,20 +181,6 @@ function format(d) {
             </div>
         </div>
     `;
-}
-
-function togglePassword(id, password) {
-    const span = document.getElementById(`password-${id}`);
-    const button = document.getElementById(`toggle-${id}`);
-    const isHidden = span.innerText.includes('•');
-
-    if (isHidden) {
-        span.innerText = password;
-        button.innerText = '🙈 Ocultar';
-    } else {
-        span.innerText = '•'.repeat(password.length);
-        button.innerText = '👁 Mostrar';
-    }
 }
 
 function activateDriver(driverId) {
@@ -175,12 +192,8 @@ function analyzeDriver(driverId) {
         return data.id === driverId;
     }).data();
 
-    if (!row) {
-        alert('Motorista não encontrado!');
-        return;
-    }
+    if (!row) return alert('Motorista não encontrado!');
 
-    const modal = new bootstrap.Modal(document.getElementById('analyzeModal'));
     $('#analysisContent').html(`
         <div class="text-center">
             <div class="spinner-border text-primary" role="status">
@@ -189,22 +202,13 @@ function analyzeDriver(driverId) {
             <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
         </div>
     `);
-    modal.show();
+    new bootstrap.Modal(document.getElementById('analyzeModal')).show();
 
     $.ajax({
         url: '/api/analyze-driver',
         method: 'POST',
         contentType: 'application/json',
-        data: JSON.stringify({
-            id: row.id,
-            name: row.name,
-            address: row.address,
-            cpf: row.cpf,
-            driver_license_number: row.driver_license_number,
-            driver_license_front: row.driver_license_front,
-            address_proof: row.address_proof,
-            face_photo: row.face_photo
-        }),
+        data: JSON.stringify(row),
         success: function (result) {
             $('#analysisContent').html(`
                 <div class="alert alert-info">
@@ -220,11 +224,7 @@ function analyzeDriver(driverId) {
             `);
         },
         error: function () {
-            $('#analysisContent').html(`
-                <div class="alert alert-danger">
-                    ❌ Ocorreu um erro ao realizar a análise com IA.
-                </div>
-            `);
+            $('#analysisContent').html(`<div class="alert alert-danger">❌ Erro na análise com IA.</div>`);
         }
     });
 }
@@ -235,55 +235,12 @@ $(document).ready(function() {
         serverSide: true,
         ajax: "{{ route('drivers.data') }}",
         columns: [
-            {
-                className: 'dt-control',
-                orderable: false,
-                data: null,
-                defaultContent: ''
-            },
+            { className: 'dt-control', orderable: false, data: null, defaultContent: '' },
             { data: 'name', name: 'name' },
             { data: 'address', name: 'address' },
-            {
-                data: 'identity_card',
-                name: 'identity_card',
-                render: function(data) {
-                    return maskRG(data);
-                }
-            },
-            {
-                data: 'phone',
-                name: 'phone',
-                render: function(data) {
-                    return maskPhone(data);
-                }
-            },
-            {
-                data: 'status',
-                name: 'status',
-                render: function(data) {
-                    let label = '';
-                    let color = '';
-
-                    if (!data || data === 'create') {
-                        label = '⏳ Aguardando Liberação';
-                        color = 'warning';
-                    } else if (data === 'active') {
-                        label = '✅ Ativo';
-                        color = 'success';
-                    } else if (data === 'block') {
-                        label = '⛔ Bloqueado';
-                        color = 'danger';
-                    } else if (data === 'transfer_block') {
-                        label = '🚫 Transferências Bloqueadas';
-                        color = 'danger';
-                    } else {
-                        label = data;
-                        color = 'secondary';
-                    }
-
-                    return `<span class="badge bg-${color}">${label}</span>`;
-                }
-            },
+            { data: 'identity_card', name: 'identity_card', render: maskRG },
+            { data: 'phone', name: 'phone', render: maskPhone },
+            { data: 'status', name: 'status', render: getStatusLabel },
             {
                 data: null,
                 orderable: false,
@@ -295,6 +252,7 @@ $(document).ready(function() {
                             <a href="/drivers/${row.id}/freights" class="btn btn-outline-primary">🚚 Ver Fretes</a>
                             <button onclick="activateDriver(${row.id})" class="btn btn-outline-warning">✅ Ativar</button>
                             <button onclick="analyzeDriver(${row.id})" class="btn btn-outline-dark">🕵️ Analisar</button>
+                            <button onclick="openWhatsAppModal('${row.phone}')" class="btn btn-outline-success">💬 Conversar</button>
                         </div>
                     `;
                 }
