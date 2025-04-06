@@ -42,6 +42,7 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
 <style>
 td.dt-control::before {
@@ -81,16 +82,38 @@ function renderImageColumn(title, src) {
 }
 
 function format(d) {
+    const formatDateBR = (dateStr) => {
+        if (!dateStr) return '';
+        const [year, month, day] = dateStr.split('-');
+        return `${day}/${month}/${year}`;
+    };
+
+    const formatCPF = (cpf) => cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+    const formatRG = (rg) => rg?.replace(/^(\d{2})(\d{3})(\d{3})(\d{1})$/, "$1.$2.$3-$4") || '';
+    const formatPhone = (phone) => phone?.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3") || '';
+
+    const passwordId = `pass-${d.id}`;
+    const toggleId = `toggle-${d.id}`;
+
     return `
         <div class="p-3 bg-light rounded">
-            <p><strong>Data de Nascimento:</strong> ${d.birth_date}</p>
+            <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
             <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
-            <p><strong>CPF:</strong> ${d.cpf}</p>
+            <p><strong>CPF:</strong> ${formatCPF(d.cpf)}</p>
+            <p><strong>RG:</strong> ${formatRG(d.identity_card)}</p>
+            <p><strong>Telefone:</strong> ${formatPhone(d.phone)}</p>
             <p><strong>CNH:</strong> ${d.driver_license_number}</p>
             <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
-            <p><strong>Validade CNH:</strong> ${d.driver_license_expiration}</p>
-            <p><strong>Senha:</strong> ${d.password}</p>
+            <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
+
+            <p>
+                <strong>Senha:</strong>
+                <input type="password" class="form-control d-inline-block w-auto" id="${passwordId}" value="${d.password}" readonly />
+                <button type="button" class="btn btn-sm btn-outline-secondary" id="${toggleId}" onclick="togglePassword('${passwordId}', '${toggleId}')">👁️</button>
+            </p>
+
             <p><strong>Termos Aceitos:</strong> ${d.terms_accepted ? 'Sim' : 'Não'}</p>
+
             <div class="row">
                 ${renderImageColumn('Frente CNH', d.driver_license_front)}
                 ${renderImageColumn('Verso CNH', d.driver_license_back)}
@@ -99,6 +122,18 @@ function format(d) {
             </div>
         </div>
     `;
+}
+
+function togglePassword(inputId, buttonId) {
+    const input = document.getElementById(inputId);
+    const button = document.getElementById(buttonId);
+    if (input.type === "password") {
+        input.type = "text";
+        button.innerText = "🙈";
+    } else {
+        input.type = "password";
+        button.innerText = "👁️";
+    }
 }
 
 function activateDriver(driverId) {
