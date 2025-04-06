@@ -15,14 +15,23 @@ class DriverController extends Controller
 
     public function getData()
     {
-        $query = Driver::query();
+        $drivers = Driver::select(['*']);
 
-        return DataTables::of($query)
+        return DataTables::of($drivers)
+            ->addColumn('actions', function ($driver) {
+                return '
+                    <a href="'.route('shipments.index', ['driver_id' => $driver->id]).'" class="btn btn-primary btn-sm">🚚 Ver Fretes</a>
+                   
+                ';
+            })
             ->addColumn('driver_license_front', fn($driver) => $driver->driver_license_front_url)
             ->addColumn('driver_license_back', fn($driver) => $driver->driver_license_back_url)
             ->addColumn('face_photo', fn($driver) => $driver->face_photo_url)
             ->addColumn('address_proof', fn($driver) => $driver->address_proof_url)
-            ->toJson();
+            ->toJson()
+            
+            ->rawColumns(['actions'])
+            ->make(true);
     }
 
     public function data(Request $request)
