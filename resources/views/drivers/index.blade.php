@@ -222,6 +222,7 @@ $(document).ready(function () {
             { data: 'address' },
             { data: 'identity_card', render: maskRG },
             { data: 'phone', render: maskPhone },
+            { data: 'status', name: 'status', render: getStatusLabel },
             {
                 data: 'status',
                 render: status => {
