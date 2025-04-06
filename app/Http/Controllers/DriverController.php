@@ -18,23 +18,13 @@ class DriverController extends Controller
     {
         $drivers = Driver::all();
 
-        $drivers->transform(function ($driver) {
-            $driver->driver_license_front = $driver->driver_license_front_photo 
-                ? Storage::disk('s3')->url($driver->driver_license_front_photo) 
-                : null;
-
-            $driver->driver_license_back = $driver->driver_license_back_photo 
-                ? Storage::disk('s3')->url($driver->driver_license_back_photo) 
-                : null;
-
-            $driver->face_photo = $driver->face_photo 
-                ? Storage::disk('s3')->url($driver->face_photo) 
-                : null;
-
-            
-
-            return $driver;
-        });
+        return DataTables::of($drivers)
+            ->addColumn('driver_license_front', fn($driver) => $driver->driver_license_front_url)
+            ->addColumn('driver_license_back', fn($driver) => $driver->driver_license_back_url)
+            ->addColumn('face_photo', fn($driver) => $driver->face_photo_url)
+            ->addColumn('address_proof', fn($driver) => $driver->address_proof_url)
+            ->toJson();
+    ;
 
         return DataTables::of($drivers)->make(true);
     }
