@@ -31,9 +31,7 @@ class DriverController extends Controller
                 ? Storage::disk('s3')->url($driver->face_photo) 
                 : null;
 
-            $driver->address_proof = $driver->address_proof_photo 
-                ? Storage::disk('s3')->url($driver->address_proof_photo) 
-                : null;
+            
 
             return $driver;
         });
