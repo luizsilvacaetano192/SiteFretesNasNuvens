@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Driver;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
+use Illuminate\Support\Facades\Storage;
 
 class DriverController extends Controller
 {
@@ -15,14 +16,18 @@ class DriverController extends Controller
 
     public function getData()
     {
-        $query = Driver::query();
+        $drivers = Driver::all();
 
-        return DataTables::of($query)
-            ->addColumn('driver_license_front', fn($driver) => $driver->driver_license_front_url)
-            ->addColumn('driver_license_back', fn($driver) => $driver->driver_license_back_url)
-            ->addColumn('face_photo', fn($driver) => $driver->face_photo_url)
-            ->addColumn('address_proof', fn($driver) => $driver->address_proof_url)
-            ->toJson();
+        $drivers->transform(function ($driver) {
+            // Converte os caminhos das imagens para URLs públicas
+            $driver->driver_license_front = $driver->driver_license_front ? Storage::url($driver->driver_license_front) : null;
+            $driver->driver_license_back = $driver->driver_license_back ? Storage::url($driver->driver_license_back) : null;
+            $driver->face_photo = $driver->face_photo ? Storage::url($driver->face_photo) : null;
+            $driver->address_proof = $driver->address_proof ? Storage::url($driver->address_proof) : null;
+            return $driver;
+        });
+
+        return DataTables::of($drivers)->make(true);
 
             
            
