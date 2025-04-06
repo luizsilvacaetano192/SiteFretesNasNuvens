@@ -44,7 +44,14 @@
         <h5 class="modal-title">🕵️ Análise de Motorista com IA</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-      <div class="modal-body" id="analysisContent"></div>
+      <div class="modal-body" id="analysisContent">
+        <div class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Analisando...</span>
+          </div>
+          <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
+        </div>
+      </div>
       <div class="modal-footer">
         <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
@@ -52,21 +59,25 @@
   </div>
 </div>
 
-<!-- Modal WhatsApp Web -->
-<div class="modal fade" id="whatsAppModal" tabindex="-1" aria-labelledby="whatsAppModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 1000px;">
-    <div class="modal-content">
+<!-- Modal de Conversa no WhatsApp -->
+<div class="modal fade" id="whatsappModal" tabindex="-1" aria-labelledby="whatsappModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content shadow-lg">
       <div class="modal-header">
-        <h5 class="modal-title">💬 Conversar no WhatsApp</h5>
+        <h5 class="modal-title">💬 Conversa via WhatsApp Web</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
       </div>
-      <div class="modal-body" style="height: 80vh;">
-        <iframe id="whatsAppIframe" src="" frameborder="0" style="width:100%; height:100%;" allow="camera; microphone"></iframe>
+      <div class="modal-body p-0" style="height:80vh;">
+        <iframe id="whatsappFrame" src="" style="border:0; width:100%; height:100%;" allow="clipboard-write"></iframe>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
     </div>
   </div>
 </div>
 
+<!-- Estilos e Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -88,15 +99,6 @@ tr.shown td.dt-control::before {
     content: "−";
     color: #dc3545;
 }
-.status-label {
-    font-weight: bold;
-    padding: 5px 10px;
-    border-radius: 8px;
-    display: inline-block;
-}
-.status-pending { background-color: #ffc107; color: #000; }
-.status-blocked, .status-transfer-blocked { background-color: #dc3545; color: #fff; }
-.status-active { background-color: #28a745; color: #fff; }
 </style>
 
 <script>
@@ -118,30 +120,10 @@ function maskPhone(phone) {
     return phone?.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3") || '';
 }
 
-function getStatusLabel(status) {
-    switch (status) {
-        case null:
-        case '':
-        case 'create': return '<span class="status-label status-pending">Aguardando ativação</span>';
-        case 'active': return '<span class="status-label status-active">Ativo</span>';
-        case 'block': return '<span class="status-label status-blocked">Bloqueado</span>';
-        case 'transfer_block': return '<span class="status-label status-transfer-blocked">Transferências Bloqueadas</span>';
-        default: return status;
-    }
-}
-
 function openImageModal(src) {
     document.getElementById('modalImage').src = src;
-    new bootstrap.Modal(document.getElementById('imageModal')).show();
-}
-
-function openWhatsAppModal(phone) {
-    if (!phone) return alert("Telefone não disponível.");
-    const cleaned = phone.replace(/\D/g, '');
-    const full = `55${cleaned.slice(-11)}`;
-    const url = `https://web.whatsapp.com/send?phone=${full}&text=Ol%C3%A1%2C%20gostaria%20de%20falar%20com%20voc%C3%AA.`;
-    $('#whatsAppIframe').attr('src', url);
-    new bootstrap.Modal(document.getElementById('whatsAppModal')).show();
+    const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+    modal.show();
 }
 
 function renderImageColumn(title, src) {
@@ -157,30 +139,12 @@ function renderImageColumn(title, src) {
     `;
 }
 
-function format(d) {
-    let reason = '';
-    if (d.status === 'block' || d.status === 'transfer_block') {
-        reason = `<p><strong>Motivo:</strong> ${d.reason || 'Não informado'}</p>`;
-    }
-
-    return `
-        <div class="p-3 bg-light rounded">
-            <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
-            <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
-            <p><strong>CPF:</strong> ${maskCPF(d.cpf)}</p>
-            <p><strong>CNH:</strong> ${d.driver_license_number}</p>
-            <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
-            <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
-            <p><strong>Status:</strong> ${getStatusLabel(d.status)}</p>
-            ${reason}
-            <div class="row">
-                ${renderImageColumn('Frente CNH', d.driver_license_front)}
-                ${renderImageColumn('Verso CNH', d.driver_license_back)}
-                ${renderImageColumn('Foto do Rosto', d.face_photo)}
-                ${renderImageColumn('Comprovante de Endereço', d.address_proof)}
-            </div>
-        </div>
-    `;
+function togglePassword(id, password) {
+    const span = document.getElementById(`password-${id}`);
+    const button = document.getElementById(`toggle-${id}`);
+    const isHidden = span.innerText.includes('•');
+    span.innerText = isHidden ? password : '•'.repeat(password.length);
+    button.innerText = isHidden ? '🙈 Ocultar' : '👁 Mostrar';
 }
 
 function activateDriver(driverId) {
@@ -191,18 +155,16 @@ function analyzeDriver(driverId) {
     const row = $('#drivers-table').DataTable().row(function (idx, data) {
         return data.id === driverId;
     }).data();
-
     if (!row) return alert('Motorista não encontrado!');
 
+    const modal = new bootstrap.Modal(document.getElementById('analyzeModal'));
     $('#analysisContent').html(`
         <div class="text-center">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Analisando...</span>
-            </div>
+            <div class="spinner-border text-primary" role="status"></div>
             <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
         </div>
     `);
-    new bootstrap.Modal(document.getElementById('analyzeModal')).show();
+    modal.show();
 
     $.ajax({
         url: '/api/analyze-driver',
@@ -229,6 +191,15 @@ function analyzeDriver(driverId) {
     });
 }
 
+function openWhatsApp(phone) {
+    if (!phone) return alert("Número de telefone não disponível.");
+    const formatted = phone.replace(/\D/g, '');
+    const url = `https://web.whatsapp.com/send?phone=55${formatted}`;
+    $('#whatsappFrame').attr('src', url);
+    const modal = new bootstrap.Modal(document.getElementById('whatsappModal'));
+    modal.show();
+}
+
 $(document).ready(function() {
     const table = $('#drivers-table').DataTable({
         processing: true,
@@ -236,11 +207,21 @@ $(document).ready(function() {
         ajax: "{{ route('drivers.data') }}",
         columns: [
             { className: 'dt-control', orderable: false, data: null, defaultContent: '' },
-            { data: 'name', name: 'name' },
-            { data: 'address', name: 'address' },
-            { data: 'identity_card', name: 'identity_card', render: maskRG },
-            { data: 'phone', name: 'phone', render: maskPhone },
-            { data: 'status', name: 'status', render: getStatusLabel },
+            { data: 'name' },
+            { data: 'address' },
+            { data: 'identity_card', render: maskRG },
+            { data: 'phone', render: maskPhone },
+            { 
+                data: 'status', 
+                render: function(status, type, row) {
+                    let label = 'Aguardando Ativação';
+                    let color = 'warning';
+                    if (status === 'active') { label = 'Ativo'; color = 'success'; }
+                    else if (status === 'block') { label = 'Bloqueado'; color = 'danger'; }
+                    else if (status === 'transfer_block') { label = 'Transferências Bloqueadas'; color = 'danger'; }
+                    return `<span class="badge bg-${color}">${label}</span>`;
+                }
+            },
             {
                 data: null,
                 orderable: false,
@@ -252,7 +233,7 @@ $(document).ready(function() {
                             <a href="/drivers/${row.id}/freights" class="btn btn-outline-primary">🚚 Ver Fretes</a>
                             <button onclick="activateDriver(${row.id})" class="btn btn-outline-warning">✅ Ativar</button>
                             <button onclick="analyzeDriver(${row.id})" class="btn btn-outline-dark">🕵️ Analisar</button>
-                            <button onclick="openWhatsAppModal('${row.phone}')" class="btn btn-outline-success">💬 Conversar</button>
+                            <button onclick="openWhatsApp('${row.phone}')" class="btn btn-outline-success">💬 Conversar</button>
                         </div>
                     `;
                 }
@@ -264,7 +245,6 @@ $(document).ready(function() {
     $('#drivers-table tbody').on('click', 'td.dt-control', function () {
         const tr = $(this).closest('tr');
         const row = table.row(tr);
-
         if (row.child.isShown()) {
             row.child.hide();
             tr.removeClass('shown');
