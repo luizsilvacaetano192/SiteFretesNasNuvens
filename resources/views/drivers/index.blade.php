@@ -59,24 +59,6 @@
   </div>
 </div>
 
-<!-- Modal de Conversa no WhatsApp -->
-<div class="modal fade" id="whatsappModal" tabindex="-1" aria-labelledby="whatsappModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
-    <div class="modal-content shadow-lg">
-      <div class="modal-header">
-        <h5 class="modal-title">💬 Conversa via WhatsApp Web</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
-      </div>
-      <div class="modal-body p-0" style="height:80vh;">
-        <iframe id="whatsappFrame" src="" style="border:0; width:100%; height:100%;" allow="clipboard-write"></iframe>
-      </div>
-      <div class="modal-footer">
-        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
-      </div>
-    </div>
-  </div>
-</div>
-
 <!-- Modal de Alerta de Ativação -->
 <div class="modal fade" id="activateModal" tabindex="-1" aria-labelledby="activateModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered">
@@ -210,7 +192,6 @@ function analyzeDriver(driverId) {
                     ${renderImageColumn('Foto do Rosto', row.face_photo)}
                 </div>
             `);
-            // Marca como analisado
             row.analysis_done = true;
         },
         error: function () {
@@ -222,10 +203,8 @@ function analyzeDriver(driverId) {
 function openWhatsApp(phone) {
     if (!phone) return alert("Número de telefone não disponível.");
     const formatted = phone.replace(/\D/g, '');
-    const url = `https://web.whatsapp.com/send?phone=55${formatted}`;
-    $('#whatsappFrame').attr('src', url);
-    const modal = new bootstrap.Modal(document.getElementById('whatsappModal'));
-    modal.show();
+    const url = `https://wa.me/55${formatted}`;
+    window.open(url, '_blank');
 }
 
 $(document).ready(function() {
