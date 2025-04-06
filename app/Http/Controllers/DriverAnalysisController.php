@@ -19,38 +19,63 @@ class DriverAnalysisController extends Controller
                     "content" => [
                         [
                             "type" => "text",
-                            "text" => "Compare as imagens com os dados a seguir. Diga se estão coerentes ou há alguma divergência.
+                            "text" => "Você é um verificador inteligente. Analise as imagens e os dados informados a seguir. 
+                            Verifique se a imagem do rosto confere com a foto da CNH, e se o endereço do comprovante confere com o informado. 
+                            Diga se está tudo coerente ou aponte as divergências. Dados:
                             Nome: {$driver['name']}
                             Endereço: {$driver['address']}"
                         ],
                         [
                             "type" => "image_url",
-                            "image_url" => ["url" => $driver['driver_license_front'], "detail" => "high"]
+                            "image_url" => [
+                                "url" => $driver['driver_license_front'],
+                                "detail" => "high"
+                            ]
                         ],
                         [
                             "type" => "image_url",
-                            "image_url" => ["url" => $driver['address_proof'], "detail" => "high"]
+                            "image_url" => [
+                                "url" => $driver['address_proof'],
+                                "detail" => "high"
+                            ]
                         ],
                         [
                             "type" => "image_url",
-                            "image_url" => ["url" => $driver['face_photo'], "detail" => "high"]
+                            "image_url" => [
+                                "url" => $driver['face_photo'],
+                                "detail" => "high"
+                            ]
                         ]
                     ]
                 ]
             ],
-            "max_tokens" => 500
+            "max_tokens" => 800
         ];
 
-        $response = Http::withToken(env('OPENAI_API_KEY'))
-            ->post('https://api.openai.com/v1/chat/completions', $payload);
+        try {
+            $response = Http::withToken(env('OPENAI_API_KEY'))
+                ->withHeaders([
+                    'Content-Type' => 'application/json'
+                ])
+                ->post('https://api.openai.com/v1/chat/completions', $payload);
 
-        if ($response->successful()) {
+            if ($response->successful()) {
+                $data = $response->json();
+                return response()->json([
+                    'status' => 'analisado',
+                    'message' => $data['choices'][0]['message']['content'] ?? 'Sem resposta clara da IA.'
+                ]);
+            }
+
             return response()->json([
-                'status' => 'analisado',
-                'message' => $response['choices'][0]['message']['content']
-            ]);
+                'status' => 'erro',
+                'message' => 'Erro da OpenAI: ' . $response->body()
+            ], 500);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => 'erro',
+                'message' => 'Falha na análise com IA: ' . $e->getMessage()
+            ], 500);
         }
-
-        return response()->json(['status' => 'erro', 'message' => 'Falha na análise com IA.'], 500);
     }
 }
