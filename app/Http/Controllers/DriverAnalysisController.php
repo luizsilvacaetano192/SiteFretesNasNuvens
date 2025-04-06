@@ -1,81 +1,58 @@
-<?php
+<? 
 
-namespace App\Http\Controllers;
+use Aws\Rekognition\RekognitionClient;
+use Illuminate\Support\Facades\Storage;
 
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
-
-class DriverAnalysisController extends Controller
+public function analyze(Request $request)
 {
-    public function analyze(Request $request)
-    {
-        $driver = $request->all();
+    $driver = $request->all();
 
-        $payload = [
-            "model" => "gpt-4-vision-preview",
-            "messages" => [
-                [
-                    "role" => "user",
-                    "content" => [
-                        [
-                            "type" => "text",
-                            "text" => "Você é um verificador inteligente. Analise as imagens e os dados informados a seguir. 
-                            Verifique se a imagem do rosto confere com a foto da CNH, e se o endereço do comprovante confere com o informado. 
-                            Diga se está tudo coerente ou aponte as divergências. Dados:
-                            Nome: {$driver['name']}
-                            Endereço: {$driver['address']}"
-                        ],
-                        [
-                            "type" => "image_url",
-                            "image_url" => [
-                                "url" => $driver['driver_license_front'],
-                                "detail" => "high"
-                            ]
-                        ],
-                        [
-                            "type" => "image_url",
-                            "image_url" => [
-                                "url" => $driver['address_proof'],
-                                "detail" => "high"
-                            ]
-                        ],
-                        [
-                            "type" => "image_url",
-                            "image_url" => [
-                                "url" => $driver['face_photo'],
-                                "detail" => "high"
-                            ]
-                        ]
-                    ]
-                ]
+    try {
+        $rekognition = new RekognitionClient([
+            'region' => env('AWS_DEFAULT_REGION'),
+            'version' => 'latest',
+            'credentials' => [
+                'key' => env('AWS_ACCESS_KEY_ID'),
+                'secret' => env('AWS_SECRET_ACCESS_KEY'),
             ],
-            "max_tokens" => 800
-        ];
+        ]);
 
-        try {
-            $response = Http::withToken(env('OPENAI_API_KEY'))
-                ->withHeaders([
-                    'Content-Type' => 'application/json'
-                ])
-                ->post('https://api.openai.com/v1/chat/completions', $payload);
+        $sourceImageKey = parse_url($driver['face_photo'], PHP_URL_PATH);
+        $targetImageKey = parse_url($driver['driver_license_front'], PHP_URL_PATH);
 
-            if ($response->successful()) {
-                $data = $response->json();
-                return response()->json([
-                    'status' => 'analisado',
-                    'message' => $data['choices'][0]['message']['content'] ?? 'Sem resposta clara da IA.'
-                ]);
-            }
+        $result = $rekognition->compareFaces([
+            'SimilarityThreshold' => 80,
+            'SourceImage' => [
+                'S3Object' => [
+                    'Bucket' => env('AWS_BUCKET'),
+                    'Name' => ltrim($sourceImageKey, '/'),
+                ],
+            ],
+            'TargetImage' => [
+                'S3Object' => [
+                    'Bucket' => env('AWS_BUCKET'),
+                    'Name' => ltrim($targetImageKey, '/'),
+                ],
+            ],
+        ]);
 
+        $matches = $result['FaceMatches'];
+
+        if (count($matches) > 0 && $matches[0]['Similarity'] >= 80) {
             return response()->json([
-                'status' => 'erro',
-                'message' => 'Erro da OpenAI: ' . $response->body()
-            ], 500);
-        } catch (\Exception $e) {
+                'status' => 'analisado',
+                'message' => "✅ A foto do rosto é compatível com a CNH (semelhança: " . round($matches[0]['Similarity'], 2) . "%)"
+            ]);
+        } else {
             return response()->json([
-                'status' => 'erro',
-                'message' => 'Falha na análise com IA: ' . $e->getMessage()
-            ], 500);
+                'status' => 'analisado',
+                'message' => "⚠️ As imagens não são compatíveis o suficiente (semelhança abaixo de 80%)"
+            ]);
         }
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => 'erro',
+            'message' => 'Erro ao usar o AWS Rekognition: ' . $e->getMessage()
+        ], 500);
     }
 }
