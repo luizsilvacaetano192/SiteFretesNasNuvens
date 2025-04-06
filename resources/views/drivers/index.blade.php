@@ -172,6 +172,33 @@ function analyzeDriver(driverId) {
     });
 }
 
+function format(d) {
+    let reason = '';
+    if (d.status === 'block' || d.status === 'transfer_block') {
+        reason = `<p><strong>Motivo:</strong> ${d.reason || 'Não informado'}</p>`;
+    }
+
+    return `
+        <div class="p-3 bg-light rounded">
+            <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
+            <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
+            <p><strong>CPF:</strong> ${maskCPF(d.cpf)}</p>
+            <p><strong>CNH:</strong> ${d.driver_license_number}</p>
+            <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
+            <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
+            <p><strong>Status:</strong> ${getStatusLabel(d.status)}</p>
+            ${reason}
+            <div class="row">
+                ${renderImageColumn('Frente CNH', d.driver_license_front)}
+                ${renderImageColumn('Verso CNH', d.driver_license_back)}
+                ${renderImageColumn('Foto do Rosto', d.face_photo)}
+                ${renderImageColumn('Comprovante de Endereço', d.address_proof)}
+            </div>
+        </div>
+    `;
+}
+
+
 function openWhatsApp(phone) {
     if (!phone) return alert("Número de telefone não disponível.");
     const formatted = phone.replace(/\D/g, '');
