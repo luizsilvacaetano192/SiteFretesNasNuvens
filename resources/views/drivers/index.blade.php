@@ -10,7 +10,7 @@
     <table id="drivers-table" class="table table-striped">
         <thead>
             <tr>
-                <th></th>
+                <th style="width: 20px;"></th> <!-- Adicione um width fixo -->
                 <th>Nome</th>
                 <th>Endereço</th>
                 <th>RG</th>
@@ -24,6 +24,25 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+
+<style>
+    /* Estilo personalizado para o botão de detalhes */
+    td.dt-control {
+        text-align: center;
+        cursor: pointer;
+    }
+    
+    td.dt-control:before {
+        content: "➕";
+        font-size: 1.1em;
+        color: #198754;
+    }
+    
+    tr.shown td.dt-control:before {
+        content: "➖";
+        color: #dc3545;
+    }
+</style>
 
 <script>
 function format(d) {
@@ -59,8 +78,6 @@ function format(d) {
     `;
 }
 
-
-
 $(document).ready(function() {
     var table = $('#drivers-table').DataTable({
         processing: true,
@@ -70,15 +87,20 @@ $(document).ready(function() {
             {
                 className: 'dt-control',
                 orderable: false,
+                searchable: false,
                 data: null,
-                defaultContent: ''
+                defaultContent: '',
+                width: '20px'
             },
             { data: 'name', name: 'name' },
             { data: 'address', name: 'address' },
             { data: 'identity_card', name: 'identity_card' },
             { data: 'phone', name: 'phone' },
         ],
-        order: [[1, 'asc']]
+        order: [[1, 'asc']],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
+        }
     });
 
     $('#drivers-table tbody').on('click', 'td.dt-control', function () {
@@ -89,7 +111,6 @@ $(document).ready(function() {
             row.child.hide();
             tr.removeClass('shown');
         } else {
-            console.log(row.data()); // Para verificar os dados retornados
             row.child(format(row.data())).show();
             tr.addClass('shown');
         }
