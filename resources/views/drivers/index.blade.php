@@ -77,6 +77,26 @@
   </div>
 </div>
 
+<!-- Modal de Bloqueio -->
+<div class="modal fade" id="blockModal" tabindex="-1" aria-labelledby="blockModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title">⛔ Bloqueio de Motorista</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body">
+        Escolha o tipo de bloqueio que deseja aplicar ao motorista.
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline-danger" onclick="blockDriver('block')">Bloquear Usuário</button>
+        <button class="btn btn-outline-warning" onclick="blockDriver('transfer_block')">Bloquear Transferências</button>
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Estilos e Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -102,6 +122,8 @@ tr.shown td.dt-control::before {
 </style>
 
 <script>
+let currentDriverId = null;
+
 function formatDateBR(dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -131,32 +153,12 @@ function renderImageColumn(title, src) {
         <div class="col-md-3 text-center mb-3">
             <p><strong>${title}</strong></p>
             <img src="${src}" class="img-fluid rounded" style="max-height:150px;"
-                 onerror="this.onerror=null;this.outerHTML='<div class='text-danger'>Imagem não disponível</div>';"/>
+                 onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';"/>
             <br>
             <a href="${src}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
             <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${src}')">🔍 Ampliar</button>
         </div>
     `;
-}
-
-function togglePassword(id, password) {
-    const span = document.getElementById(`password-${id}`);
-    const button = document.getElementById(`toggle-${id}`);
-    const isHidden = span.innerText.includes('•');
-    span.innerText = isHidden ? password : '•'.repeat(password.length);
-    button.innerText = isHidden ? '🙈 Ocultar' : '👁 Mostrar';
-}
-
-function activateDriver(driverId) {
-    const row = $('#drivers-table').DataTable().row(function (idx, data) {
-        return data.id === driverId;
-    }).data();
-    if (!row || !row.analysis_done) {
-        const modal = new bootstrap.Modal(document.getElementById('activateModal'));
-        modal.show();
-        return;
-    }
-    alert(`Ativar motorista ID: ${driverId}`);
 }
 
 function analyzeDriver(driverId) {
@@ -200,6 +202,52 @@ function analyzeDriver(driverId) {
     });
 }
 
+function activateDriver(driverId) {
+    const row = $('#drivers-table').DataTable().row(function (idx, data) {
+        return data.id === driverId;
+    }).data();
+    if (!row || !row.analysis_done) {
+        const modal = new bootstrap.Modal(document.getElementById('activateModal'));
+        modal.show();
+        return;
+    }
+
+    $.ajax({
+        url: `/drivers/${driverId}/activate`,
+        method: 'POST',
+        success: function () {
+            $('#drivers-table').DataTable().ajax.reload(null, false);
+        },
+        error: function () {
+            alert('Erro ao ativar motorista.');
+        }
+    });
+}
+
+function showBlockOptions(driverId) {
+    currentDriverId = driverId;
+    const modal = new bootstrap.Modal(document.getElementById('blockModal'));
+    modal.show();
+}
+
+function blockDriver(type) {
+    if (!currentDriverId) return;
+
+    $.ajax({
+        url: `/drivers/${currentDriverId}/block`,
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({ type }),
+        success: function () {
+            $('#blockModal').modal('hide');
+            $('#drivers-table').DataTable().ajax.reload(null, false);
+        },
+        error: function () {
+            alert('Erro ao bloquear motorista.');
+        }
+    });
+}
+
 function openWhatsApp(phone) {
     if (!phone) return alert("Número de telefone não disponível.");
     const formatted = phone.replace(/\D/g, '');
@@ -220,7 +268,7 @@ $(document).ready(function() {
             { data: 'phone', render: maskPhone },
             { 
                 data: 'status', 
-                render: function(status, type, row) {
+                render: function(status) {
                     let label = 'Aguardando Ativação';
                     let color = 'warning';
                     if (status === 'active') { label = 'Ativo'; color = 'success'; }
@@ -234,11 +282,14 @@ $(document).ready(function() {
                 orderable: false,
                 searchable: false,
                 render: function (data, type, row) {
+                    const actionBtn = row.status === 'active'
+                        ? `<button onclick="showBlockOptions(${row.id})" class="btn btn-outline-danger">⛔ Bloquear</button>`
+                        : `<button onclick="activateDriver(${row.id})" class="btn btn-outline-warning">✅ Ativar</button>`;
                     return `
                         <div class="btn-group btn-group-sm" role="group">
                             <a href="/drivers/${row.id}/balance" class="btn btn-outline-success">💰 Saldo</a>
                             <a href="/drivers/${row.id}/freights" class="btn btn-outline-primary">🚚 Ver Fretes</a>
-                            <button onclick="activateDriver(${row.id})" class="btn btn-outline-warning">✅ Ativar</button>
+                            ${actionBtn}
                             <button onclick="analyzeDriver(${row.id})" class="btn btn-outline-dark">🕵️ Analisar</button>
                             <button onclick="openWhatsApp('${row.phone}')" class="btn btn-outline-success">💬 Conversar</button>
                         </div>
