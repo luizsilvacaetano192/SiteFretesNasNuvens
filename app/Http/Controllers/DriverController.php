@@ -17,31 +17,18 @@ class DriverController extends Controller
     }
 
    
-    public function activate($id)
+    public function updateStatus(Request $request, $id)
     {
+        $request->validate([
+            'status' => 'required|in:create,active,block,transfer_block',
+        ]);
+
         $driver = Driver::findOrFail($id);
-        $driver->status = 'active';
+        $driver->status = $request->status;
         $driver->save();
 
-        return response()->json(['success' => true]);
+        return response()->json(['success' => true, 'message' => 'Status atualizado com sucesso.']);
     }
-
-    public function block(Request $request, $id)
-    {
-        $driver = Driver::findOrFail($id);
-
-        $type = $request->input('type');
-
-        if (!in_array($type, ['block', 'transfer_block'])) {
-            return response()->json(['error' => 'Tipo de bloqueio inválido.'], 400);
-        }
-
-        $driver->status = $type;
-        $driver->save();
-
-        return response()->json(['success' => true]);
-    }
-
 
     public function getData()
     {

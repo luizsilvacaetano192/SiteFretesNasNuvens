@@ -57,6 +57,7 @@ Route::get('/drivers/data', [DriverController::class, 'getData'])->name('drivers
 
 Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate']);
 Route::post('/drivers/{driver}/block', [DriverController::class, 'block']);
+Route::post('/drivers/{id}/update-status', [DriverController::class, 'updateStatus'])->name('drivers.updateStatus');
 
 
 //Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
