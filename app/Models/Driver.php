@@ -20,23 +20,30 @@ class Driver extends Model
         'driver_license_expiration',
         'password',
         'terms_accepted',
-        'driver_license_front',
-        'driver_license_back',
+        'driver_license_front_photo',
+        'driver_license_back_photo',
         'face_photo',
-        'address_proof',
+        'address_proof_photo',
+    ];
+
+    protected $appends = [
+        'driver_license_front_url',
+        'driver_license_back_url',
+        'face_photo_url',
+        'address_proof_url',
     ];
 
     public function getDriverLicenseFrontUrlAttribute()
     {
-        return $this->driver_license_front
-            ? Storage::disk('s3')->url($this->driver_license_front)
+        return $this->driver_license_front_photo
+            ? Storage::disk('s3')->url($this->driver_license_front_photo)
             : null;
     }
 
     public function getDriverLicenseBackUrlAttribute()
     {
-        return $this->driver_license_back
-            ? Storage::disk('s3')->url($this->driver_license_back)
+        return $this->driver_license_back_photo
+            ? Storage::disk('s3')->url($this->driver_license_back_photo)
             : null;
     }
 
@@ -49,8 +56,8 @@ class Driver extends Model
 
     public function getAddressProofUrlAttribute()
     {
-        return $this->address_proof
-            ? Storage::disk('s3')->url($this->address_proof)
+        return $this->address_proof_photo
+            ? Storage::disk('s3')->url($this->address_proof_photo)
             : null;
     }
 }
