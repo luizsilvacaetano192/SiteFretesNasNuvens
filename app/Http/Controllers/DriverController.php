@@ -7,12 +7,41 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Storage;
 
+
+
 class DriverController extends Controller
 {
     public function index()
     {
         return view('drivers.index');
     }
+
+   
+    public function activate($id)
+    {
+        $driver = Driver::findOrFail($id);
+        $driver->status = 'active';
+        $driver->save();
+
+        return response()->json(['success' => true]);
+    }
+
+    public function block(Request $request, $id)
+    {
+        $driver = Driver::findOrFail($id);
+
+        $type = $request->input('type');
+
+        if (!in_array($type, ['block', 'transfer_block'])) {
+            return response()->json(['error' => 'Tipo de bloqueio inválido.'], 400);
+        }
+
+        $driver->status = $type;
+        $driver->save();
+
+        return response()->json(['success' => true]);
+    }
+
 
     public function getData()
     {

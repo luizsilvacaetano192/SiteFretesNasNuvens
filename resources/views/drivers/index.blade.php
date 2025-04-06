@@ -22,8 +22,8 @@
     </table>
 </div>
 
-<!-- Modal de Imagem Ampliada -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+<!-- Modais -->
+<div class="modal fade" id="imageModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content bg-dark">
       <div class="modal-body text-center p-0">
@@ -36,8 +36,7 @@
   </div>
 </div>
 
-<!-- Modal de Análise por IA -->
-<div class="modal fade" id="analyzeModal" tabindex="-1" aria-labelledby="analyzeModalLabel" aria-hidden="true">
+<div class="modal fade" id="analyzeModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -46,9 +45,7 @@
       </div>
       <div class="modal-body" id="analysisContent">
         <div class="text-center">
-          <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Analisando...</span>
-          </div>
+          <div class="spinner-border text-primary" role="status"></div>
           <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
         </div>
       </div>
@@ -59,8 +56,7 @@
   </div>
 </div>
 
-<!-- Modal de Alerta de Ativação -->
-<div class="modal fade" id="activateModal" tabindex="-1" aria-labelledby="activateModalLabel" aria-hidden="true">
+<div class="modal fade" id="activateModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
@@ -77,8 +73,7 @@
   </div>
 </div>
 
-<!-- Modal de Bloqueio -->
-<div class="modal fade" id="blockModal" tabindex="-1" aria-labelledby="blockModalLabel" aria-hidden="true">
+<div class="modal fade" id="blockModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-danger text-white">
@@ -124,16 +119,6 @@ tr.shown td.dt-control::before {
 <script>
 let currentDriverId = null;
 
-function formatDateBR(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR');
-}
-
-function maskCPF(cpf) {
-    return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
-}
-
 function maskRG(rg) {
     return rg?.replace(/^(\d{2})(\d{3})(\d{3})(\d{1})$/, "$1.$2.$3-$4") || '';
 }
@@ -153,7 +138,7 @@ function renderImageColumn(title, src) {
         <div class="col-md-3 text-center mb-3">
             <p><strong>${title}</strong></p>
             <img src="${src}" class="img-fluid rounded" style="max-height:150px;"
-                 onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';"/>
+                onerror="this.onerror=null;this.outerHTML='<div class="text-danger">Imagem não disponível</div>';">
             <br>
             <a href="${src}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
             <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${src}')">🔍 Ampliar</button>
@@ -206,6 +191,7 @@ function activateDriver(driverId) {
     const row = $('#drivers-table').DataTable().row(function (idx, data) {
         return data.id === driverId;
     }).data();
+
     if (!row || !row.analysis_done) {
         const modal = new bootstrap.Modal(document.getElementById('activateModal'));
         modal.show();
@@ -251,11 +237,10 @@ function blockDriver(type) {
 function openWhatsApp(phone) {
     if (!phone) return alert("Número de telefone não disponível.");
     const formatted = phone.replace(/\D/g, '');
-    const url = `https://wa.me/55${formatted}`;
-    window.open(url, '_blank');
+    window.open(`https://wa.me/55${formatted}`, '_blank');
 }
 
-$(document).ready(function() {
+$(document).ready(function () {
     const table = $('#drivers-table').DataTable({
         processing: true,
         serverSide: true,
@@ -266,9 +251,9 @@ $(document).ready(function() {
             { data: 'address' },
             { data: 'identity_card', render: maskRG },
             { data: 'phone', render: maskPhone },
-            { 
-                data: 'status', 
-                render: function(status) {
+            {
+                data: 'status',
+                render: function (status) {
                     let label = 'Aguardando Ativação';
                     let color = 'warning';
                     if (status === 'active') { label = 'Ativo'; color = 'success'; }
@@ -280,13 +265,12 @@ $(document).ready(function() {
             {
                 data: null,
                 orderable: false,
-                searchable: false,
                 render: function (data, type, row) {
                     const actionBtn = row.status === 'active'
                         ? `<button onclick="showBlockOptions(${row.id})" class="btn btn-outline-danger">⛔ Bloquear</button>`
                         : `<button onclick="activateDriver(${row.id})" class="btn btn-outline-warning">✅ Ativar</button>`;
                     return `
-                        <div class="btn-group btn-group-sm" role="group">
+                        <div class="btn-group btn-group-sm">
                             <a href="/drivers/${row.id}/balance" class="btn btn-outline-success">💰 Saldo</a>
                             <a href="/drivers/${row.id}/freights" class="btn btn-outline-primary">🚚 Ver Fretes</a>
                             ${actionBtn}
@@ -296,8 +280,7 @@ $(document).ready(function() {
                     `;
                 }
             }
-        ],
-        order: [[1, 'asc']]
+        ]
     });
 
     $('#drivers-table tbody').on('click', 'td.dt-control', function () {
