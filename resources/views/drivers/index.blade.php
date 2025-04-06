@@ -21,7 +21,7 @@
     </table>
 </div>
 
-<!-- Modal para imagem ampliada -->
+<!-- Modal de Imagem Ampliada -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content bg-dark">
@@ -30,6 +30,29 @@
       </div>
       <div class="modal-footer justify-content-center">
         <button type="button" class="btn btn-light" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Análise por IA -->
+<div class="modal fade" id="analyzeModal" tabindex="-1" aria-labelledby="analyzeModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">🕵️ Análise de Motorista com IA</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fechar"></button>
+      </div>
+      <div class="modal-body" id="analysisContent">
+        <div class="text-center">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Analisando...</span>
+          </div>
+          <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
     </div>
   </div>
@@ -90,7 +113,7 @@ function renderImageColumn(title, src) {
         <div class="col-md-3 text-center mb-3">
             <p><strong>${title}</strong></p>
             <img src="${src}" class="img-fluid rounded" style="max-height:150px;"
-                 onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
+                 onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';"/>
             <br>
             <a href="${src}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
             <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${src}')">🔍 Ampliar</button>
@@ -144,7 +167,64 @@ function activateDriver(driverId) {
 }
 
 function analyzeDriver(driverId) {
-    alert(`Analisar motorista ID: ${driverId}`);
+    const row = $('#drivers-table').DataTable().row(function (idx, data) {
+        return data.id === driverId;
+    }).data();
+
+    if (!row) {
+        alert('Motorista não encontrado!');
+        return;
+    }
+
+    // Mostrar o modal imediatamente
+    const modal = new bootstrap.Modal(document.getElementById('analyzeModal'));
+    $('#analysisContent').html(`
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Analisando...</span>
+            </div>
+            <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
+        </div>
+    `);
+    modal.show();
+
+    // Enviar dados via POST
+    $.ajax({
+        url: '/api/analyze-driver',
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            id: row.id,
+            name: row.name,
+            address: row.address,
+            cpf: row.cpf,
+            driver_license_number: row.driver_license_number,
+            driver_license_front: row.driver_license_front,
+            address_proof: row.address_proof,
+            face_photo: row.face_photo
+        }),
+        success: function (result) {
+            $('#analysisContent').html(`
+                <div class="alert alert-info">
+                    <h5>🧠 Resultado da Análise via IA:</h5>
+                    <p>${result.message.replace(/\n/g, "<br>")}</p>
+                </div>
+                <hr>
+                <div class="row">
+                    ${renderImageColumn('Frente CNH', row.driver_license_front)}
+                    ${renderImageColumn('Comprovante de Endereço', row.address_proof)}
+                    ${renderImageColumn('Foto do Rosto', row.face_photo)}
+                </div>
+            `);
+        },
+        error: function () {
+            $('#analysisContent').html(`
+                <div class="alert alert-danger">
+                    ❌ Ocorreu um erro ao realizar a análise com IA.
+                </div>
+            `);
+        }
+    });
 }
 
 $(document).ready(function() {
