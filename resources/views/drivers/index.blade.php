@@ -42,7 +42,6 @@
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 
 <style>
 td.dt-control::before {
@@ -62,6 +61,24 @@ tr.shown td.dt-control::before {
 </style>
 
 <script>
+function formatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR');
+}
+
+function maskCPF(cpf) {
+    return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+}
+
+function maskRG(rg) {
+    return rg?.replace(/^(\d{2})(\d{3})(\d{3})(\d{1})$/, "$1.$2.$3-$4") || '';
+}
+
+function maskPhone(phone) {
+    return phone?.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3") || '';
+}
+
 function openImageModal(src) {
     document.getElementById('modalImage').src = src;
     const modal = new bootstrap.Modal(document.getElementById('imageModal'));
@@ -82,38 +99,22 @@ function renderImageColumn(title, src) {
 }
 
 function format(d) {
-    const formatDateBR = (dateStr) => {
-        if (!dateStr) return '';
-        const [year, month, day] = dateStr.split('-');
-        return `${day}/${month}/${year}`;
-    };
-
-    const formatCPF = (cpf) => cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
-    const formatRG = (rg) => rg?.replace(/^(\d{2})(\d{3})(\d{3})(\d{1})$/, "$1.$2.$3-$4") || '';
-    const formatPhone = (phone) => phone?.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3") || '';
-
-    const passwordId = `pass-${d.id}`;
-    const toggleId = `toggle-${d.id}`;
+    const passwordFieldId = `password-${d.id}`;
+    const toggleBtnId = `toggle-${d.id}`;
 
     return `
         <div class="p-3 bg-light rounded">
             <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
             <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
-            <p><strong>CPF:</strong> ${formatCPF(d.cpf)}</p>
-            <p><strong>RG:</strong> ${formatRG(d.identity_card)}</p>
-            <p><strong>Telefone:</strong> ${formatPhone(d.phone)}</p>
+            <p><strong>CPF:</strong> ${maskCPF(d.cpf)}</p>
             <p><strong>CNH:</strong> ${d.driver_license_number}</p>
             <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
             <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
-
-            <p>
-                <strong>Senha:</strong>
-                <input type="password" class="form-control d-inline-block w-auto" id="${passwordId}" value="${d.password}" readonly />
-                <button type="button" class="btn btn-sm btn-outline-secondary" id="${toggleId}" onclick="togglePassword('${passwordId}', '${toggleId}')">👁️</button>
+            <p><strong>Senha:</strong> 
+                <span id="${passwordFieldId}">${'•'.repeat(d.password.length)}</span>
+                <button class="btn btn-sm btn-outline-secondary" id="${toggleBtnId}" onclick="togglePassword('${d.id}', '${d.password}')">👁 Mostrar</button>
             </p>
-
             <p><strong>Termos Aceitos:</strong> ${d.terms_accepted ? 'Sim' : 'Não'}</p>
-
             <div class="row">
                 ${renderImageColumn('Frente CNH', d.driver_license_front)}
                 ${renderImageColumn('Verso CNH', d.driver_license_back)}
@@ -124,26 +125,26 @@ function format(d) {
     `;
 }
 
-function togglePassword(inputId, buttonId) {
-    const input = document.getElementById(inputId);
-    const button = document.getElementById(buttonId);
-    if (input.type === "password") {
-        input.type = "text";
-        button.innerText = "🙈";
+function togglePassword(id, password) {
+    const span = document.getElementById(`password-${id}`);
+    const button = document.getElementById(`toggle-${id}`);
+    const isHidden = span.innerText.includes('•');
+
+    if (isHidden) {
+        span.innerText = password;
+        button.innerText = '🙈 Ocultar';
     } else {
-        input.type = "password";
-        button.innerText = "👁️";
+        span.innerText = '•'.repeat(password.length);
+        button.innerText = '👁 Mostrar';
     }
 }
 
 function activateDriver(driverId) {
     alert(`Ativar motorista ID: ${driverId}`);
-    // Aqui você pode fazer uma chamada AJAX para ativar
 }
 
 function analyzeDriver(driverId) {
     alert(`Analisar motorista ID: ${driverId}`);
-    // Aqui você pode redirecionar ou abrir modal
 }
 
 $(document).ready(function() {
@@ -160,8 +161,20 @@ $(document).ready(function() {
             },
             { data: 'name', name: 'name' },
             { data: 'address', name: 'address' },
-            { data: 'identity_card', name: 'identity_card' },
-            { data: 'phone', name: 'phone' },
+            {
+                data: 'identity_card',
+                name: 'identity_card',
+                render: function(data) {
+                    return maskRG(data);
+                }
+            },
+            {
+                data: 'phone',
+                name: 'phone',
+                render: function(data) {
+                    return maskPhone(data);
+                }
+            },
             {
                 data: null,
                 orderable: false,
