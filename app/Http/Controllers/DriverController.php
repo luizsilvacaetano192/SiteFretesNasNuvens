@@ -15,18 +15,17 @@ class DriverController extends Controller
 
     public function getData()
     {
-        $drivers = Driver::select(['*']);
+        $drivers = Driver::select(['id', 'name', 'phone', 'license_number','address','identity_card']);
 
         return DataTables::of($drivers)
+        ->addColumn('driver_license_front', fn($driver) => $driver->driver_license_front_url)
+        ->addColumn('driver_license_back', fn($driver) => $driver->driver_license_back_url)
+        ->addColumn('face_photo', fn($driver) => $driver->face_photo_url)
+        ->addColumn('address_proof', fn($driver) => $driver->address_proof_url)
+        ->toJson()
+
             
-            ->addColumn('driver_license_front', fn($driver) => $driver->driver_license_front_url)
-            ->addColumn('driver_license_back', fn($driver) => $driver->driver_license_back_url)
-            ->addColumn('face_photo', fn($driver) => $driver->face_photo_url)
-            ->addColumn('address_proof', fn($driver) => $driver->address_proof_url)
-            ->toJson()
-            
-            ->rawColumns(['actions'])
-            ->make(true);
+           
     }
 
     public function data(Request $request)
