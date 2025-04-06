@@ -15,7 +15,7 @@ class DriverController extends Controller
 
     public function getData()
     {
-        $drivers = Driver::select(['id', 'name', 'phone', 'license_number']);
+        $drivers = Driver::select(['id', 'name', 'phone', 'license_number','address','identity_card']);
 
         return DataTables::of($drivers)
             ->addColumn('actions', function ($driver) {
