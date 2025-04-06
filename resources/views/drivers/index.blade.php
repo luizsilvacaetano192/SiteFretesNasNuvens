@@ -40,24 +40,26 @@ function format(d) {
             <div class="row">
                 <div class="col-md-3 text-center">
                     <p><strong>Frente CNH</strong></p>
-                    <img src="${d.driver_license_front}" class="img-fluid rounded" style="max-height:150px;">
+                    <img src="${d.driver_license_front}" class="img-fluid rounded" style="max-height:150px;" onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
                 </div>
                 <div class="col-md-3 text-center">
                     <p><strong>Verso CNH</strong></p>
-                    <img src="${d.driver_license_back}" class="img-fluid rounded" style="max-height:150px;">
+                    <img src="${d.driver_license_back}" class="img-fluid rounded" style="max-height:150px;" onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
                 </div>
                 <div class="col-md-3 text-center">
                     <p><strong>Foto do Rosto</strong></p>
-                    <img src="${d.face_photo}" class="img-fluid rounded-circle" style="max-height:150px;">
+                    <img src="${d.face_photo}" class="img-fluid rounded-circle" style="max-height:150px;" onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
                 </div>
                 <div class="col-md-3 text-center">
                     <p><strong>Comprovante de Endereço</strong></p>
-                    <img src="${d.address_proof}" class="img-fluid rounded" style="max-height:150px;">
+                    <img src="${d.address_proof}" class="img-fluid rounded" style="max-height:150px;" onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
                 </div>
             </div>
         </div>
     `;
 }
+
+
 
 $(document).ready(function() {
     var table = $('#drivers-table').DataTable({
