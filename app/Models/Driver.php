@@ -28,21 +28,29 @@ class Driver extends Model
 
     public function getDriverLicenseFrontUrlAttribute()
     {
-        return Storage::disk('s3')->url($this->driver_license_front);
+        return $this->driver_license_front
+            ? Storage::disk('s3')->url($this->driver_license_front)
+            : null;
     }
 
     public function getDriverLicenseBackUrlAttribute()
     {
-        return Storage::disk('s3')->url($this->driver_license_back);
+        return $this->driver_license_back
+            ? Storage::disk('s3')->url($this->driver_license_back)
+            : null;
     }
 
     public function getFacePhotoUrlAttribute()
     {
-        return Storage::disk('s3')->url($this->face_photo);
+        return $this->face_photo
+            ? Storage::disk('s3')->url($this->face_photo)
+            : null;
     }
 
     public function getAddressProofUrlAttribute()
     {
-        return Storage::disk('s3')->url($this->address_proof);
+        return $this->address_proof
+            ? Storage::disk('s3')->url($this->address_proof)
+            : null;
     }
 }
