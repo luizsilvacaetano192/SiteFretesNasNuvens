@@ -204,6 +204,15 @@ function format(d) {
     `;
 }
 
+function getStatusLabel(status) {
+    const labels = {
+        'create': ['Aguardando Ativação', 'warning'],
+        'active': ['Ativo', 'success'],
+        'block': ['Bloqueado', 'danger'],
+        'transfer_block': ['Transferências Bloqueadas', 'danger'],
+    };
+    return labels[status] || ['Desconhecido', 'secondary'];
+}
 
 function openWhatsApp(phone) {
     if (!phone) return alert("Número de telefone não disponível.");
@@ -222,7 +231,13 @@ $(document).ready(function () {
             { data: 'address' },
             { data: 'identity_card', render: maskRG },
             { data: 'phone', render: maskPhone },
-            { data: 'status', name: 'status', render: getStatusLabel },
+            {
+                data: 'status',
+                render: status => {
+                    const [text, color] = getStatusLabel(status);
+                    return `<span class="badge bg-${color}">${text}</span>`;
+                }
+            },
             {
                 data: 'status',
                 render: status => {
