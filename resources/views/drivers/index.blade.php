@@ -15,6 +15,7 @@
                 <th>Endereço</th>
                 <th>RG</th>
                 <th>Telefone</th>
+                <th>Status</th>
                 <th>Ações</th>
             </tr>
         </thead>
@@ -138,6 +139,9 @@ function format(d) {
                 <button class="btn btn-sm btn-outline-secondary" id="${toggleBtnId}" onclick="togglePassword('${d.id}', '${d.password}')">👁 Mostrar</button>
             </p>
             <p><strong>Termos Aceitos:</strong> ${d.terms_accepted ? 'Sim' : 'Não'}</p>
+            ${(d.status === 'block' || d.status === 'transfer_block') && d.reason ? `
+                <p><strong>Motivo:</strong> <span class="text-danger">${d.reason}</span></p>
+            ` : ''}
             <div class="row">
                 ${renderImageColumn('Frente CNH', d.driver_license_front)}
                 ${renderImageColumn('Verso CNH', d.driver_license_back)}
@@ -176,7 +180,6 @@ function analyzeDriver(driverId) {
         return;
     }
 
-    // Mostrar o modal imediatamente
     const modal = new bootstrap.Modal(document.getElementById('analyzeModal'));
     $('#analysisContent').html(`
         <div class="text-center">
@@ -188,7 +191,6 @@ function analyzeDriver(driverId) {
     `);
     modal.show();
 
-    // Enviar dados via POST
     $.ajax({
         url: '/api/analyze-driver',
         method: 'POST',
@@ -253,6 +255,33 @@ $(document).ready(function() {
                 name: 'phone',
                 render: function(data) {
                     return maskPhone(data);
+                }
+            },
+            {
+                data: 'status',
+                name: 'status',
+                render: function(data) {
+                    let label = '';
+                    let color = '';
+
+                    if (!data || data === 'create') {
+                        label = '⏳ Aguardando Liberação';
+                        color = 'warning';
+                    } else if (data === 'active') {
+                        label = '✅ Ativo';
+                        color = 'success';
+                    } else if (data === 'block') {
+                        label = '⛔ Bloqueado';
+                        color = 'danger';
+                    } else if (data === 'transfer_block') {
+                        label = '🚫 Transferências Bloqueadas';
+                        color = 'danger';
+                    } else {
+                        label = data;
+                        color = 'secondary';
+                    }
+
+                    return `<span class="badge bg-${color}">${label}</span>`;
                 }
             },
             {

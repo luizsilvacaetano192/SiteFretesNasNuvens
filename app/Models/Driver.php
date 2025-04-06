@@ -24,6 +24,8 @@ class Driver extends Model
         'driver_license_back_photo',
         'face_photo',
         'address_proof_photo',
+        'status',
+        'reason'
     ];
 
     protected $appends = [
