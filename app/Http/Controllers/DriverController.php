@@ -15,23 +15,31 @@ class DriverController extends Controller
     }
 
     public function getData()
-    {
-        $drivers = Driver::all();
+{
+    $drivers = Driver::all();
 
-        $drivers->transform(function ($driver) {
-            // Converte os caminhos das imagens para URLs públicas
-            $driver->driver_license_front = $driver->driver_license_front ? Storage::url($driver->driver_license_front) : null;
-            $driver->driver_license_back = $driver->driver_license_back ? Storage::url($driver->driver_license_back) : null;
-            $driver->face_photo = $driver->face_photo ? Storage::url($driver->face_photo) : null;
-            $driver->address_proof = $driver->address_proof ? Storage::url($driver->address_proof) : null;
-            return $driver;
-        });
+    $drivers->transform(function ($driver) {
+        $driver->driver_license_front = $driver->driver_license_front 
+            ? Storage::disk('s3')->url($driver->driver_license_front) 
+            : null;
 
-        return DataTables::of($drivers)->make(true);
+        $driver->driver_license_back = $driver->driver_license_back 
+            ? Storage::disk('s3')->url($driver->driver_license_back) 
+            : null;
 
-            
-           
-    }
+        $driver->face_photo = $driver->face_photo 
+            ? Storage::disk('s3')->url($driver->face_photo) 
+            : null;
+
+        $driver->address_proof = $driver->address_proof 
+            ? Storage::disk('s3')->url($driver->address_proof) 
+            : null;
+
+        return $driver;
+    });
+
+    return DataTables::of($drivers)->make(true);
+}
 
     public function data(Request $request)
     {
