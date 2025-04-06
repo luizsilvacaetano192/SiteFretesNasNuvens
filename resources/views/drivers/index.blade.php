@@ -15,12 +15,13 @@
                 <th>Endereço</th>
                 <th>RG</th>
                 <th>Telefone</th>
+                <th>Ações</th>
             </tr>
         </thead>
     </table>
 </div>
 
-<!-- Modal de Imagem Ampliada -->
+<!-- Modal para imagem ampliada -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content bg-dark">
@@ -34,7 +35,7 @@
   </div>
 </div>
 
-<!-- Scripts e Estilos -->
+<!-- Estilos e Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -43,7 +44,6 @@
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 
 <style>
-/* Ícone de expansão sempre visível */
 td.dt-control::before {
     content: "+";
     font-weight: bold;
@@ -62,8 +62,7 @@ tr.shown td.dt-control::before {
 
 <script>
 function openImageModal(src) {
-    const modalImage = document.getElementById('modalImage');
-    modalImage.src = src;
+    document.getElementById('modalImage').src = src;
     const modal = new bootstrap.Modal(document.getElementById('imageModal'));
     modal.show();
 }
@@ -73,7 +72,7 @@ function renderImageColumn(title, src) {
         <div class="col-md-3 text-center mb-3">
             <p><strong>${title}</strong></p>
             <img src="${src}" class="img-fluid rounded" style="max-height:150px;"
-                onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
+                 onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';">
             <br>
             <a href="${src}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
             <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${src}')">🔍 Ampliar</button>
@@ -102,6 +101,16 @@ function format(d) {
     `;
 }
 
+function activateDriver(driverId) {
+    alert(`Ativar motorista ID: ${driverId}`);
+    // Aqui você pode fazer uma chamada AJAX para ativar
+}
+
+function analyzeDriver(driverId) {
+    alert(`Analisar motorista ID: ${driverId}`);
+    // Aqui você pode redirecionar ou abrir modal
+}
+
 $(document).ready(function() {
     const table = $('#drivers-table').DataTable({
         processing: true,
@@ -118,6 +127,21 @@ $(document).ready(function() {
             { data: 'address', name: 'address' },
             { data: 'identity_card', name: 'identity_card' },
             { data: 'phone', name: 'phone' },
+            {
+                data: null,
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    return `
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="/drivers/${row.id}/balance" class="btn btn-outline-success">💰 Saldo</a>
+                            <a href="/drivers/${row.id}/freights" class="btn btn-outline-primary">🚚 Ver Fretes</a>
+                            <button onclick="activateDriver(${row.id})" class="btn btn-outline-warning">✅ Ativar</button>
+                            <button onclick="analyzeDriver(${row.id})" class="btn btn-outline-dark">🕵️ Analisar</button>
+                        </div>
+                    `;
+                }
+            }
         ],
         order: [[1, 'asc']]
     });
