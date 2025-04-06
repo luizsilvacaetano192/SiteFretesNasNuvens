@@ -24,7 +24,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 
-Route::post('/api/analyze-driver', [DriverAnalysisController::class, 'analyze']);
+Route::post('/analyze-driver', [DriverAnalysisController::class, 'analyze']);
 
 
 Route::get('/shipments', [ShipmentController::class, 'getAllShipments']);
