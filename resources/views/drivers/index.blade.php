@@ -112,6 +112,12 @@ function maskPhone(phone) {
     return phone?.replace(/^(\d{2})(\d{5})(\d{4})$/, "($1) $2-$3") || '';
 }
 
+function maskCPF(cpf) {
+    return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+}
+
+
+
 function openImageModal(src) {
     $('#modalImage').attr('src', src);
     new bootstrap.Modal('#imageModal').show();
