@@ -44,6 +44,6 @@ class FreightStatusController extends Controller
             'name' => $request->name,
         ]);
 
-        return redirect()->route('freight-statuses.index')->with('success', 'Status do frete cadastrado com sucesso!');
+        return redirect()->route('freight_statuses.index')->with('success', 'Status do frete cadastrado com sucesso!');
     }
 }

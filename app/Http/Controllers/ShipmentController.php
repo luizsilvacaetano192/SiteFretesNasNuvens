@@ -12,7 +12,9 @@ class ShipmentController extends Controller
 {
     public function index()
     {
-        return view('shipments.index');
+        $shipments = Shipment::with(['Company'])->get();
+     
+        return view('shipments.index', compact('shipments'));
     }
 
  
@@ -96,7 +98,7 @@ class ShipmentController extends Controller
         
         $shipment->save();
     
-        return redirect()->route('shipments')->with('success', 'Carga cadastrada com sucesso!');
+        return redirect()->route('/shipments/index')->with('success', 'Carga cadastrada com sucesso!');
        
     }
 

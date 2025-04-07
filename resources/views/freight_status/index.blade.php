@@ -4,7 +4,13 @@
 
 @section('content')
     <div class="container">
-        <h1>Lista de Status de Frete</h1>
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>Lista de Status de Frete</h1>
+            <a href="{{ route('freight_statuses.create') }}" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Novo Status
+            </a>
+        </div>
+
         <table id="freight-statuses-table" class="table table-bordered">
             <thead>
                 <tr>

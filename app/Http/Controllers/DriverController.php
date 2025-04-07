@@ -7,7 +7,8 @@ use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
-
+use App\Models\MessagePush;
+use Carbon\Carbon;
 
 
 class DriverController extends Controller
@@ -27,35 +28,42 @@ class DriverController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function showSendPushForm()
+    {
+        $drivers = Driver::select('id', 'name', 'phone', 'address', 'token_push')->get();
+
+        return view('drivers.drivers-push', compact('drivers'));
+    }
+
+
     public function sendPush(Request $request)
     {
         $request->validate([
             'message' => 'required|string',
-            'drivers' => 'required|array',
+            'motoristas' => 'required|array',
         ]);
 
-        $drivers = Driver::whereIn('id', $request->drivers)->get();
+        $mensagem = $request->input('message');
+        $motoristaIds = $request->input('motoristas');
 
-        foreach ($drivers as $driver) {
-            if ($driver->fcm_token) {
-                Http::withHeaders([
-                    'Authorization' => 'key=' . env('FIREBASE_SERVER_KEY'),
-                    'Content-Type' => 'application/json',
-                ])->post('https://fcm.googleapis.com/fcm/send', [
-                    'to' => $driver->fcm_token,
-                    'notification' => [
-                        'title' => 'Nova mensagem',
-                        'body' => $request->message,
-                    ],
-                    'data' => [
-                        'driver_id' => $driver->id,
-                    ]
+        foreach ($motoristaIds as $id) {
+            $motorista = Driver::find($id);
+
+            if ($motorista) {
+                MessagePush::create([
+                    'driver_id' => $motorista->id,
+                    'texto'     => $mensagem,
+                    'token'     => $motorista->token_push,
+                    'data'      => Carbon::now(),
+                    'send'      => false,
+                    'type'      => 'info', // ou outro tipo que desejar
                 ]);
             }
         }
 
-        return back()->with('success', 'Mensagens enviadas com sucesso!');
+        return redirect()->back()->with('success', 'Mensagens salvas com sucesso e serão processadas posteriormente.');
     }
+
 
     public function getData()
     {

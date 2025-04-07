@@ -119,15 +119,20 @@
     </nav>
 
     <!-- Sidebar -->
-    <div class="sidebar">
-        <a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a>
-        <a href="/freights"><i class="fas fa-truck"></i> Gerenciar Fretes</a>
-        <a href="/shipments"><i class="fas fa-box"></i> Cargas</a>
-        <a href="/companies"><i class="fas fa-building"></i> Empresas</a>
-        <a href="/drivers"><i class="fas fa-id-card"></i> Motoristas</a>
-        <a href="#"><i class="fas fa-cogs"></i> Configurações</a>
-        <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
-    </div>
+    <!-- Sidebar -->
+<div class="sidebar">
+    <a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a>
+    <a href="/freights"><i class="fas fa-truck"></i> Gerenciar Fretes</a>
+    <a href="/shipments"><i class="fas fa-box"></i> Cargas</a>
+    <a href="/companies"><i class="fas fa-building"></i> Empresas</a>
+    <a href="/drivers"><i class="fas fa-id-card"></i> Motoristas</a>
+    <a href="/drivers/send-push"><i class="fas fa-paper-plane"></i> Enviar Push</a>
+    <a href="/mensagens-push"><i class="fas fa-bell"></i> Mensagens Push</a>
+    <a href="/freight-statuses"><i class="fas fa-tasks"></i> Status</a>
+    <a href="#"><i class="fas fa-cogs"></i> Configurações</a>
+    <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+</div>
+
 
     <!-- Conteúdo -->
     <div class="content">

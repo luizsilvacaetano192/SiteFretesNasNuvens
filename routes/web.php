@@ -54,7 +54,12 @@ Route::get('/drivers/create', [DriverController::class, 'create'])->name('driver
 Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
 Route::get('/drivers/data', [DriverController::class, 'getData'])->name('drivers.data');
 
-Route::post('/admin/drivers/send-push', [App\Http\Controllers\DriverController::class, 'sendPush'])->name('drivers.sendPush');
+Route::post('/drivers/send-push', [App\Http\Controllers\DriverController::class, 'sendPush'])->name('drivers.sendPush');
+
+Route::get('/drivers/send-push', [DriverController::class, 'showSendPushForm'])->name('drivers.pushForm');
+
+Route::get('/mensagens-push', [App\Http\Controllers\MessagePushController::class, 'index'])->name('mensagens-push.index');
+Route::get('/mensagens-push/list', [App\Http\Controllers\MessagePushController::class, 'list'])->name('mensagens-push.list');
 
 
 
