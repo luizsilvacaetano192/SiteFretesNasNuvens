@@ -16,7 +16,7 @@ class MessagePushController extends Controller
 
     public function list(Request $request)
     {
-        $query = MessagePush::with('driver:id,nome') // Assumindo que você tem relação com motoristas
+        $query = MessagePush::with('driver:id,name') // Assumindo que você tem relação com motoristas
             ->select('messages_push.*');
 
         return DataTables::of($query)
