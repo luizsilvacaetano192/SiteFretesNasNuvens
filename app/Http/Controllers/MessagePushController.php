@@ -20,7 +20,7 @@ class MessagePushController extends Controller
             ->select('messages_push.*');
 
         return DataTables::of($query)
-            ->addColumn('driver', fn($row) => $row->driver->nome ?? '—')
+            ->addColumn('driver', fn($row) => $row->driver->name ?? '—')
             ->editColumn('send', fn($row) => $row->send ? '✅ Sim' : '❌ Não')
             ->editColumn('erro', fn($row) => $row->erro ? '<span class="text-danger">'.$row->erro.'</span>' : '—')
             ->editColumn('data', fn($row) => optional($row->data)->format('d/m/Y H:i'))
