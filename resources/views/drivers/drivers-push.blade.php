@@ -48,7 +48,7 @@
 @endsection
 
 @push('scripts')
-    <!-- jQuery (deve vir antes) -->
+    <!-- jQuery -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
     <!-- DataTables CSS -->
@@ -70,54 +70,61 @@
                     { orderable: false, targets: 0 } // checkbox não ordenável
                 ]
             });
-        });
 
-        document.getElementById('selectAll').addEventListener('change', function () {
-            const checkboxes = document.querySelectorAll('.driver-checkbox');
-            checkboxes.forEach(cb => cb.checked = this.checked);
-        });
-
-        document.getElementById('pushForm').addEventListener('submit', async function (e) {
-            e.preventDefault();
-
-            const message = document.getElementById('message').value;
-            const checkboxes = document.querySelectorAll('.driver-checkbox:checked');
-            const drivers = Array.from(checkboxes).map(cb => cb.value);
-
-            if (!message || drivers.length === 0) {
-                alert("Preencha a mensagem e selecione pelo menos um motorista.");
-                return;
+            // Checkbox "selecionar todos"
+            const selectAll = document.getElementById('selectAll');
+            if (selectAll) {
+                selectAll.addEventListener('change', function () {
+                    const checkboxes = document.querySelectorAll('.driver-checkbox');
+                    checkboxes.forEach(cb => cb.checked = this.checked);
+                });
             }
 
-            const csrfToken = document.querySelector('input[name="_token"]').value;
+            // Submissão do formulário
+            const pushForm = document.getElementById('pushForm');
+            if (pushForm) {
+                pushForm.addEventListener('submit', async function (e) {
+                    e.preventDefault();
 
-            const response = await fetch("{{ route('drivers.sendPush') }}", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRF-TOKEN": csrfToken,
-                },
-                body: JSON.stringify({
-                    message: message,
-                    drivers: drivers
-                })
-            });
+                    const message = document.getElementById('message').value;
+                    const checkboxes = document.querySelectorAll('.driver-checkbox:checked');
+                    const drivers = Array.from(checkboxes).map(cb => cb.value);
 
-            const result = await response.json();
+                    if (!message || drivers.length === 0) {
+                        alert("Preencha a mensagem e selecione pelo menos um motorista.");
+                        return;
+                    }
 
-            const feedback = document.getElementById('feedback');
-            if (response.ok) {
-                feedback.innerText = result.message || "Mensagem enviada com sucesso!";
-                feedback.className = "alert alert-success";
-                feedback.style.display = 'block';
-                document.getElementById('pushForm').reset();
+                    const csrfToken = document.querySelector('input[name="_token"]').value;
 
-                document.querySelectorAll('.driver-checkbox').forEach(cb => cb.checked = false);
-                document.getElementById('selectAll').checked = false;
-            } else {
-                feedback.innerText = result.message || "Erro ao enviar mensagem.";
-                feedback.className = "alert alert-danger";
-                feedback.style.display = 'block';
+                    const response = await fetch("{{ route('drivers.sendPush') }}", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                            "X-CSRF-TOKEN": csrfToken,
+                        },
+                        body: JSON.stringify({
+                            message: message,
+                            drivers: drivers
+                        })
+                    });
+
+                    const result = await response.json();
+
+                    const feedback = document.getElementById('feedback');
+                    if (response.ok) {
+                        feedback.innerText = result.message || "Mensagem enviada com sucesso!";
+                        feedback.className = "alert alert-success";
+                        feedback.style.display = 'block';
+                        document.getElementById('pushForm').reset();
+                        document.querySelectorAll('.driver-checkbox').forEach(cb => cb.checked = false);
+                        document.getElementById('selectAll').checked = false;
+                    } else {
+                        feedback.innerText = result.message || "Erro ao enviar mensagem.";
+                        feedback.className = "alert alert-danger";
+                        feedback.style.display = 'block';
+                    }
+                });
             }
         });
     </script>
