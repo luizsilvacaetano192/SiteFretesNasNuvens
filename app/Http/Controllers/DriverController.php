@@ -30,6 +30,7 @@ class DriverController extends Controller
 
     public function showSendPushForm()
     {
+
         $drivers = Driver::select('id', 'name', 'phone', 'address', 'token_push')->get();
 
         return view('drivers.drivers-push', compact('drivers'));
@@ -38,6 +39,8 @@ class DriverController extends Controller
 
     public function sendPush(Request $request)
     {
+
+        die('chegou aq');
         $request->validate([
             'message' => 'required|string',
             'motoristas' => 'required|array',
