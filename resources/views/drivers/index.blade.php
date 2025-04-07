@@ -60,8 +60,14 @@
         <h5 class="modal-title">🔒 Bloqueio de Motorista</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
-      <div class="modal-body text-center">
-        <p>Escolha o tipo de bloqueio a ser aplicado ao motorista.</p>
+      <div class="modal-body">
+        <p class="text-center">Escolha o tipo de bloqueio e informe o motivo.</p>
+
+        <div class="mb-3">
+          <label for="blockReason" class="form-label">📝 Motivo do Bloqueio</label>
+          <textarea class="form-control" id="blockReason" rows="3" placeholder="Descreva o motivo do bloqueio..."></textarea>
+        </div>
+
         <div class="d-grid gap-2">
           <button class="btn btn-danger" id="blockUserBtn">🚫 Bloquear Usuário</button>
           <button class="btn btn-warning" id="blockTransferBtn">📵 Bloquear Transferências</button>
@@ -70,6 +76,8 @@
     </div>
   </div>
 </div>
+
+
 
 <!-- Estilos e Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -143,12 +151,28 @@ function renderImageColumn(title, src) {
 }
 
 function updateDriverStatus(id, status) {
-    $.post(`/drivers/${id}/update-status`, { status, _token: '{{ csrf_token() }}' }, () => {
+    const reason = $('#blockReason').val().trim();
+
+    if ((status === 'block' || status === 'transfer_block') && !reason) {
+        toastr.warning('Por favor, informe o motivo do bloqueio.');
+        return;
+    }
+
+    $.post(`/drivers/${id}/update-status`, {
+        status,
+        reason,
+        _token: '{{ csrf_token() }}'
+    }, () => {
         $('#drivers-table').DataTable().ajax.reload(null, false);
         bootstrap.Modal.getInstance(document.getElementById('blockModal'))?.hide();
         toastr.success(`Status atualizado para ${status}`);
+        $('#blockReason').val(''); // Limpa o campo
     }).fail(() => toastr.error("Erro ao atualizar status."));
 }
+
+$('#blockUserBtn').click(() => updateDriverStatus(selectedDriverId, 'block'));
+$('#blockTransferBtn').click(() => updateDriverStatus(selectedDriverId, 'transfer_block'));
+
 
 function activateDriver(id, status) {
     if (status === 'active') {

@@ -16,19 +16,18 @@ class DriverController extends Controller
         return view('drivers.index');
     }
 
-   
     public function updateStatus(Request $request, $id)
     {
-        $request->validate([
-            'status' => 'required|in:create,active,block,transfer_block',
-        ]);
-
         $driver = Driver::findOrFail($id);
         $driver->status = $request->status;
+        $driver->reason = $request->reason ?? null;
         $driver->save();
 
-        return response()->json(['success' => true, 'message' => 'Status atualizado com sucesso.']);
+        return response()->json(['success' => true]);
     }
+
+   
+   
 
     public function getData()
     {
