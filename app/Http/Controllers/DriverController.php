@@ -6,6 +6,7 @@ use App\Models\Driver;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Http;
 
 
 
@@ -26,8 +27,35 @@ class DriverController extends Controller
         return response()->json(['success' => true]);
     }
 
-   
-   
+    public function sendPush(Request $request)
+    {
+        $request->validate([
+            'message' => 'required|string',
+            'drivers' => 'required|array',
+        ]);
+
+        $drivers = Driver::whereIn('id', $request->drivers)->get();
+
+        foreach ($drivers as $driver) {
+            if ($driver->fcm_token) {
+                Http::withHeaders([
+                    'Authorization' => 'key=' . env('FIREBASE_SERVER_KEY'),
+                    'Content-Type' => 'application/json',
+                ])->post('https://fcm.googleapis.com/fcm/send', [
+                    'to' => $driver->fcm_token,
+                    'notification' => [
+                        'title' => 'Nova mensagem',
+                        'body' => $request->message,
+                    ],
+                    'data' => [
+                        'driver_id' => $driver->id,
+                    ]
+                ]);
+            }
+        }
+
+        return back()->with('success', 'Mensagens enviadas com sucesso!');
+    }
 
     public function getData()
     {

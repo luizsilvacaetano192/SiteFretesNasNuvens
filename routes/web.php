@@ -54,6 +54,7 @@ Route::get('/drivers/create', [DriverController::class, 'create'])->name('driver
 Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
 Route::get('/drivers/data', [DriverController::class, 'getData'])->name('drivers.data');
 
+Route::post('/admin/drivers/send-push', [App\Http\Controllers\DriverController::class, 'sendPush'])->name('drivers.sendPush');
 
 
 
