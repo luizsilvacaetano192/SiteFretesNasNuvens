@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use App\Models\MessagePush;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Log;
 
 
 class DriverController extends Controller
@@ -39,33 +40,45 @@ class DriverController extends Controller
 
     public function sendPush(Request $request)
     {
-
-        die('chegou aq');
         $request->validate([
             'message' => 'required|string',
-            'motoristas' => 'required|array',
+            'drivers' => 'required|array',
         ]);
-
+    
         $mensagem = $request->input('message');
-        $motoristaIds = $request->input('motoristas');
-
+        $motoristaIds = $request->input('drivers');
+    
+        $resultados = [];
+    
         foreach ($motoristaIds as $id) {
             $motorista = Driver::find($id);
-
+    
             if ($motorista) {
-                MessagePush::create([
-                    'driver_id' => $motorista->id,
-                    'texto'     => $mensagem,
-                    'token'     => $motorista->token_push,
-                    'data'      => Carbon::now(),
-                    'send'      => false,
-                    'type'      => 'info', // ou outro tipo que desejar
-                ]);
+                try {
+                    MessagePush::create([
+                        'driver_id' => $motorista->id,
+                        'texto'     => $mensagem,
+                        'token'     => $motorista->token_push,
+                        'data'      => Carbon::now(),
+                        'send'      => false,
+                        'type'      => 'info',
+                    ]);
+    
+                    $resultados[] = "✅ Mensagem registrada para {$motorista->name}";
+                } catch (\Exception $e) {
+                    $resultados[] = "❌ Erro ao salvar mensagem para {$motorista->name}";
+                }
+            } else {
+                $resultados[] = "⚠️ Motorista com ID {$id} não encontrado";
             }
         }
-
-        return redirect()->back()->with('success', 'Mensagens salvas com sucesso e serão processadas posteriormente.');
+    
+        return response()->json([
+            'message' => 'Envio concluído!',
+            'resultados' => $resultados
+        ]);
     }
+    
 
 
     public function getData()

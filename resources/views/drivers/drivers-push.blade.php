@@ -8,7 +8,9 @@
 <div class="container">
     <h2 class="mb-4">Envia push para os motoristas</h2>
 
-    <div id="feedback" style="display: none;" class="alert alert-success"></div>
+    <div id="feedback" style="display: none;" class="alert mt-3"></div>
+    <ul id="feedback-list" class="mt-2"></ul>
+
 
     <form id="pushForm">
         @csrf
@@ -112,18 +114,33 @@
                     const result = await response.json();
 
                     const feedback = document.getElementById('feedback');
+                    const feedbackList = document.getElementById('feedback-list');
+
                     if (response.ok) {
                         feedback.innerText = result.message || "Mensagem enviada com sucesso!";
                         feedback.className = "alert alert-success";
                         feedback.style.display = 'block';
+
+                        // Mostra os detalhes
+                        feedbackList.innerHTML = '';
+                        result.resultados.forEach(msg => {
+                            const li = document.createElement('li');
+                            li.textContent = msg;
+                            feedbackList.appendChild(li);
+                        });
+
+                        // Limpa formulário
                         document.getElementById('pushForm').reset();
                         document.querySelectorAll('.driver-checkbox').forEach(cb => cb.checked = false);
                         document.getElementById('selectAll').checked = false;
+
                     } else {
                         feedback.innerText = result.message || "Erro ao enviar mensagem.";
                         feedback.className = "alert alert-danger";
                         feedback.style.display = 'block';
+                        feedbackList.innerHTML = '';
                     }
+
                 });
             }
         });
