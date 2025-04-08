@@ -1,5 +1,9 @@
 @extends('layouts.app')
 
+@section('styles')
+<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+@endsection
+
 @section('content')
 <div class="container">
     <h2 class="mb-4">Mensagens Push</h2>
@@ -21,6 +25,7 @@
 @endsection
 
 @section('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
 $(document).ready(function () {
