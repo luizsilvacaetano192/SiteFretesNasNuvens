@@ -31,28 +31,28 @@
         </div>
     </div>
 
-    {{-- Opções de visibilidade de colunas --}}
+    {{-- Opções para mostrar/ocultar colunas --}}
     <div class="row mb-4">
         <div class="col-md-3">
             <label><input type="checkbox" class="toggle-column" data-column="3" checked> Mostrar Texto</label>
         </div>
         <div class="col-md-3">
-            <label><input type="checkbox" class="toggle-column" data-column="8" checked> Mostrar Token</label>
+            <label><input type="checkbox" class="toggle-column" data-column="8" checked> Mostrar Token Push</label>
         </div>
     </div>
 
     <table id="messages-table" class="table table-bordered table-hover">
         <thead>
             <tr>
-                <th>ID</th>
-                <th>Motorista</th>
-                <th>Título</th>
-                <th>Texto</th>
-                <th>Enviado?</th>
-                <th>Data</th>
-                <th>Tela</th>
-                <th>Ações</th>
-                <th>Token</th>
+                <th>ID</th>               {{-- 0 --}}
+                <th>Motorista</th>        {{-- 1 --}}
+                <th>Título</th>           {{-- 2 --}}
+                <th>Texto</th>            {{-- 3 <- toggle --}}
+                <th>Enviado?</th>         {{-- 4 --}}
+                <th>Data</th>             {{-- 5 --}}
+                <th>Tela</th>             {{-- 6 --}}
+                <th>Ações</th>            {{-- 7 --}}
+                <th>Token</th>            {{-- 8 <- toggle --}}
             </tr>
         </thead>
     </table>
@@ -78,19 +78,19 @@ $(document).ready(function () {
             }
         },
         columns: [
-            { data: 'id', name: 'id' },
-            { data: 'driver', name: 'driver' },
-            { data: 'titulo', name: 'titulo' },
-            { data: 'texto', name: 'texto' },
-            { data: 'send_label', name: 'send' },
-            { data: 'data', name: 'created_at' },
-            { data: 'screen', name: 'screen' },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false },
-            { data: 'token', name: 'token' }
+            { data: 'id', name: 'id' },                        // 0
+            { data: 'driver', name: 'driver' },                // 1
+            { data: 'titulo', name: 'titulo' },                // 2
+            { data: 'texto', name: 'texto' },                  // 3 <- toggle
+            { data: 'send_label', name: 'send' },              // 4
+            { data: 'data', name: 'created_at' },              // 5
+            { data: 'screen', name: 'screen' },                // 6
+            { data: 'actions', name: 'actions', orderable: false, searchable: false }, // 7
+            { data: 'token', name: 'token' }                   // 8 <- toggle
         ]
     });
 
-    // Atualiza automaticamente ao mudar filtros
+    // Atualizar ao mudar filtros
     $('#filter-send, #filter-error').on('change', function () {
         table.ajax.reload();
     });
@@ -99,13 +99,14 @@ $(document).ready(function () {
         table.ajax.reload();
     });
 
-    // Mostrar/ocultar colunas
+    // Mostrar ou esconder colunas
     $('.toggle-column').on('change', function () {
-        const column = table.column($(this).data('column'));
-        column.visible(!column.visible());
+        const columnIdx = $(this).data('column');
+        const column = table.column(columnIdx);
+        column.visible($(this).is(':checked'));
     });
 
-    // Botão reenviar
+    // Botão de reenviar mensagem
     $(document).on('click', '.resend-btn', function () {
         const id = $(this).data('id');
         if (confirm('Deseja reenviar a notificação e limpar o erro?')) {
