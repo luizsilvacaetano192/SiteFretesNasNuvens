@@ -14,11 +14,11 @@ class MessagePushController extends Controller
         return view('drivers.messages.index');
     }
 
-    use Illuminate\Http\Request;
+
 
     public function list(Request $request)
     {
-        $query = MensagemPush::with('driver:id,nome')
+        $query = MessagePush::with('driver:id,nome')
             ->select('mensagens_push.*');
     
         // Filtros aqui
