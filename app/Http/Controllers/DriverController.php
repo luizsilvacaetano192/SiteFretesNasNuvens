@@ -31,10 +31,27 @@ class DriverController extends Controller
 
     public function showSendPushForm()
     {
+        $drivers = Driver::select('id', 'name',  'address', 'token_push')->get();
+        $enderecos = $drivers->pluck('address')->filter()->unique();
 
-        $drivers = Driver::select('id', 'name', 'phone', 'address', 'token_push')->get();
+        $estados = $enderecos->map(function ($address) {
+            // Assume formato: "... - Estado"
+            $parts = explode('-', $address);
+            return trim(end($parts));
+        })->unique()->filter()->values();
+        
+        $cidades = $enderecos->map(function ($address) {
+            // Assume formato: "... , Cidade - Estado"
+            $parts = explode(',', $address);
+            if (count($parts) >= 2) {
+                $cidadeEstado = trim(end($parts)); // "Cidade - Estado"
+                $cidade = explode('-', $cidadeEstado)[0];
+                return trim($cidade);
+            }
+            return null;
+        })->unique()->filter()->values();
 
-        return view('drivers.drivers-push', compact('drivers'));
+        return view('drivers.drivers-push', compact('drivers', 'estados', 'cidades'));
     }
 
 
