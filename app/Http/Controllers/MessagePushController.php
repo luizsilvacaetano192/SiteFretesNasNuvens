@@ -27,13 +27,9 @@ class MessagePushController extends Controller
         }
     
         if ($request->filled('error')) {
-            if ($request->error == 1) {
-                $query->whereNotNull('error')->where('error', '!=', '');
-            } elseif ($request->error == 0) {
-                $query->where(function ($q) {
-                    $q->whereNull('error')->orWhere('error', '');
-                });
-            }
+          
+            $query->whereNotNull('error')->where('error', '!=', '');
+           
         }
     
         if ($request->filled('date')) {
@@ -41,7 +37,7 @@ class MessagePushController extends Controller
         }
     
         return datatables()->of($query)
-            ->addColumn('driver', fn($row) => $row->driver->nome ?? '—')
+            ->addColumn('driver', fn($row) => $row->driver->name ?? '—')
             ->addColumn('titulo', fn($row) => $row->titulo ?? '—')
             ->addColumn('send_label', fn($row) => $row->send ? '✅ Sim' : '❌ Não')
             ->addColumn('data', fn($row) => optional($row->created_at)->format('Y-m-d H:i:s'))
