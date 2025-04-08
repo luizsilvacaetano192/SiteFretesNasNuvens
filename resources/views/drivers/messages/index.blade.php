@@ -24,7 +24,6 @@
             <select id="filter-error" class="form-control">
                 <option value="">Todos</option>
                 <option value="1">Com erro</option>
-                <option value="0">Sem erro</option>
             </select>
         </div>
         <div class="col-md-3">
