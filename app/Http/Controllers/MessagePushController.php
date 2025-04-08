@@ -14,38 +14,41 @@ class MessagePushController extends Controller
         return view('drivers.messages.index');
     }
 
+    use Illuminate\Http\Request;
+
     public function list(Request $request)
-{
-    $query = MensagemPush::with('driver');
-
-    if ($request->filled('send')) {
-        $query->where('send', $request->send);
-    }
-
-    if ($request->filled('error')) {
-        if ($request->error == 1) {
-            $query->whereNotNull('reason')->where('reason', '!=', '');
-        } elseif ($request->error == 0) {
-            $query->where(function ($q) {
-                $q->whereNull('reason')->orWhere('reason', '');
-            });
+    {
+        $query = MensagemPush::with('driver:id,nome')
+            ->select('mensagens_push.*');
+    
+        // Filtros aqui
+        if ($request->filled('send')) {
+            $query->where('send', $request->send);
         }
+    
+        if ($request->filled('error')) {
+            if ($request->error == 1) {
+                $query->whereNotNull('reason')->where('reason', '!=', '');
+            } elseif ($request->error == 0) {
+                $query->where(function ($q) {
+                    $q->whereNull('reason')->orWhere('reason', '');
+                });
+            }
+        }
+    
+        if ($request->filled('date')) {
+            $query->whereDate('created_at', $request->date);
+        }
+    
+        return datatables()->of($query)
+            ->addColumn('driver', fn($row) => $row->driver->nome ?? '—')
+            ->addColumn('titulo', fn($row) => $row->titulo ?? '—')
+            ->addColumn('send_label', fn($row) => $row->send ? '✅ Sim' : '❌ Não')
+            ->addColumn('erro', fn($row) => $row->reason ? '❌' : '✅')
+            ->addColumn('data', fn($row) => optional($row->created_at)->format('Y-m-d H:i:s'))
+            ->addColumn('screen', fn($row) => $row->screen ?? '—')
+            ->rawColumns(['erro'])
+            ->make(true);
     }
-
-    if ($request->filled('date')) {
-        $query->whereDate('created_at', $request->date);
-    }
-
-    return datatables()->of($query)
-        ->addColumn('driver', function ($msg) {
-            return $msg->driver->nome ?? 'N/A';
-        })
-        ->addColumn('send_label', function ($msg) {
-            return $msg->send ? '✅' : '❌';
-        })
-        ->addColumn('erro', function ($msg) {
-            return $msg->reason ? '❌' : '✅';
-        })
-        ->toJson();
-}
+    
 }
