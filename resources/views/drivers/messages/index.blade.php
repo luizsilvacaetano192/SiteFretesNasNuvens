@@ -31,16 +31,28 @@
         </div>
     </div>
 
+    {{-- Opções de visibilidade de colunas --}}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <label><input type="checkbox" class="toggle-column" data-column="3" checked> Mostrar Texto</label>
+        </div>
+        <div class="col-md-3">
+            <label><input type="checkbox" class="toggle-column" data-column="8" checked> Mostrar Token</label>
+        </div>
+    </div>
+
     <table id="messages-table" class="table table-bordered table-hover">
         <thead>
             <tr>
                 <th>ID</th>
                 <th>Motorista</th>
                 <th>Título</th>
+                <th>Texto</th>
                 <th>Enviado?</th>
                 <th>Data</th>
                 <th>Tela</th>
                 <th>Ações</th>
+                <th>Token</th>
             </tr>
         </thead>
     </table>
@@ -69,10 +81,12 @@ $(document).ready(function () {
             { data: 'id', name: 'id' },
             { data: 'driver', name: 'driver' },
             { data: 'titulo', name: 'titulo' },
+            { data: 'texto', name: 'texto' },
             { data: 'send_label', name: 'send' },
             { data: 'data', name: 'created_at' },
             { data: 'screen', name: 'screen' },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false }
+            { data: 'actions', name: 'actions', orderable: false, searchable: false },
+            { data: 'token', name: 'token' }
         ]
     });
 
@@ -83,6 +97,12 @@ $(document).ready(function () {
 
     $('#filter-date').on('input', function () {
         table.ajax.reload();
+    });
+
+    // Mostrar/ocultar colunas
+    $('.toggle-column').on('change', function () {
+        const column = table.column($(this).data('column'));
+        column.visible(!column.visible());
     });
 
     // Botão reenviar
