@@ -61,7 +61,7 @@ Route::post('/drivers/send-push', [App\Http\Controllers\DriverController::class,
 Route::get('/drivers/send-push', [DriverController::class, 'showSendPushForm'])->name('drivers.pushForm');
 
 Route::prefix('messages-push')->group(function () {
-    Route::get('/', [MessagePushController::class, 'index'])->name('messages-push.index');
+    Route::get('/', [MessagePushController::class, 'index'])->name('mensagens-push.index');
     Route::get('/list', [MessagePushController::class, 'list'])->name('messages-push.list');
     Route::post('/resend/{id}', [MessagePushController::class, 'resend'])->name('messages-push.resend');
 });
