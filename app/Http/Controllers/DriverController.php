@@ -58,11 +58,15 @@ class DriverController extends Controller
     public function sendPush(Request $request)
     {
         $request->validate([
+            'title'   => 'required|string',
             'message' => 'required|string',
+            'screen'  => 'nullable|string',
             'drivers' => 'required|array',
         ]);
     
-        $mensagem = $request->input('message');
+        $titulo      = $request->input('title');
+        $mensagem    = $request->input('message');
+        $screen      = $request->input('screen');
         $motoristaIds = $request->input('drivers');
     
         $resultados = [];
@@ -74,15 +78,18 @@ class DriverController extends Controller
                 try {
                     MessagePush::create([
                         'driver_id' => $motorista->id,
+                        'titulo'    => $titulo,
                         'texto'     => $mensagem,
                         'token'     => $motorista->token_push,
                         'data'      => Carbon::now(),
                         'send'      => false,
                         'type'      => 'info',
+                        'screen'    => $screen,
                     ]);
     
                     $resultados[] = "✅ Mensagem registrada para {$motorista->name}";
                 } catch (\Exception $e) {
+                    Log::error("Erro ao salvar push para {$motorista->name}: " . $e->getMessage());
                     $resultados[] = "❌ Erro ao salvar mensagem para {$motorista->name}";
                 }
             } else {
@@ -91,12 +98,10 @@ class DriverController extends Controller
         }
     
         return response()->json([
-            'message' => 'Envio concluído!',
+            'message'    => 'Envio concluído!',
             'resultados' => $resultados
         ]);
     }
-    
-
 
     public function getData()
     {

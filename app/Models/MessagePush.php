@@ -17,6 +17,8 @@ class MessagePush extends Model
         'send',
         'erro',
         'type',
+        'titulo',
+        'screen'
     ];
 
     public function driver()
