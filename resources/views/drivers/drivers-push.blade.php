@@ -1,14 +1,23 @@
 @extends('layouts.app')
 
 @push('styles')
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css">
+    <!-- DataTables Bootstrap 5 CSS -->
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <style>
+        table.dataTable tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+
         .token-wrapper {
             position: relative;
             max-height: 40px;
             overflow: hidden;
             word-break: break-word;
             transition: max-height 0.3s ease;
+            background: #f8f9fa;
+            padding: 5px;
+            border-radius: 5px;
+            font-family: monospace;
         }
 
         .token-wrapper.expanded {
@@ -16,15 +25,17 @@
         }
 
         .toggle-token {
-            position: absolute;
-            bottom: 0;
-            right: 0;
-            background: white;
-            padding: 0 5px;
-            font-size: 0.85em;
+            background: none;
             border: none;
+            font-weight: 600;
+            font-size: 0.85rem;
             color: #0d6efd;
             cursor: pointer;
+            padding-top: 5px;
+        }
+
+        #driversTable th, #driversTable td {
+            vertical-align: middle;
         }
     </style>
 @endpush
@@ -62,7 +73,6 @@
             <button type="submit" class="btn btn-primary">Enviar</button>
         </div>
 
-        {{-- Filtros movidos para baixo do botão Enviar --}}
         <div class="row mb-4">
             <div class="col-md-6">
                 <select id="filterCidade" class="form-control">
@@ -82,7 +92,7 @@
             </div>
         </div>
 
-        <table id="driversTable" class="table table-bordered">
+        <table id="driversTable" class="table table-striped table-hover table-bordered align-middle">
             <thead>
                 <tr>
                     <th><input type="checkbox" id="selectAll"></th>
@@ -113,7 +123,9 @@
 
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
 <script>
     $(document).ready(function () {
         const table = $('#driversTable').DataTable({
@@ -123,6 +135,7 @@
             paging: true,
             searching: true,
             ordering: true,
+            order: [[1, 'desc']], // Ordena pela coluna "Nome" (índice 1)
             columnDefs: [{ orderable: false, targets: 0 }]
         });
 
@@ -177,7 +190,6 @@
             });
 
             const result = await response.json();
-
             const feedback = $('#feedback');
             const feedbackList = $('#feedback-list');
 
