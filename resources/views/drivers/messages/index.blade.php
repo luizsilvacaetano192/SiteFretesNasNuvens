@@ -1,10 +1,10 @@
 @extends('layouts.app')
 
-@section('styles')
+@push('styles')
 <link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
-@endsection
+@endpush
 
-@section('content')
+@push('content')
 <div class="container">
     <h2 class="mb-4">Mensagens Push</h2>
 
@@ -22,9 +22,9 @@
         </thead>
     </table>
 </div>
-@endsection
+@endpush
 
-@section('scripts')
+@Push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
@@ -67,4 +67,4 @@ $(document).ready(function () {
     });
 });
 </script>
-@endsection
+@endpush
