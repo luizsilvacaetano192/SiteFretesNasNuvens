@@ -15,28 +15,18 @@ class MessagePushController extends Controller
     }
 
     public function list(Request $request)
-{
-    $query = MessagePush::with('driver:id,name')->select('messages_push.*');
+    {
+        $query = MessagePush::with('driver:id,name') // Assumindo que você tem relação com motoristas
+            ->select('messages_push.*');
 
-    return DataTables::of($query)
-        ->addColumn('driver', fn($row) => $row->driver->name ?? '—')
-        ->addColumn('titulo', fn($row) => $row->titulo ?? '—')
-
-        // ✅ Coluna visível formatada
-        ->addColumn('send_label', fn($row) => $row->send ? '✅ Sim' : '❌ Não')
-
-        // ✅ Coluna oculta para filtro
-        ->addColumn('send', fn($row) => $row->send ? '1' : '0')
-
-        // ✅ Coluna oculta com reason puro
-        ->addColumn('reason', fn($row) => $row->reason ?? '')
-
-        ->addColumn('erro', fn($row) => $row->reason ? '<span class="text-danger">'.$row->reason.'</span>' : '—')
-        ->addColumn('data', fn($row) => optional($row->created_at)->format('Y-m-d')) // manter formato padrão para filtro
-        ->addColumn('screen', fn($row) => $row->screen ?? '—')
-
-        ->rawColumns(['erro'])
-        ->make(true);
+        return DataTables::of($query)
+            ->addColumn('driver', fn($row) => $row->driver->name ?? '—')
+            ->addColumn('titulo', fn($row) => $row->titulo ?? '—')
+            ->addColumn('send', fn($row) => $row->send ? '✅ Sim' : '❌ Não')
+            ->addColumn('erro', fn($row) => $row->erro ? '<span class="text-danger">'.$row->erro.'</span>' : '')
+            ->addColumn('data', fn($row) => optional($row->created_at)->format('d/m/Y H:i'))
+            ->rawColumns(['erro']) // Permitir HTML no campo de erro
+            ->addColumn('screen', fn($row) => $row->screen ?? '—')
+            ->make(true);
     }
-
 }
