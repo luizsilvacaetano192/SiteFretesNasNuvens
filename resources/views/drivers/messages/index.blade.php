@@ -102,7 +102,6 @@ $(function () {
             },
             { data: 'data', name: 'data' },
             { data: 'send', visible: false, name: 'send' },
-            { data: 'reason', visible: false, name: 'reason' },
             { data: 'send_label', name: 'send_label' },
             { data: 'erro', name: 'erro' },
             { data: 'type', name: 'type' },
@@ -113,7 +112,7 @@ $(function () {
                 orderable: false,
                 searchable: false,
                 render: function (data, type, row) {
-                    if (row.reason && row.reason.trim() !== '') {
+                    if (row.error && row.error.trim() !== '') {
                         return `<button class="btn btn-sm btn-danger reenviar-btn" data-id="${row.id}">Reenviar</button>`;
                     }
                     return '';
@@ -121,7 +120,7 @@ $(function () {
             }
         ],
         createdRow: function (row, data, dataIndex) {
-            if (data.reason && data.reason.trim() !== '') {
+            if (data.error && data.error.trim() !== '') {
                 $(row).addClass('table-danger');
             }
         },

@@ -44,7 +44,6 @@ class MessagePushController extends Controller
             ->addColumn('driver', fn($row) => $row->driver->nome ?? '—')
             ->addColumn('titulo', fn($row) => $row->titulo ?? '—')
             ->addColumn('send_label', fn($row) => $row->send ? '✅ Sim' : '❌ Não')
-            ->addColumn('erro', fn($row) => $row->error ? '❌' : '✅')
             ->addColumn('data', fn($row) => optional($row->created_at)->format('Y-m-d H:i:s'))
             ->addColumn('screen', fn($row) => $row->screen ?? '—')
             ->rawColumns(['erro'])
