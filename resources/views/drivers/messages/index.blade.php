@@ -29,6 +29,8 @@
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script>
 $(document).ready(function () {
+    $.fn.dataTable.ext.errMode = 'throw'; // Mostra erros no console
+
     const table = $('#messages-table').DataTable({
         processing: true,
         serverSide: true,
