@@ -12,6 +12,8 @@ use App\Models\Shipment;
 use App\Models\Freight;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HistoryController;
+use App\Http\Controllers\MessagePushController;
+
 
 
 
@@ -58,9 +60,11 @@ Route::post('/drivers/send-push', [App\Http\Controllers\DriverController::class,
 
 Route::get('/drivers/send-push', [DriverController::class, 'showSendPushForm'])->name('drivers.pushForm');
 
-Route::get('/mensagens-push', [App\Http\Controllers\MessagePushController::class, 'index'])->name('mensagens-push.index');
-Route::get('/messages-push/list', [App\Http\Controllers\MessagePushController::class, 'list'])->name('messages-push.list');
-Route::post('/messages-push/resend/{id}', [App\Http\Controllers\MessagePushController::class, 'resend'])->name('messages-push.resend');
+Route::prefix('messages-push')->group(function () {
+    Route::get('/', [MessagePushController::class, 'index'])->name('messages-push.index');
+    Route::get('/list', [MessagePushController::class, 'list'])->name('messages-push.list');
+    Route::post('/resend/{id}', [MessagePushController::class, 'resend'])->name('messages-push.resend');
+});
 
 
 
