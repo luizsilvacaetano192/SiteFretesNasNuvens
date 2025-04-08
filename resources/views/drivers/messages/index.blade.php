@@ -1,57 +1,73 @@
 @extends('layouts.app')
 
 @push('styles')
-<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
+<!-- Bootstrap 5 + DataTables -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<style>
+    table.dataTable td {
+        vertical-align: middle;
+    }
+    .dataTables_wrapper .dataTables_paginate .paginate_button {
+        padding: 0.25rem 0.75rem;
+        margin: 0 2px;
+    }
+</style>
 @endpush
 
 @section('content')
-<div class="container">
-    <h2 class="mb-4">Mensagens Push</h2>
+<div class="container mt-4">
+    <h2 class="mb-4">📩 Mensagens Push</h2>
 
     {{-- Filtros automáticos --}}
     <div class="row mb-4">
         <div class="col-md-3">
-            <label for="filter-send">Enviado?</label>
-            <select id="filter-send" class="form-control">
+            <label for="filter-send" class="form-label">Enviado?</label>
+            <select id="filter-send" class="form-select">
                 <option value="">Todos</option>
                 <option value="1">Sim</option>
                 <option value="0">Não</option>
             </select>
         </div>
         <div class="col-md-3">
-            <label for="filter-error">Com Erro?</label>
-            <select id="filter-error" class="form-control">
+            <label for="filter-error" class="form-label">Com Erro?</label>
+            <select id="filter-error" class="form-select">
                 <option value="">Todos</option>
                 <option value="1">Sim</option>
             </select>
         </div>
         <div class="col-md-3">
-            <label for="filter-date">Data</label>
+            <label for="filter-date" class="form-label">Data</label>
             <input type="date" id="filter-date" class="form-control">
         </div>
     </div>
 
-    <table id="messages-table" class="table table-bordered table-hover">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Motorista</th>
-                <th>Título</th>
-                <th>Texto</th>
-                <th>Enviado?</th>
-                <th>Data</th>
-                <th>Tela</th>
-                <th>Ações</th>
-                <th>Token</th>
-            </tr>
-        </thead>
-    </table>
+    <div class="table-responsive">
+        <table id="messages-table" class="table table-striped table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th>ID</th>
+                    <th>Motorista</th>
+                    <th>Título</th>
+                    <th>Texto</th>
+                    <th>Enviado?</th>
+                    <th>Data</th>
+                    <th>Tela</th>
+                    <th>Ações</th>
+                    <th>Token</th>
+                </tr>
+            </thead>
+        </table>
+    </div>
 </div>
 @endsection
 
 @push('scripts')
+<!-- Bootstrap 5 + jQuery + DataTables -->
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
 <script>
 $(document).ready(function () {
@@ -60,6 +76,7 @@ $(document).ready(function () {
     const table = $('#messages-table').DataTable({
         processing: true,
         serverSide: true,
+        order: [[5, 'desc']], // coluna 5 = 'data', ordena decrescente (mais recentes)
         ajax: {
             url: '{{ route('messages-push.list') }}',
             data: function (d) {
@@ -73,14 +90,13 @@ $(document).ready(function () {
             { data: 'driver', name: 'driver' },
             { data: 'titulo', name: 'titulo' },
 
-            // Texto com botão
             {
                 data: 'texto',
                 name: 'texto',
-                render: function (data, type, row) {
+                render: function (data) {
                     return `
                         <div>
-                            <button class="btn btn-sm btn-primary toggle-text">Mostrar</button>
+                            <button class="btn btn-outline-primary btn-sm toggle-text">Mostrar</button>
                             <div class="text-content mt-2 d-none">${data}</div>
                         </div>`;
                 }
@@ -89,24 +105,30 @@ $(document).ready(function () {
             { data: 'send_label', name: 'send' },
             { data: 'data', name: 'created_at' },
             { data: 'screen', name: 'screen' },
-            { data: 'actions', name: 'actions', orderable: false, searchable: false },
+            {
+                data: 'actions',
+                name: 'actions',
+                orderable: false,
+                searchable: false
+            },
 
-            // Token com botão
             {
                 data: 'token',
                 name: 'token',
-                render: function (data, type, row) {
+                render: function (data) {
                     return `
                         <div>
-                            <button class="btn btn-sm btn-secondary toggle-token">Mostrar</button>
+                            <button class="btn btn-outline-secondary btn-sm toggle-token">Mostrar</button>
                             <div class="token-content mt-2 d-none">${data}</div>
                         </div>`;
                 }
             }
-        ]
+        ],
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
+        }
     });
 
-    // Filtros
     $('#filter-send, #filter-error').on('change', function () {
         table.ajax.reload();
     });
@@ -115,7 +137,6 @@ $(document).ready(function () {
         table.ajax.reload();
     });
 
-    // Mostrar/Ocultar Texto
     $(document).on('click', '.toggle-text', function () {
         const content = $(this).siblings('.text-content');
         const isVisible = !content.hasClass('d-none');
@@ -123,7 +144,6 @@ $(document).ready(function () {
         $(this).text(isVisible ? 'Mostrar' : 'Ocultar');
     });
 
-    // Mostrar/Ocultar Token
     $(document).on('click', '.toggle-token', function () {
         const content = $(this).siblings('.token-content');
         const isVisible = !content.hasClass('d-none');
@@ -131,7 +151,6 @@ $(document).ready(function () {
         $(this).text(isVisible ? 'Mostrar' : 'Ocultar');
     });
 
-    // Botão de reenviar notificação
     $(document).on('click', '.resend-btn', function () {
         const id = $(this).data('id');
         if (confirm('Deseja reenviar a notificação e limpar o erro?')) {
