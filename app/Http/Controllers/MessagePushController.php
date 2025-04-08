@@ -31,15 +31,13 @@ class MessagePushController extends Controller
         $query = MessagePush::with('driver:id,name')
             ->select('messages_push.*');
     
-        // Filtros aqui
+        // Filtros
         if ($request->filled('send')) {
             $query->where('send', $request->send);
         }
     
         if ($request->filled('error')) {
-          
             $query->whereNotNull('erro')->where('erro', '!=', "''");
-           
         }
     
         if ($request->filled('date')) {
@@ -52,8 +50,15 @@ class MessagePushController extends Controller
             ->addColumn('send_label', fn($row) => $row->send ? '✅ Sim' : '❌ Não')
             ->addColumn('data', fn($row) => optional($row->created_at)->format('Y-m-d H:i:s'))
             ->addColumn('screen', fn($row) => $row->screen ?? '—')
-            ->rawColumns(['erro'])
+            ->addColumn('actions', function ($row) {
+                if (!empty($row->erro)) {
+                    return '<button class="btn btn-sm btn-warning resend-btn" data-id="' . $row->id . '">🔁 Reenviar</button>';
+                }
+                return '—';
+            })
+            ->rawColumns(['actions'])
             ->make(true);
     }
+    
     
 }
