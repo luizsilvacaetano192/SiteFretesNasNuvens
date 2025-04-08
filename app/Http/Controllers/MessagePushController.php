@@ -19,7 +19,7 @@ class MessagePushController extends Controller
     public function list(Request $request)
     {
         $query = MessagePush::with('driver:id,nome')
-            ->select('mensagens_push.*');
+            ->select('message_push.*');
     
         // Filtros aqui
         if ($request->filled('send')) {
