@@ -1,61 +1,74 @@
 @extends('layouts.app')
 
 @push('styles')
-    <!-- DataTables Bootstrap 5 CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    <style>
-        table.dataTable tbody tr:hover {
-            background-color: #f9f9f9;
-        }
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+<style>
+    body {
+        background-color: #f8f9fa;
+    }
 
-        .token-wrapper {
-            position: relative;
-            max-height: 40px;
-            overflow: hidden;
-            word-break: break-word;
-            transition: max-height 0.3s ease;
-            background: #f8f9fa;
-            padding: 5px;
-            border-radius: 5px;
-            font-family: monospace;
-        }
+    .token-wrapper {
+        position: relative;
+        max-height: 40px;
+        overflow: hidden;
+        word-break: break-word;
+        transition: max-height 0.3s ease;
+        background: #f1f3f5;
+        padding: 5px;
+        border-radius: 5px;
+        font-family: monospace;
+    }
 
-        .token-wrapper.expanded {
-            max-height: 500px;
-        }
+    .token-wrapper.expanded {
+        max-height: 500px;
+    }
 
-        .toggle-token {
-            background: none;
-            border: none;
-            font-weight: 600;
-            font-size: 0.85rem;
-            color: #0d6efd;
-            cursor: pointer;
-            padding-top: 5px;
-        }
+    .toggle-token {
+        background: none;
+        border: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #0d6efd;
+        cursor: pointer;
+        padding-top: 5px;
+    }
 
-        #driversTable th, #driversTable td {
-            vertical-align: middle;
-        }
-    </style>
+    #driversTable th, #driversTable td {
+        vertical-align: middle;
+    }
+
+    .fade-alert {
+        animation: fadeInOut 6s ease forwards;
+    }
+
+    @keyframes fadeInOut {
+        0% { opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { opacity: 0; display: none; }
+    }
+</style>
 @endpush
 
 @section('content')
-<div class="container">
-    <h2 class="mb-4">Enviar push para os motoristas</h2>
+<div class="container py-4">
+    <h2 class="mb-4"><i class="fa-solid fa-paper-plane"></i> Enviar Push para Motoristas</h2>
 
-    <div id="feedback" style="display: none;" class="alert mt-3"></div>
+    <div id="feedback" style="display: none;" class="alert fade-alert mt-3"></div>
     <ul id="feedback-list" class="mt-2"></ul>
 
     <form id="pushForm">
         @csrf
 
         <div class="mb-3">
+            <label for="title" class="form-label"><i class="fa-solid fa-heading"></i> Título</label>
             <input type="text" name="title" id="title" class="form-control" placeholder="Título da mensagem" required>
         </div>
 
         <div class="mb-3">
-            <select name="screen" id="screen" class="form-control" required>
+            <label for="screen" class="form-label"><i class="fa-solid fa-tv"></i> Tela a abrir</label>
+            <select name="screen" id="screen" class="form-select" required>
                 <option value="">Abrir qual tela?</option>
                 <option value="Menu">Menu - Tela inicial</option>
                 <option value="ListScreen">ListScreen - Tela de lista de carga</option>
@@ -66,24 +79,25 @@
         </div>
 
         <div class="mb-3">
+            <label for="message" class="form-label"><i class="fa-solid fa-message"></i> Mensagem</label>
             <textarea name="message" id="message" class="form-control" rows="3" placeholder="Escreva a sua mensagem..." required></textarea>
         </div>
 
-        <div class="mb-3">
-            <button type="submit" class="btn btn-primary">Enviar</button>
+        <div class="mb-4">
+            <button type="submit" class="btn btn-primary"><i class="fa-solid fa-paper-plane"></i> Enviar</button>
         </div>
 
         <div class="row mb-4">
-            <div class="col-md-6">
-                <select id="filterCidade" class="form-control">
+            <div class="col-md-6 mb-2">
+                <select id="filterCidade" class="form-select">
                     <option value="">Filtrar por cidade</option>
                     @foreach ($cidades as $cidade)
                         <option value="{{ $cidade }}">{{ $cidade }}</option>
                     @endforeach
                 </select>
             </div>
-            <div class="col-md-6">
-                <select id="filterEstado" class="form-control">
+            <div class="col-md-6 mb-2">
+                <select id="filterEstado" class="form-select">
                     <option value="">Filtrar por estado</option>
                     @foreach ($estados as $estado)
                         <option value="{{ $estado }}">{{ $estado }}</option>
@@ -92,31 +106,33 @@
             </div>
         </div>
 
-        <table id="driversTable" class="table table-striped table-hover table-bordered align-middle">
-            <thead>
-                <tr>
-                    <th><input type="checkbox" id="selectAll"></th>
-                    <th>Nome</th>
-                    <th>Endereço</th>
-                    <th>Token Push</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($drivers as $driver)
-                <tr>
-                    <td><input type="checkbox" name="drivers[]" value="{{ $driver->id }}" class="driver-checkbox"></td>
-                    <td>{{ $driver->name }}</td>
-                    <td class="address-cell">{{ $driver->address }}</td>
-                    <td>
-                        <div class="token-wrapper" id="token-{{ $driver->id }}">
-                            <div class="token-text">{{ $driver->token_push }}</div>
-                            <button type="button" class="toggle-token" onclick="toggleToken({{ $driver->id }})">Ver mais</button>
-                        </div>
-                    </td>
-                </tr>
-                @endforeach
-            </tbody>
-        </table>
+        <div class="table-responsive">
+            <table id="driversTable" class="table table-striped table-hover table-bordered align-middle">
+                <thead class="table-dark">
+                    <tr>
+                        <th><input type="checkbox" id="selectAll"></th>
+                        <th><i class="fa-solid fa-user"></i> Nome</th>
+                        <th><i class="fa-solid fa-map-location-dot"></i> Endereço</th>
+                        <th><i class="fa-solid fa-key"></i> Token Push</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach ($drivers as $driver)
+                    <tr>
+                        <td><input type="checkbox" name="drivers[]" value="{{ $driver->id }}" class="driver-checkbox"></td>
+                        <td>{{ $driver->name }}</td>
+                        <td class="address-cell">{{ $driver->address }}</td>
+                        <td>
+                            <div class="token-wrapper" id="token-{{ $driver->id }}">
+                                <div class="token-text">{{ $driver->token_push }}</div>
+                                <button type="button" class="toggle-token" onclick="toggleToken({{ $driver->id }})">Ver mais</button>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
     </form>
 </div>
 @endsection
@@ -133,9 +149,9 @@
                 url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
             },
             paging: true,
-            searching: true,
+            responsive: true,
             ordering: true,
-            order: [[1, 'desc']], // Ordena pela coluna "Nome" (índice 1)
+            order: [[1, 'asc']],
             columnDefs: [{ orderable: false, targets: 0 }]
         });
 
@@ -194,7 +210,7 @@
             const feedbackList = $('#feedback-list');
 
             if (response.ok) {
-                feedback.removeClass().addClass('alert alert-success').text(result.message || "Mensagem enviada com sucesso!").show();
+                feedback.removeClass().addClass('alert alert-success fade-alert').text(result.message || "Mensagem enviada com sucesso!").show();
                 feedbackList.html('');
                 result.resultados.forEach(msg => {
                     feedbackList.append(`<li>${msg}</li>`);
@@ -203,7 +219,7 @@
                 $('.driver-checkbox').prop('checked', false);
                 $('#selectAll').prop('checked', false);
             } else {
-                feedback.removeClass().addClass('alert alert-danger').text(result.message || "Erro ao enviar mensagem.").show();
+                feedback.removeClass().addClass('alert alert-danger fade-alert').text(result.message || "Erro ao enviar mensagem.").show();
                 feedbackList.html('');
             }
         });
