@@ -8,7 +8,7 @@
 <div class="container">
     <h2 class="mb-4">Mensagens Push</h2>
 
-    {{-- Filtros --}}
+    {{-- Filtros automáticos --}}
     <div class="row mb-4">
         <div class="col-md-3">
             <label for="filter-send">Enviado?</label>
@@ -28,9 +28,6 @@
         <div class="col-md-3">
             <label for="filter-date">Data</label>
             <input type="date" id="filter-date" class="form-control">
-        </div>
-        <div class="col-md-3 d-flex align-items-end">
-            <button id="filter-btn" class="btn btn-primary w-100">Filtrar</button>
         </div>
     </div>
 
@@ -79,10 +76,16 @@ $(document).ready(function () {
         ]
     });
 
-    $('#filter-btn').click(function () {
+    // Atualiza automaticamente ao mudar filtros
+    $('#filter-send, #filter-error').on('change', function () {
         table.ajax.reload();
     });
 
+    $('#filter-date').on('input', function () {
+        table.ajax.reload();
+    });
+
+    // Botão reenviar
     $(document).on('click', '.resend-btn', function () {
         const id = $(this).data('id');
         if (confirm('Deseja reenviar a notificação e limpar o erro?')) {
