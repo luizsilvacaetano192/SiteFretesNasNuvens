@@ -60,7 +60,7 @@ Route::get('/drivers/send-push', [DriverController::class, 'showSendPushForm'])-
 
 Route::get('/mensagens-push', [App\Http\Controllers\MessagePushController::class, 'index'])->name('mensagens-push.index');
 Route::get('/mensagens-push/list', [App\Http\Controllers\MessagePushController::class, 'list'])->name('mensagens-push.list');
-
+Route::post('/messages-push/resend/{id}', [MessagePushController::class, 'resend'])->name('messages-push.resend');
 
 
 Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate']);

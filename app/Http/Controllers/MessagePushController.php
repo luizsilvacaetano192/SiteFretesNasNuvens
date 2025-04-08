@@ -14,7 +14,17 @@ class MessagePushController extends Controller
         return view('drivers.messages.index');
     }
 
+    public function resend($id)
+    {
+        $message = MessagePush::findOrFail($id);
 
+        // Aqui pode colocar lógica real de reenvio via FCM, se quiser
+
+        $message->erro = null;
+        $message->save();
+
+        return response()->json(['success' => true, 'message' => 'Mensagem sera enviada novamente.']);
+    }
 
     public function list(Request $request)
     {
