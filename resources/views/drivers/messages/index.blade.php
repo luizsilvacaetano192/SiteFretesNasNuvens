@@ -15,8 +15,8 @@
             <label>Filtrar por envio:</label>
             <select id="filter-send" class="form-control">
                 <option value="">Todos</option>
-                <option value="1">Enviadas</option>
-                <option value="0">Não enviadas</option>
+                <option value="true">Enviadas</option>
+                <option value="false">Não enviadas</option>
             </select>
         </div>
         <div class="col-md-3" id="erro-container" style="display: none;">
