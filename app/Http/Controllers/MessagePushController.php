@@ -26,9 +26,9 @@ class MessagePushController extends Controller
             $query->where('send', $request->send);
         }
     
-        if ($request->filled('error')) {
+        if ($request->filled('erro')) {
           
-            $query->whereNotNull('error')->where('error', '!=', "''");
+            $query->whereNotNull('erro')->where('erro', '!=', "''");
            
         }
     
