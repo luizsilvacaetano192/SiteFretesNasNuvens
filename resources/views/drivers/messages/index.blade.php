@@ -77,7 +77,7 @@ $(function () {
                 d.data = $('#filter-date').val();
             }
         },
-        order: [[5, 'desc']], // Ordenar por data DESC
+        order: [[0, 'desc']], // Ordenar por ID DESC
         columns: [
             { data: 'id', name: 'id' },
             { data: 'driver', name: 'driver' },
