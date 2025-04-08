@@ -27,7 +27,7 @@ $(document).ready(function () {
     const table = $('#messages-table').DataTable({
         processing: true,
         serverSide: true,
-        ajax: '{{ route('messages-push.list') }}',
+        ajax: '{{ route('mensagens-push.list') }}',
         columns: [
             { data: 'id', name: 'id' },
             { data: 'driver', name: 'driver' },
