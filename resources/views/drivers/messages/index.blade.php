@@ -67,24 +67,14 @@ function showToast(message, type = 'info') {
 
 $(function () {
     const table = $('#messages-table').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: '{{ route('mensagens-push.list') }}',
-            data: function (d) {
-                d.send = $('#filter-send').val();
-                d.erro = $('#filter-send').val() === '0' ? $('#filter-error').val() : '';
-                d.data = $('#filter-date').val();
-            }
-        },
+        ajax: '{{ route('mensagens-push.list') }}',
         order: [[0, 'desc']], // Ordenar por ID DESC
         columns: [
-            { data: 'id', name: 'id' },
-            { data: 'driver', name: 'driver' },
-            { data: 'titulo', name: 'titulo' },
+            { data: 'id' },
+            { data: 'driver' },
+            { data: 'titulo' },
             {
                 data: 'texto',
-                name: 'texto',
                 render: function (data, type, row) {
                     if (type === 'display') {
                         return `<span class="texto-obfuscated" style="display:none">${data}</span>
@@ -95,7 +85,6 @@ $(function () {
             },
             {
                 data: 'token',
-                name: 'token',
                 render: function (data, type, row) {
                     if (type === 'display') {
                         return `<span class="token-obfuscated" style="display:none">${data}</span>
@@ -104,14 +93,13 @@ $(function () {
                     return data;
                 }
             },
-            { data: 'data', name: 'data' },
-            { data: 'send', name: 'send' },
-            { data: 'erro', name: 'erro' },
-            { data: 'type', name: 'type' },
-            { data: 'screen', name: 'screen' },
+            { data: 'data' },
+            { data: 'send' },
+            { data: 'erro' },
+            { data: 'type' },
+            { data: 'screen' },
             {
                 data: null,
-                name: 'acoes',
                 orderable: false,
                 searchable: false,
                 render: function (data, type, row) {
@@ -122,7 +110,7 @@ $(function () {
                 }
             }
         ],
-        createdRow: function (row, data, dataIndex) {
+        createdRow: function (row, data) {
             if (data.erro && data.erro !== '—') {
                 $(row).addClass('table-danger');
             }
@@ -133,18 +121,26 @@ $(function () {
     });
 
     $('#filter-send').on('change', function () {
-        const send = $(this).val();
-        if (send === '0') {
+        const value = $(this).val();
+        table.column(6).search(value).draw(); // coluna "Enviada"
+
+        if (value === '0') {
             $('#erro-container').show();
         } else {
             $('#erro-container').hide();
             $('#filter-error').val('');
+            table.column(7).search('').draw();
         }
-        table.draw();
     });
 
-    $('#filter-error, #filter-date').on('change', function () {
-        table.draw();
+    $('#filter-error').on('change', function () {
+        const value = $(this).val();
+        table.column(7).search(value).draw(); // coluna "Erro"
+    });
+
+    $('#filter-date').on('change', function () {
+        const value = $(this).val();
+        table.column(5).search(value).draw(); // coluna "Data"
     });
 
     $('#messages-table').on('click', '.toggle-token', function () {
