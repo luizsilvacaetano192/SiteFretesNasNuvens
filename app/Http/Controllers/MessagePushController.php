@@ -1,65 +1,207 @@
-<?php
+@extends('layouts.app')
 
-namespace App\Http\Controllers;
+@push('styles')
+<link href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" rel="stylesheet">
 
-use App\Http\Controllers\Controller;
-use App\Models\MessagePush;
-use Illuminate\Http\Request;
-use Yajra\DataTables\DataTables;
-
-class MessagePushController extends Controller
-{
-    public function index()
-    {
-        return view('drivers.messages.index');
+<style>
+    .switch {
+        position: relative;
+        display: inline-block;
+        width: 46px;
+        height: 24px;
     }
 
-    public function resend($id)
-    {
-        $message = MessagePush::findOrFail($id);
-
-        // Aqui pode colocar lógica real de reenvio via FCM, se quiser
-
-        $message->erro = null;
-        $message->save();
-
-        return response()->json(['success' => true, 'message' => 'Mensagem sera enviada novamente.']);
+    .switch input {
+        opacity: 0;
+        width: 0;
+        height: 0;
     }
 
-    public function list(Request $request)
-    {
-        $query = MessagePush::with('driver:id,name')
-            ->select('messages_push.*');
-    
-        // Filtros
-        if ($request->filled('send')) {
-            $query->where('send', $request->send);
-        }
-    
-        if ($request->filled('error')) {
-            $query->whereNotNull('erro')->where('erro', '!=', "''");
-        }
-    
-        if ($request->filled('date')) {
-            $query->whereDate('created_at', $request->date);
-        }
-    
-        return datatables()->of($query)
-            ->addColumn('driver', fn($row) => $row->driver->name ?? '—')
-            ->addColumn('titulo', fn($row) => $row->titulo ?? '—')
-            ->addColumn('texto', fn($row) => $row->titulo ?? '—')
-            ->addColumn('send_label', fn($row) => $row->send ? '✅ Sim' : '❌ Não')
-            ->addColumn('data', fn($row) => optional($row->created_at)->format('d/m/Y H:i:s'))
-            ->addColumn('screen', fn($row) => $row->screen ?? '—')
-            ->addColumn('actions', function ($row) {
-                if (!empty($row->erro)) {
-                    return '<button class="btn btn-sm btn-warning resend-btn" data-id="' . $row->id . '">🔁 Reenviar</button>';
+    .slider {
+        position: absolute;
+        cursor: pointer;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: #ccc;
+        transition: .4s;
+        border-radius: 34px;
+    }
+
+    .slider:before {
+        position: absolute;
+        content: "";
+        height: 18px;
+        width: 18px;
+        left: 3px;
+        bottom: 3px;
+        background-color: white;
+        transition: .4s;
+        border-radius: 50%;
+    }
+
+    input:checked + .slider {
+        background-color: #28a745;
+    }
+
+    input:checked + .slider:before {
+        transform: translateX(22px);
+    }
+</style>
+@endpush
+
+@section('content')
+<div class="container">
+    <h2 class="mb-4">Mensagens Push</h2>
+
+    {{-- Filtros automáticos --}}
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <label for="filter-send">Enviado?</label>
+            <select id="filter-send" class="form-control">
+                <option value="">Todos</option>
+                <option value="1">Sim</option>
+                <option value="0">Não</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="filter-error">Com Erro?</label>
+            <select id="filter-error" class="form-control">
+                <option value="">Todos</option>
+                <option value="1">Sim</option>
+            </select>
+        </div>
+        <div class="col-md-3">
+            <label for="filter-date">Data</label>
+            <input type="date" id="filter-date" class="form-control">
+        </div>
+    </div>
+
+    {{-- Opções para mostrar/ocultar colunas --}}
+    <div class="row mb-4 align-items-end">
+        <div class="col-md-3">
+            <label>Mostrar Texto</label><br>
+            <label class="switch">
+                <input type="checkbox" class="toggle-column" data-column="3" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="col-md-3">
+            <label>Mostrar Token</label><br>
+            <label class="switch">
+                <input type="checkbox" class="toggle-column" data-column="8" checked>
+                <span class="slider"></span>
+            </label>
+        </div>
+        <div class="col-md-3">
+            <button id="toggle-all-columns" class="btn btn-secondary">Ocultar Todos</button>
+        </div>
+    </div>
+
+    <table id="messages-table" class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>ID</th>               {{-- 0 --}}
+                <th>Motorista</th>        {{-- 1 --}}
+                <th>Título</th>           {{-- 2 --}}
+                <th>Texto</th>            {{-- 3 --}}
+                <th>Enviado?</th>         {{-- 4 --}}
+                <th>Data</th>             {{-- 5 --}}
+                <th>Tela</th>             {{-- 6 --}}
+                <th>Ações</th>            {{-- 7 --}}
+                <th>Token</th>            {{-- 8 --}}
+            </tr>
+        </thead>
+    </table>
+</div>
+@endsection
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
+<script>
+$(document).ready(function () {
+    $.fn.dataTable.ext.errMode = 'throw';
+
+    const table = $('#messages-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route('messages-push.list') }}',
+            data: function (d) {
+                d.send = $('#filter-send').val();
+                d.error = $('#filter-error').val();
+                d.date = $('#filter-date').val();
+            }
+        },
+        columns: [
+            { data: 'id', name: 'id' },                        // 0
+            { data: 'driver', name: 'driver' },                // 1
+            { data: 'titulo', name: 'titulo' },                // 2
+            { data: 'texto', name: 'texto' },                  // 3 <- toggle
+            { data: 'send_label', name: 'send' },              // 4
+            { data: 'data', name: 'created_at' },              // 5
+            { data: 'screen', name: 'screen' },                // 6
+            { data: 'actions', name: 'actions', orderable: false, searchable: false }, // 7
+            { data: 'token', name: 'token' }                   // 8 <- toggle
+        ]
+    });
+
+    // Atualizar tabela ao mudar filtros
+    $('#filter-send, #filter-error').on('change', function () {
+        table.ajax.reload();
+    });
+
+    $('#filter-date').on('input', function () {
+        table.ajax.reload();
+    });
+
+    // Alternar visibilidade de colunas individuais
+    $('.toggle-column').on('change', function () {
+        const columnIdx = $(this).data('column');
+        const column = table.column(columnIdx);
+        column.visible($(this).is(':checked'));
+    });
+
+    // Alternar todas colunas de uma vez
+    let allVisible = true;
+
+    $('#toggle-all-columns').on('click', function () {
+        allVisible = !allVisible;
+
+        $('.toggle-column').each(function () {
+            const columnIdx = $(this).data('column');
+            const column = table.column(columnIdx);
+
+            $(this).prop('checked', allVisible);
+            column.visible(allVisible);
+        });
+
+        $(this).text(allVisible ? 'Ocultar Todos' : 'Mostrar Todos');
+    });
+
+    // Botão de reenviar notificação
+    $(document).on('click', '.resend-btn', function () {
+        const id = $(this).data('id');
+        if (confirm('Deseja reenviar a notificação e limpar o erro?')) {
+            $.ajax({
+                url: `/messages-push/resend/${id}`,
+                method: 'POST',
+                data: {
+                    _token: '{{ csrf_token() }}'
+                },
+                success: function (res) {
+                    alert(res.message);
+                    table.ajax.reload(null, false);
+                },
+                error: function () {
+                    alert('Erro ao tentar reenviar.');
                 }
-                return '—';
-            })
-            ->rawColumns(['actions'])
-            ->make(true);
-    }
-    
-    
-}
+            });
+        }
+    });
+});
+</script>
+@endpush
