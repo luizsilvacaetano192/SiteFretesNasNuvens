@@ -19,7 +19,7 @@
                 <option value="0">Não enviadas</option>
             </select>
         </div>
-        <div class="col-md-3" id="erro-container">
+        <div class="col-md-3">
             <label>Com erro:</label>
             <select id="filter-error" class="form-control">
                 <option value="">Todos</option>
@@ -73,6 +73,11 @@ $(function () {
         serverSide: true,
         ajax: {
             url: '{{ route('mensagens-push.list') }}',
+            data: function (d) {
+                d.send = $('#filter-send').val();
+                d.error = $('#filter-error').val();
+                d.date = $('#filter-date').val();
+            }
         },
         order: [[0, 'desc']],
         columns: [
@@ -127,33 +132,6 @@ $(function () {
 
     $('#filter-send, #filter-error, #filter-date').on('change', function () {
         table.draw();
-    });
-
-    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
-        const sendFilter = $('#filter-send').val();
-        const errorFilter = $('#filter-error').val();
-        const dateFilter = $('#filter-date').val();
-
-        const sendValue = data[6];   // coluna oculta 'send'
-        const reasonValue = data[7]; // coluna oculta 'reason'
-        const dateValue = data[5];   // 'data'
-
-        if (sendFilter !== '' && sendValue !== sendFilter) {
-            return false;
-        }
-
-        if (errorFilter === '1' && reasonValue.trim() === '') {
-            return false;
-        }
-        if (errorFilter === '0' && reasonValue.trim() !== '') {
-            return false;
-        }
-
-        if (dateFilter && !dateValue.startsWith(dateFilter)) {
-            return false;
-        }
-
-        return true;
     });
 
     $('#messages-table').on('click', '.toggle-token', function () {
