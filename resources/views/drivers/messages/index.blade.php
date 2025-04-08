@@ -6,6 +6,10 @@
 <div class="container mt-4">
     <h2 class="mb-4">Mensagens Push</h2>
 
+    <div id="toast" class="alert alert-info" style="display: none; position: fixed; top: 20px; right: 20px; z-index: 9999;">
+        <span id="toast-message"></span>
+    </div>
+
     <div class="row mb-3">
         <div class="col-md-3">
             <label>Filtrar por envio:</label>
@@ -42,6 +46,7 @@
                 <th>Erro</th>
                 <th>Tipo</th>
                 <th>Tela</th>
+                <th>Ações</th>
             </tr>
         </thead>
     </table>
@@ -49,12 +54,18 @@
 @endsection
 
 @push('scripts')
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
-    <script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.5/css/jquery.dataTables.min.css">
+<script src="https://cdn.datatables.net/1.13.5/js/jquery.dataTables.min.js"></script>
 
 <script>
-$(function() {
+function showToast(message, type = 'info') {
+    $('#toast-message').text(message);
+    $('#toast').removeClass().addClass(`alert alert-${type}`).fadeIn();
+    setTimeout(() => $('#toast').fadeOut(), 5000);
+}
+
+$(function () {
     const table = $('#messages-table').DataTable({
         processing: true,
         serverSide: true,
@@ -66,6 +77,7 @@ $(function() {
                 d.data = $('#filter-date').val();
             }
         },
+        order: [[5, 'desc']], // Ordenar por data DESC
         columns: [
             { data: 'id', name: 'id' },
             { data: 'driver', name: 'driver' },
@@ -73,7 +85,7 @@ $(function() {
             {
                 data: 'texto',
                 name: 'texto',
-                render: function(data, type, row) {
+                render: function (data, type, row) {
                     if (type === 'display') {
                         return `<span class="texto-obfuscated" style="display:none">${data}</span>
                                 <button class="btn btn-sm btn-outline-primary toggle-texto">Mostrar</button>`;
@@ -84,7 +96,7 @@ $(function() {
             {
                 data: 'token',
                 name: 'token',
-                render: function(data, type, row) {
+                render: function (data, type, row) {
                     if (type === 'display') {
                         return `<span class="token-obfuscated" style="display:none">${data}</span>
                                 <button class="btn btn-sm btn-outline-secondary toggle-token">Mostrar</button>`;
@@ -96,8 +108,25 @@ $(function() {
             { data: 'send', name: 'send' },
             { data: 'erro', name: 'erro' },
             { data: 'type', name: 'type' },
-            { data: 'screen', name: 'screen' }
+            { data: 'screen', name: 'screen' },
+            {
+                data: null,
+                name: 'acoes',
+                orderable: false,
+                searchable: false,
+                render: function (data, type, row) {
+                    if (row.erro && row.erro !== '—') {
+                        return `<button class="btn btn-sm btn-danger reenviar-btn" data-id="${row.id}">Reenviar</button>`;
+                    }
+                    return '';
+                }
+            }
         ],
+        createdRow: function (row, data, dataIndex) {
+            if (data.erro && data.erro !== '—') {
+                $(row).addClass('table-danger');
+            }
+        },
         language: {
             url: '//cdn.datatables.net/plug-ins/1.13.5/i18n/pt-BR.json'
         }
@@ -118,7 +147,6 @@ $(function() {
         table.draw();
     });
 
-    // Mostrar/ocultar token
     $('#messages-table').on('click', '.toggle-token', function () {
         const btn = $(this);
         const span = btn.siblings('.token-obfuscated');
@@ -132,7 +160,6 @@ $(function() {
         }
     });
 
-    // Mostrar/ocultar texto
     $('#messages-table').on('click', '.toggle-texto', function () {
         const btn = $(this);
         const span = btn.siblings('.texto-obfuscated');
@@ -144,6 +171,26 @@ $(function() {
             span.show();
             btn.text('Ocultar');
         }
+    });
+
+    $('#messages-table').on('click', '.reenviar-btn', function () {
+        const id = $(this).data('id');
+        $.ajax({
+            url: `/mensagens-push/${id}/reenviar`,
+            method: 'POST',
+            data: {
+                _token: '{{ csrf_token() }}'
+            },
+            success: function (response) {
+                if (response.success) {
+                    showToast(`Mensagem #${id} marcada para reenvio. 🚀`);
+                    table.ajax.reload(null, false);
+                }
+            },
+            error: function () {
+                showToast(`Erro ao reenviar a mensagem #${id}.`, 'danger');
+            }
+        });
     });
 });
 </script>
