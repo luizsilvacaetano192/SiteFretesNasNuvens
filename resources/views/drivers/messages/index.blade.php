@@ -15,11 +15,11 @@
             <label>Filtrar por envio:</label>
             <select id="filter-send" class="form-control">
                 <option value="">Todos</option>
-                <option value="true">Enviadas</option>
-                <option value="false">Não enviadas</option>
+                <option value="1">Enviadas</option>
+                <option value="0">Não enviadas</option>
             </select>
         </div>
-        <div class="col-md-3" id="erro-container" style="display: none;">
+        <div class="col-md-3" id="erro-container">
             <label>Com erro:</label>
             <select id="filter-error" class="form-control">
                 <option value="">Todos</option>
@@ -42,6 +42,8 @@
                 <th>Texto</th>
                 <th>Token</th>
                 <th>Data</th>
+                <th style="display:none;">Send</th>
+                <th style="display:none;">Erro Interno</th>
                 <th>Enviada</th>
                 <th>Erro</th>
                 <th>Tipo</th>
@@ -67,51 +69,54 @@ function showToast(message, type = 'info') {
 
 $(function () {
     const table = $('#messages-table').DataTable({
-        ajax: '{{ route('mensagens-push.list') }}',
-        order: [[0, 'desc']], // Ordenar por ID DESC
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route('mensagens-push.list') }}',
+        },
+        order: [[0, 'desc']],
         columns: [
-            { data: 'id' },
-            { data: 'driver' },
-            { data: 'titulo' },
+            { data: 'id', name: 'id' },
+            { data: 'driver', name: 'driver' },
+            { data: 'titulo', name: 'titulo' },
             {
                 data: 'texto',
+                name: 'texto',
                 render: function (data, type, row) {
-                    if (type === 'display') {
-                        return `<span class="texto-obfuscated" style="display:none">${data}</span>
-                                <button class="btn btn-sm btn-outline-primary toggle-texto">Mostrar</button>`;
-                    }
-                    return data;
+                    return `<span class="texto-obfuscated" style="display:none">${data}</span>
+                            <button class="btn btn-sm btn-outline-primary toggle-texto">Mostrar</button>`;
                 }
             },
             {
                 data: 'token',
+                name: 'token',
                 render: function (data, type, row) {
-                    if (type === 'display') {
-                        return `<span class="token-obfuscated" style="display:none">${data}</span>
-                                <button class="btn btn-sm btn-outline-secondary toggle-token">Mostrar</button>`;
-                    }
-                    return data;
+                    return `<span class="token-obfuscated" style="display:none">${data}</span>
+                            <button class="btn btn-sm btn-outline-secondary toggle-token">Mostrar</button>`;
                 }
             },
-            { data: 'data' },
-            { data: 'send' },
-            { data: 'erro' },
-            { data: 'type' },
-            { data: 'screen' },
+            { data: 'data', name: 'data' },
+            { data: 'send', visible: false, name: 'send' },
+            { data: 'reason', visible: false, name: 'reason' },
+            { data: 'send_label', name: 'send_label' },
+            { data: 'erro', name: 'erro' },
+            { data: 'type', name: 'type' },
+            { data: 'screen', name: 'screen' },
             {
                 data: null,
+                name: 'acoes',
                 orderable: false,
                 searchable: false,
                 render: function (data, type, row) {
-                    if (row.erro && row.erro !== '—') {
+                    if (row.reason && row.reason.trim() !== '') {
                         return `<button class="btn btn-sm btn-danger reenviar-btn" data-id="${row.id}">Reenviar</button>`;
                     }
                     return '';
                 }
             }
         ],
-        createdRow: function (row, data) {
-            if (data.erro && data.erro !== '—') {
+        createdRow: function (row, data, dataIndex) {
+            if (data.reason && data.reason.trim() !== '') {
                 $(row).addClass('table-danger');
             }
         },
@@ -120,53 +125,51 @@ $(function () {
         }
     });
 
-    $('#filter-send').on('change', function () {
-        const value = $(this).val();
-        table.column(6).search(value).draw(); // coluna "Enviada"
+    $('#filter-send, #filter-error, #filter-date').on('change', function () {
+        table.draw();
+    });
 
-        if (value === '0') {
-            $('#erro-container').show();
-        } else {
-            $('#erro-container').hide();
-            $('#filter-error').val('');
-            table.column(7).search('').draw();
+    $.fn.dataTable.ext.search.push(function (settings, data, dataIndex) {
+        const sendFilter = $('#filter-send').val();
+        const errorFilter = $('#filter-error').val();
+        const dateFilter = $('#filter-date').val();
+
+        const sendValue = data[6];   // coluna oculta 'send'
+        const reasonValue = data[7]; // coluna oculta 'reason'
+        const dateValue = data[5];   // 'data'
+
+        if (sendFilter !== '' && sendValue !== sendFilter) {
+            return false;
         }
-    });
 
-    $('#filter-error').on('change', function () {
-        const value = $(this).val();
-        table.column(7).search(value).draw(); // coluna "Erro"
-    });
+        if (errorFilter === '1' && reasonValue.trim() === '') {
+            return false;
+        }
+        if (errorFilter === '0' && reasonValue.trim() !== '') {
+            return false;
+        }
 
-    $('#filter-date').on('change', function () {
-        const value = $(this).val();
-        table.column(5).search(value).draw(); // coluna "Data"
+        if (dateFilter && !dateValue.startsWith(dateFilter)) {
+            return false;
+        }
+
+        return true;
     });
 
     $('#messages-table').on('click', '.toggle-token', function () {
         const btn = $(this);
         const span = btn.siblings('.token-obfuscated');
 
-        if (span.is(':visible')) {
-            span.hide();
-            btn.text('Mostrar');
-        } else {
-            span.show();
-            btn.text('Ocultar');
-        }
+        span.toggle();
+        btn.text(span.is(':visible') ? 'Ocultar' : 'Mostrar');
     });
 
     $('#messages-table').on('click', '.toggle-texto', function () {
         const btn = $(this);
         const span = btn.siblings('.texto-obfuscated');
 
-        if (span.is(':visible')) {
-            span.hide();
-            btn.text('Mostrar');
-        } else {
-            span.show();
-            btn.text('Ocultar');
-        }
+        span.toggle();
+        btn.text(span.is(':visible') ? 'Ocultar' : 'Mostrar');
     });
 
     $('#messages-table').on('click', '.reenviar-btn', function () {
