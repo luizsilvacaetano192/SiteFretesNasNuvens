@@ -48,7 +48,7 @@ class MessagePushController extends Controller
             ->addColumn('driver', fn($row) => $row->driver->name ?? '—')
             ->addColumn('titulo', fn($row) => $row->titulo ?? '—')
             ->addColumn('send_label', fn($row) => $row->send ? '✅ Sim' : '❌ Não')
-            ->addColumn('data', fn($row) => optional($row->created_at)->format('Y-m-d H:i:s'))
+            ->addColumn('data', fn($row) => optional($row->created_at)->format('d/m/Y H:i:s'))
             ->addColumn('screen', fn($row) => $row->screen ?? '—')
             ->addColumn('actions', function ($row) {
                 if (!empty($row->erro)) {
