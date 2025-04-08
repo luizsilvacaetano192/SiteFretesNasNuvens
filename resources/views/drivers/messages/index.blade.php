@@ -31,28 +31,18 @@
         </div>
     </div>
 
-    {{-- Opções para mostrar/ocultar colunas --}}
-    <div class="row mb-4">
-        <div class="col-md-3">
-            <label><input type="checkbox" class="toggle-column" data-column="3" checked> Mostrar Texto</label>
-        </div>
-        <div class="col-md-3">
-            <label><input type="checkbox" class="toggle-column" data-column="8" checked> Mostrar Token Push</label>
-        </div>
-    </div>
-
     <table id="messages-table" class="table table-bordered table-hover">
         <thead>
             <tr>
-                <th>ID</th>               {{-- 0 --}}
-                <th>Motorista</th>        {{-- 1 --}}
-                <th>Título</th>           {{-- 2 --}}
-                <th>Texto</th>            {{-- 3 <- toggle --}}
-                <th>Enviado?</th>         {{-- 4 --}}
-                <th>Data</th>             {{-- 5 --}}
-                <th>Tela</th>             {{-- 6 --}}
-                <th>Ações</th>            {{-- 7 --}}
-                <th>Token</th>            {{-- 8 <- toggle --}}
+                <th>ID</th>
+                <th>Motorista</th>
+                <th>Título</th>
+                <th>Texto</th>
+                <th>Enviado?</th>
+                <th>Data</th>
+                <th>Tela</th>
+                <th>Ações</th>
+                <th>Token</th>
             </tr>
         </thead>
     </table>
@@ -62,6 +52,7 @@
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+
 <script>
 $(document).ready(function () {
     $.fn.dataTable.ext.errMode = 'throw';
@@ -78,19 +69,44 @@ $(document).ready(function () {
             }
         },
         columns: [
-            { data: 'id', name: 'id' },                        // 0
-            { data: 'driver', name: 'driver' },                // 1
-            { data: 'titulo', name: 'titulo' },                // 2
-            { data: 'texto', name: 'texto' },                  // 3 <- toggle
-            { data: 'send_label', name: 'send' },              // 4
-            { data: 'data', name: 'created_at' },              // 5
-            { data: 'screen', name: 'screen' },                // 6
-            { data: 'actions', name: 'actions', orderable: false, searchable: false }, // 7
-            { data: 'token', name: 'token' }                   // 8 <- toggle
+            { data: 'id', name: 'id' },
+            { data: 'driver', name: 'driver' },
+            { data: 'titulo', name: 'titulo' },
+
+            // Texto com botão
+            {
+                data: 'texto',
+                name: 'texto',
+                render: function (data, type, row) {
+                    return `
+                        <div>
+                            <button class="btn btn-sm btn-primary toggle-text">Mostrar</button>
+                            <div class="text-content mt-2 d-none">${data}</div>
+                        </div>`;
+                }
+            },
+
+            { data: 'send_label', name: 'send' },
+            { data: 'data', name: 'created_at' },
+            { data: 'screen', name: 'screen' },
+            { data: 'actions', name: 'actions', orderable: false, searchable: false },
+
+            // Token com botão
+            {
+                data: 'token',
+                name: 'token',
+                render: function (data, type, row) {
+                    return `
+                        <div>
+                            <button class="btn btn-sm btn-secondary toggle-token">Mostrar</button>
+                            <div class="token-content mt-2 d-none">${data}</div>
+                        </div>`;
+                }
+            }
         ]
     });
 
-    // Atualizar ao mudar filtros
+    // Filtros
     $('#filter-send, #filter-error').on('change', function () {
         table.ajax.reload();
     });
@@ -99,14 +115,23 @@ $(document).ready(function () {
         table.ajax.reload();
     });
 
-    // Mostrar ou esconder colunas
-    $('.toggle-column').on('change', function () {
-        const columnIdx = $(this).data('column');
-        const column = table.column(columnIdx);
-        column.visible($(this).is(':checked'));
+    // Mostrar/Ocultar Texto
+    $(document).on('click', '.toggle-text', function () {
+        const content = $(this).siblings('.text-content');
+        const isVisible = !content.hasClass('d-none');
+        content.toggleClass('d-none');
+        $(this).text(isVisible ? 'Mostrar' : 'Ocultar');
     });
 
-    // Botão de reenviar mensagem
+    // Mostrar/Ocultar Token
+    $(document).on('click', '.toggle-token', function () {
+        const content = $(this).siblings('.token-content');
+        const isVisible = !content.hasClass('d-none');
+        content.toggleClass('d-none');
+        $(this).text(isVisible ? 'Mostrar' : 'Ocultar');
+    });
+
+    // Botão de reenviar notificação
     $(document).on('click', '.resend-btn', function () {
         const id = $(this).data('id');
         if (confirm('Deseja reenviar a notificação e limpar o erro?')) {
