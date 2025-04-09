@@ -8,32 +8,6 @@
         background-color: #f8f9fa;
     }
 
-    .token-wrapper {
-        position: relative;
-        max-height: 40px;
-        overflow: hidden;
-        word-break: break-word;
-        transition: max-height 0.3s ease;
-        background: #f1f3f5;
-        padding: 5px;
-        border-radius: 5px;
-        font-family: monospace;
-    }
-
-    .token-wrapper.expanded {
-        max-height: 500px;
-    }
-
-    .toggle-token {
-        background: none;
-        border: none;
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: #0d6efd;
-        cursor: pointer;
-        padding-top: 5px;
-    }
-
     #driversTable th, #driversTable td {
         vertical-align: middle;
     }
@@ -52,11 +26,6 @@
     tr.selected-row {
         background-color: #d0ebff !important;
         font-weight: 500;
-    }
-
-    .table-warning {
-        outline: 3px solid #ffc107;
-        transition: outline 0.4s ease;
     }
 </style>
 @endpush
@@ -117,7 +86,7 @@
             </div>
         </div>
 
-        <div class="table-responsive">
+        <div class="table-responsive" id="driversTableContainer">
             <table id="driversTable" class="table table-striped table-bordered align-middle">
                 <thead class="table-dark">
                     <tr>
@@ -134,16 +103,14 @@
                         <td>{{ $driver->name }}</td>
                         <td class="address-cell">{{ $driver->address }}</td>
                         <td>
-                            <div class="token-wrapper" id="token-{{ $driver->id }}">
-                                @if ($driver->token_push)
-                                    <div>
-                                        <button type="button" class="btn btn-outline-secondary btn-sm toggle-token">Mostrar</button>
-                                        <div class="token-content mt-2 ">{{ $driver->token_push }}</div>
-                                    </div>
-                                @else
-                                    <span>Sem Token</span>
-                                @endif
+                            @if ($driver->token_push)
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm toggle-token">Mostrar</button>
+                                <div class="token-content mt-2 d-none">{{ $driver->token_push }}</div>
                             </div>
+                            @else
+                            <span>Sem Token</span>
+                            @endif
                         </td>
                     </tr>
                     @endforeach
@@ -175,22 +142,17 @@
         function updateRowHighlight() {
             $('.driver-checkbox').each(function () {
                 const row = $(this).closest('tr');
-                if (this.checked) {
-                    row.addClass('selected-row');
-                } else {
-                    row.removeClass('selected-row');
-                }
+                row.toggleClass('selected-row', this.checked);
             });
         }
 
         $('#selectAll').on('change', function () {
-            const checked = this.checked;
-            $('.driver-checkbox').prop('checked', checked).trigger('change');
+            $('.driver-checkbox').prop('checked', this.checked).trigger('change');
         });
 
         $('.driver-checkbox').on('change', updateRowHighlight);
 
-        function filterByCidadeEstado() {
+        $('#filterCidade, #filterEstado').on('change', function () {
             const cidade = $('#filterCidade').val().toLowerCase();
             const estado = $('#filterEstado').val().toLowerCase();
 
@@ -201,9 +163,7 @@
                 const matchEstado = !estado || address.includes(estado);
                 row.toggle(matchCidade && matchEstado);
             });
-        }
-
-        $('#filterCidade, #filterEstado').on('change', filterByCidadeEstado);
+        });
 
         $('#pushForm').on('submit', async function (e) {
             e.preventDefault();
@@ -215,26 +175,68 @@
                 return this.value;
             }).get();
 
+            const feedback = $('#feedback');
+            const feedbackList = $('#feedback-list');
+
             if (!title || !message || !screen || selectedDrivers.length === 0) {
-                $('#feedback').text("Por favor, preencha todos os campos e selecione pelo menos um motorista.").addClass('alert-warning').show();
+                alert("Preencha todos os campos e selecione pelo menos um motorista.");
+                if (selectedDrivers.length === 0) {
+                    document.getElementById('driversTableContainer').scrollIntoView({ behavior: 'smooth' });
+                }
                 return;
             }
 
-            $('#feedback').text("Mensagem enviada com sucesso para os motoristas!").removeClass('alert-warning').addClass('alert-success').show();
+            const csrfToken = $('input[name="_token"]').val();
 
-            // Simular o envio dos dados (substitua com lógica real de envio)
-            setTimeout(() => {
-                $('#feedback').fadeOut();
-            }, 3000);
+            const response = await fetch("{{ route('drivers.sendPush') }}", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRF-TOKEN": csrfToken,
+                },
+                body: JSON.stringify({
+                    title,
+                    message,
+                    screen,
+                    drivers: selectedDrivers
+                })
+            });
+
+            const result = await response.json();
+
+            if (response.ok) {
+                feedback.removeClass().addClass('alert alert-success fade-alert').text(result.message || "Mensagem enviada com sucesso!").show();
+                feedbackList.html('');
+                result.resultados.forEach(msg => {
+                    feedbackList.append(`<li>${msg}</li>`);
+                });
+                $('#pushForm')[0].reset();
+                $('.driver-checkbox').prop('checked', false).trigger('change');
+                $('#selectAll').prop('checked', false);
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+
+                setTimeout(() => {
+                    window.location.href = "{{ route('messages-push.index') }}";
+                }, 2000);
+            } else {
+                feedback.removeClass().addClass('alert alert-danger fade-alert').text(result.message || "Erro ao enviar mensagem.").show();
+                feedbackList.html('');
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
         });
 
-        // Lógica para mostrar/ocultar o token
-        $(document).on('click', '.toggle-token', function() {
-            const tokenWrapper = $(this).closest('.token-wrapper');
-            const tokenContent = tokenWrapper.find('.token-content');
-            const isVisible = tokenContent.hasClass('d-none');
-            tokenContent.toggleClass('d-none', !isVisible);
-            $(this).text(isVisible ? 'Ocultar' : 'Mostrar');
+        // Mostrar/ocultar token
+        $(document).on('click', '.toggle-token', function () {
+            const button = $(this);
+            const tokenContent = button.siblings('.token-content');
+
+            if (tokenContent.hasClass('d-none')) {
+                tokenContent.removeClass('d-none');
+                button.text('Ocultar');
+            } else {
+                tokenContent.addClass('d-none');
+                button.text('Mostrar');
+            }
         });
     });
 </script>
