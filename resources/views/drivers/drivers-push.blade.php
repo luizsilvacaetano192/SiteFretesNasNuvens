@@ -65,7 +65,7 @@
     </div>
 
     <div class="text-center mt-4">
-        <a href="{{ route('drivers.send-push') }}" class="btn btn-primary">
+        <a href="{{ route('drivers.pushForm') }}" class="btn btn-primary">
             <i class="fa-solid fa-arrow-left"></i> Voltar para envio de push
         </a>
     </div>
