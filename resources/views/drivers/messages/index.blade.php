@@ -111,7 +111,7 @@ $(document).ready(function () {
                 render: function (data) {
                     return data ? `<span class="text-danger">${data}</span>` : '';
                 }
-            }
+            },
             {
                 data: 'actions',
                 name: 'actions',
@@ -128,7 +128,7 @@ $(document).ready(function () {
                             <div class="token-content mt-2 d-none">${data}</div>
                         </div>`;
                 }
-            },
+            }
             
         ],
         createdRow: function (row, data, dataIndex) {
