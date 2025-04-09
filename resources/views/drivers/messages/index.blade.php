@@ -89,7 +89,6 @@ $(document).ready(function () {
             { data: 'id', name: 'id' },
             { data: 'driver', name: 'driver' },
             { data: 'titulo', name: 'titulo' },
-
             {
                 data: 'texto',
                 name: 'texto',
@@ -101,7 +100,6 @@ $(document).ready(function () {
                         </div>`;
                 }
             },
-
             { data: 'send_label', name: 'send' },
             { data: 'data', name: 'created_at' },
             { data: 'screen', name: 'screen' },
@@ -111,7 +109,6 @@ $(document).ready(function () {
                 orderable: false,
                 searchable: false
             },
-
             {
                 data: 'token',
                 name: 'token',
@@ -124,6 +121,11 @@ $(document).ready(function () {
                 }
             }
         ],
+        createdRow: function (row, data, dataIndex) {
+            if (data.error && data.error !== '') {
+                $(row).addClass('table-danger');
+            }
+        },
         language: {
             url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
         }
