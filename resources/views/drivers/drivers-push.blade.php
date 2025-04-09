@@ -135,7 +135,6 @@
                         <td class="address-cell">{{ $driver->address }}</td>
                         <td>
                             <div class="token-wrapper" id="token-{{ $driver->id }}">
-                                <div class="token-text">{{ $driver->token_push }}</div>
                                 <button type="button" class="toggle-token">Mostrar</button>
                                 <div class="token-content mt-2 d-none">{{ $driver->token_push }}</div>
                             </div>
