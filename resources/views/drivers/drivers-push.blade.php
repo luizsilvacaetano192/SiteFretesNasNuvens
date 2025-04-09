@@ -58,19 +58,6 @@
 
 @section('content')
 
-<div class="container py-5">
-    <div class="alert alert-success text-center shadow">
-        <h4 class="mb-0"><i class="fa-solid fa-circle-check text-success me-2"></i>Mensagem enviada com sucesso!</h4>
-        <p class="mt-2">Acompanhe o histórico ou envie novas notificações abaixo.</p>
-    </div>
-
-    <div class="text-center mt-4">
-        <a href="{{ route('drivers.pushForm') }}" class="btn btn-primary">
-            <i class="fa-solid fa-arrow-left"></i> Voltar para envio de push
-        </a>
-    </div>
-</div>
-
 <div class="container py-4">
     <h2 class="mb-4"><i class="fa-solid fa-paper-plane"></i> Enviar Push para Motoristas</h2>
 
