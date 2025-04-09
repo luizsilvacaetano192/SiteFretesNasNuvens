@@ -17,22 +17,23 @@
         padding: 5px;
         border-radius: 5px;
         font-family: monospace;
+        background: transparent;
+        border: 1px solid #ced4da;
     }
 
     .token-wrapper.expanded {
         max-height: 500px;
+        background: #f1f3f5;
     }
 
     .toggle-token {
-        background-color: #0d6efd;
+        background: none;
         border: none;
-        color: white;
         font-weight: 600;
-        font-size: 0.8rem;
-        padding: 3px 8px;
-        border-radius: 5px;
+        font-size: 0.85rem;
+        color: #0d6efd;
         cursor: pointer;
-        margin-top: 5px;
+        padding-top: 5px;
     }
 
     #driversTable th,
@@ -61,14 +62,6 @@
             opacity: 0;
             display: none;
         }
-    }
-
-    tr.selected-row .token-wrapper {
-        background-color: #f1f3f5;
-    }
-
-    tr:not(.selected-row) .token-wrapper {
-        background-color: transparent;
     }
 
     tr.selected-row {
@@ -150,10 +143,14 @@
                         <td>{{ $driver->name }}</td>
                         <td class="address-cell">{{ $driver->address }}</td>
                         <td>
+                            @if (!empty($driver->token_push))
                             <div class="token-wrapper" id="token-{{ $driver->id }}">
                                 <div class="token-text">{{ $driver->token_push }}</div>
                                 <button type="button" class="toggle-token" onclick="toggleToken({{ $driver->id }})">Mostrar</button>
                             </div>
+                            @else
+                            <span class="text-muted">Sem token</span>
+                            @endif
                         </td>
                     </tr>
                     @endforeach
@@ -273,9 +270,8 @@
     function toggleToken(id) {
         const wrapper = document.getElementById(`token-${id}`);
         const btn = wrapper.querySelector('.toggle-token');
-
         wrapper.classList.toggle('expanded');
-        btn.textContent = wrapper.classList.contains('expanded') ? 'Ocultar' : 'Mostrar';
+        btn.innerText = wrapper.classList.contains('expanded') ? 'Ocultar' : 'Mostrar';
     }
 </script>
 @endpush
