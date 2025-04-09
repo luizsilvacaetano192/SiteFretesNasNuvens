@@ -122,8 +122,8 @@ $(document).ready(function () {
                 }
             },
             {
-                data: 'error',
-                name: 'error',
+                data: 'erro',
+                name: 'erro',
                 render: function (data) {
                     return data ? `<span class="text-danger">${data}</span>` : '';
                 }
