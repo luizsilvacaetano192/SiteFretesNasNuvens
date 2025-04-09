@@ -53,9 +53,10 @@
                     <th>Enviado?</th>
                     <th>Data</th>
                     <th>Tela</th>
+                    <th>Erro</th> <!-- NOVA COLUNA -->
                     <th>Ações</th>
                     <th>Token</th>
-                    <th>Erro</th> <!-- NOVA COLUNA -->
+                    
                 </tr>
             </thead>
         </table>
@@ -105,6 +106,13 @@ $(document).ready(function () {
             { data: 'data', name: 'created_at' },
             { data: 'screen', name: 'screen' },
             {
+                data: 'erro',
+                name: 'erro',
+                render: function (data) {
+                    return data ? `<span class="text-danger">${data}</span>` : '';
+                }
+            }
+            {
                 data: 'actions',
                 name: 'actions',
                 orderable: false,
@@ -121,13 +129,7 @@ $(document).ready(function () {
                         </div>`;
                 }
             },
-            {
-                data: 'erro',
-                name: 'erro',
-                render: function (data) {
-                    return data ? `<span class="text-danger">${data}</span>` : '';
-                }
-            }
+            
         ],
         createdRow: function (row, data, dataIndex) {
             if (data.error && data.error !== '') {
