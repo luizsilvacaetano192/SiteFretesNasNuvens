@@ -19,9 +19,8 @@
         100% { opacity: 0; display: none; }
     }
 
-    tr.selected-row {
+    tr.selected-row td {
         background-color: #d0ebff !important;
-        font-weight: 500;
     }
 
     .token-button-container {
@@ -37,20 +36,39 @@
         padding: 5px;
         word-break: break-word;
     }
+
+    #pushForm .mb-4 {
+        margin-bottom: 1rem !important;
+    }
+
+    .table-responsive {
+        margin-top: 1rem;
+    }
+
+    .form-control, .form-select {
+        padding-top: 0.3rem;
+        padding-bottom: 0.3rem;
+    }
+
+    .form-label {
+        margin-bottom: 0.2rem;
+    }
+
+    #feedback {
+        margin-bottom: 0.5rem;
+    }
 </style>
 @endpush
 
 @section('content')
-
 <div class="container py-2">
-    <h2 class="mb-4"><i class="fa-solid fa-paper-plane"></i> Enviar Push para Motoristas</h2>
+    <h2 class="mb-3"><i class="fa-solid fa-paper-plane"></i> Enviar Push para Motoristas</h2>
 
-    <div id="feedback" style="display: none;" class="alert fade-alert mt-3"></div>
-    <ul id="feedback-list" class="mt-2"></ul>
+    <div id="feedback" style="display: none;" class="alert fade-alert mt-2"></div>
+    <ul id="feedback-list" class="mt-1"></ul>
 
     <form id="pushForm">
         @csrf
-
         <div class="mb-3">
             <label for="title" class="form-label"><i class="fa-solid fa-heading"></i> Título</label>
             <input type="text" name="title" id="title" class="form-control" placeholder="Título da mensagem" required>
@@ -149,22 +167,18 @@
             columnDefs: [{ orderable: false, targets: 0 }]
         });
 
-        function updateRowHighlight() {
-            $('.driver-checkbox').each(function () {
-                const row = $(this).closest('tr');
-                if (this.checked) {
-                    row.addClass('selected-row');
-                } else {
-                    row.removeClass('selected-row');
-                }
-            });
-        }
+        $('.driver-checkbox').on('change', function () {
+            const row = $(this).closest('tr');
+            if (this.checked) {
+                row.addClass('selected-row');
+            } else {
+                row.removeClass('selected-row');
+            }
+        });
 
         $('#selectAll').on('change', function () {
             $('.driver-checkbox').prop('checked', this.checked).trigger('change');
         });
-
-        $('.driver-checkbox').on('change', updateRowHighlight);
 
         function filterByCidadeEstado() {
             const cidade = $('#filterCidade').val().toLowerCase();
@@ -193,8 +207,6 @@
 
             if (!title || !message || !screen || selectedDrivers.length === 0) {
                 alert("Preencha todos os campos e selecione pelo menos um motorista.");
-
-                // Scroll para DataTable se nenhum motorista estiver selecionado
                 if (selectedDrivers.length === 0) {
                     document.getElementById("driversTableContainer").scrollIntoView({ behavior: "smooth" });
                 }
@@ -220,7 +232,6 @@
             const result = await response.json();
             const feedback = $('#feedback');
             const feedbackList = $('#feedback-list');
-
             window.scrollTo({ top: 0, behavior: 'smooth' });
 
             if (response.ok) {
@@ -246,7 +257,6 @@
     function toggleToken(button) {
         const container = button.closest('.token-button-container');
         const token = container.querySelector('.token-content');
-
         const isVisible = !token.classList.contains('d-none');
         token.classList.toggle('d-none', isVisible);
         button.textContent = isVisible ? 'Mostrar' : 'Ocultar';
