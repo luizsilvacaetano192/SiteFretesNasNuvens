@@ -72,6 +72,8 @@
 
 <script>
 $(document).ready(function () {
+
+
     $.fn.dataTable.ext.errMode = 'throw';
 
     const table = $('#messages-table').DataTable({
@@ -138,6 +140,11 @@ $(document).ready(function () {
             url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
         }
     });
+
+    
+    setInterval(() => {
+        table.ajax.reload(null, false); // false = mantém a paginação atual
+    }, 10000);
 
     $('#filter-send, #filter-error').on('change', function () {
         table.ajax.reload();
