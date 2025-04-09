@@ -9,21 +9,13 @@
     }
 
     .token-wrapper {
-        position: relative;
-        max-height: 40px;
-        overflow: hidden;
         word-break: break-word;
-        transition: max-height 0.3s ease;
         padding: 5px;
         border-radius: 5px;
         font-family: monospace;
-        background: transparent;
         border: 1px solid #ced4da;
-    }
-
-    .token-wrapper.expanded {
-        max-height: 500px;
-        background: #f1f3f5;
+        margin-bottom: 5px;
+        background: transparent;
     }
 
     .toggle-token {
@@ -33,11 +25,10 @@
         font-size: 0.85rem;
         color: #0d6efd;
         cursor: pointer;
-        padding-top: 5px;
+        padding: 0;
     }
 
-    #driversTable th,
-    #driversTable td {
+    #driversTable th, #driversTable td {
         vertical-align: middle;
     }
 
@@ -46,22 +37,10 @@
     }
 
     @keyframes fadeInOut {
-        0% {
-            opacity: 0;
-        }
-
-        10% {
-            opacity: 1;
-        }
-
-        90% {
-            opacity: 1;
-        }
-
-        100% {
-            opacity: 0;
-            display: none;
-        }
+        0% { opacity: 0; }
+        10% { opacity: 1; }
+        90% { opacity: 1; }
+        100% { opacity: 0; display: none; }
     }
 
     tr.selected-row {
@@ -112,7 +91,7 @@
                 <select id="filterCidade" class="form-select">
                     <option value="">Filtrar por cidade</option>
                     @foreach ($cidades as $cidade)
-                    <option value="{{ $cidade }}">{{ $cidade }}</option>
+                        <option value="{{ $cidade }}">{{ $cidade }}</option>
                     @endforeach
                 </select>
             </div>
@@ -120,7 +99,7 @@
                 <select id="filterEstado" class="form-select">
                     <option value="">Filtrar por estado</option>
                     @foreach ($estados as $estado)
-                    <option value="{{ $estado }}">{{ $estado }}</option>
+                        <option value="{{ $estado }}">{{ $estado }}</option>
                     @endforeach
                 </select>
             </div>
@@ -144,12 +123,14 @@
                         <td class="address-cell">{{ $driver->address }}</td>
                         <td>
                             @if (!empty($driver->token_push))
-                            <div class="token-wrapper" id="token-{{ $driver->id }}">
-                                <div class="token-text">{{ $driver->token_push }}</div>
+                            <div id="token-container-{{ $driver->id }}">
+                                <div class="token-wrapper" id="token-{{ $driver->id }}" style="display: none;">
+                                    {{ $driver->token_push }}
+                                </div>
                                 <button type="button" class="toggle-token" onclick="toggleToken({{ $driver->id }})">Mostrar</button>
                             </div>
                             @else
-                            <span class="text-muted">Sem token</span>
+                                <span class="text-muted">Sem token</span>
                             @endif
                         </td>
                     </tr>
@@ -268,10 +249,13 @@
     });
 
     function toggleToken(id) {
-        const wrapper = document.getElementById(`token-${id}`);
-        const btn = wrapper.querySelector('.toggle-token');
-        wrapper.classList.toggle('expanded');
-        btn.innerText = wrapper.classList.contains('expanded') ? 'Ocultar' : 'Mostrar';
+        const tokenDiv = document.getElementById(`token-${id}`);
+        const btn = document.querySelector(`#token-container-${id} .toggle-token`);
+
+        const isVisible = tokenDiv.style.display === 'block';
+
+        tokenDiv.style.display = isVisible ? 'none' : 'block';
+        btn.innerText = isVisible ? 'Mostrar' : 'Ocultar';
     }
 </script>
 @endpush
