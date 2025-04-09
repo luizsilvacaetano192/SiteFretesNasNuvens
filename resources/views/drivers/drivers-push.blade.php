@@ -240,7 +240,7 @@
 
                 // Redirecionamento após 2 segundos
                 setTimeout(() => {
-                    window.location.href = "{{ route(messages-push') }}";
+                    window.location.href = "{{ 'route(messages-push') }}";
                 }, 2000);
             } else {
                 feedback.removeClass().addClass('alert alert-danger fade-alert').text(result.message || "Erro ao enviar mensagem.").show();
