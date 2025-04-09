@@ -136,8 +136,10 @@
                         <td>
                             <div class="token-wrapper" id="token-{{ $driver->id }}">
                                 @if ($driver->token_push)
-                                    <button type="button" class="btn btn-outline-secondary btn-sm toggle-token">Mostrar</button>
-                                    <div class="token-content mt-2 d-none">{{ $driver->token_push }}</div>
+                                    <div>
+                                        <button type="button" class="btn btn-outline-secondary btn-sm toggle-token">Mostrar</button>
+                                        <div class="token-content mt-2 d-none">{{ $driver->token_push }}</div>
+                                    </div>
                                 @else
                                     <span>Sem Token</span>
                                 @endif
