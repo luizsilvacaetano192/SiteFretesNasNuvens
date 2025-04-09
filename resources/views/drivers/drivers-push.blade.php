@@ -8,8 +8,12 @@
         background-color: #f8f9fa;
     }
 
-    #driversTable th, #driversTable td {
-        vertical-align: middle;
+    .token-content {
+        background: #f1f3f5;
+        padding: 5px;
+        border-radius: 5px;
+        font-family: monospace;
+        word-break: break-word;
     }
 
     .fade-alert {
@@ -31,6 +35,7 @@
 @endpush
 
 @section('content')
+
 <div class="container py-4">
     <h2 class="mb-4"><i class="fa-solid fa-paper-plane"></i> Enviar Push para Motoristas</h2>
 
@@ -102,26 +107,10 @@
                         <td>{{ $driver->name }}</td>
                         <td class="address-cell">{{ $driver->address }}</td>
                         <td>
-                            @if (!empty($driver->token_push))
-                                <div id="token-container-{{ $driver->id }}">
-                                    <button
-                                        type="button"
-                                        class="btn btn-outline-secondary btn-sm"
-                                        onclick="toggleToken({{ $driver->id }})"
-                                        id="btn-token-{{ $driver->id }}"
-                                    >
-                                        Mostrar
-                                    </button>
-                                    <div
-                                        class="token-content mt-2 d-none"
-                                        id="token-{{ $driver->id }}"
-                                    >
-                                        {{ $driver->token_push }}
-                                    </div>
-                                </div>
-                            @else
-                                <span class="text-muted">Sem token</span>
-                            @endif
+                            <div>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleToken({{ $driver->id }})" id="btn-token-{{ $driver->id }}">Mostrar</button>
+                                <div class="token-content mt-2 d-none" id="token-{{ $driver->id }}">{{ $driver->token_push }}</div>
+                            </div>
                         </td>
                     </tr>
                     @endforeach
@@ -218,6 +207,12 @@
             const feedback = $('#feedback');
             const feedbackList = $('#feedback-list');
 
+            // Scroll para o topo da página
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+
             if (response.ok) {
                 feedback.removeClass().addClass('alert alert-success fade-alert').text(result.message || "Mensagem enviada com sucesso!").show();
                 feedbackList.html('');
@@ -239,18 +234,10 @@
     });
 
     function toggleToken(id) {
-        const tokenDiv = document.getElementById(`token-${id}`);
-        const button = document.getElementById(`btn-token-${id}`);
-
-        const isHidden = tokenDiv.classList.contains('d-none');
-
-        if (isHidden) {
-            tokenDiv.classList.remove('d-none');
-            button.innerText = 'Ocultar';
-        } else {
-            tokenDiv.classList.add('d-none');
-            button.innerText = 'Mostrar';
-        }
+        const token = document.getElementById(`token-${id}`);
+        const btn = document.getElementById(`btn-token-${id}`);
+        token.classList.toggle('d-none');
+        btn.textContent = token.classList.contains('d-none') ? 'Mostrar' : 'Ocultar';
     }
 </script>
 @endpush
