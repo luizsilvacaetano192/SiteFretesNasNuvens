@@ -138,7 +138,7 @@
                                 @if ($driver->token_push)
                                     <div>
                                         <button type="button" class="btn btn-outline-secondary btn-sm toggle-token">Mostrar</button>
-                                        <div class="token-content mt-2 d-none">{{ $driver->token_push }}</div>
+                                        <div class="token-content mt-2 ">{{ $driver->token_push }}</div>
                                     </div>
                                 @else
                                     <span>Sem Token</span>
