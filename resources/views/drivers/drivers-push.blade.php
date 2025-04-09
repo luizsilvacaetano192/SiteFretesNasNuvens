@@ -8,10 +8,6 @@
         background-color: #f8f9fa;
     }
 
-    #driversTable th, #driversTable td {
-        vertical-align: middle;
-    }
-
     .fade-alert {
         animation: fadeInOut 6s ease forwards;
     }
@@ -27,12 +23,26 @@
         background-color: #d0ebff !important;
         font-weight: 500;
     }
+
+    .token-button-container {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .token-content {
+        font-family: monospace;
+        background: #f1f3f5;
+        border-radius: 5px;
+        padding: 5px;
+        word-break: break-word;
+    }
 </style>
 @endpush
 
 @section('content')
 
-<div class="container py-4">
+<div class="container py-2">
     <h2 class="mb-4"><i class="fa-solid fa-paper-plane"></i> Enviar Push para Motoristas</h2>
 
     <div id="feedback" style="display: none;" class="alert fade-alert mt-3"></div>
@@ -86,7 +96,7 @@
             </div>
         </div>
 
-        <div class="table-responsive" id="driversTableContainer">
+        <div id="driversTableContainer" class="table-responsive mb-5">
             <table id="driversTable" class="table table-striped table-bordered align-middle">
                 <thead class="table-dark">
                     <tr>
@@ -104,12 +114,12 @@
                         <td class="address-cell">{{ $driver->address }}</td>
                         <td>
                             @if ($driver->token_push)
-                            <div>
-                                <button type="button" class="btn btn-outline-secondary btn-sm toggle-token">Mostrar</button>
+                            <div class="token-button-container">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleToken(this)">Mostrar</button>
                                 <div class="token-content mt-2 d-none">{{ $driver->token_push }}</div>
                             </div>
                             @else
-                            <span>Sem Token</span>
+                                <span class="text-muted">Sem token</span>
                             @endif
                         </td>
                     </tr>
@@ -142,7 +152,11 @@
         function updateRowHighlight() {
             $('.driver-checkbox').each(function () {
                 const row = $(this).closest('tr');
-                row.toggleClass('selected-row', this.checked);
+                if (this.checked) {
+                    row.addClass('selected-row');
+                } else {
+                    row.removeClass('selected-row');
+                }
             });
         }
 
@@ -152,7 +166,7 @@
 
         $('.driver-checkbox').on('change', updateRowHighlight);
 
-        $('#filterCidade, #filterEstado').on('change', function () {
+        function filterByCidadeEstado() {
             const cidade = $('#filterCidade').val().toLowerCase();
             const estado = $('#filterEstado').val().toLowerCase();
 
@@ -163,7 +177,9 @@
                 const matchEstado = !estado || address.includes(estado);
                 row.toggle(matchCidade && matchEstado);
             });
-        });
+        }
+
+        $('#filterCidade, #filterEstado').on('change', filterByCidadeEstado);
 
         $('#pushForm').on('submit', async function (e) {
             e.preventDefault();
@@ -175,13 +191,12 @@
                 return this.value;
             }).get();
 
-            const feedback = $('#feedback');
-            const feedbackList = $('#feedback-list');
-
             if (!title || !message || !screen || selectedDrivers.length === 0) {
                 alert("Preencha todos os campos e selecione pelo menos um motorista.");
+
+                // Scroll para DataTable se nenhum motorista estiver selecionado
                 if (selectedDrivers.length === 0) {
-                    document.getElementById('driversTableContainer').scrollIntoView({ behavior: 'smooth' });
+                    document.getElementById("driversTableContainer").scrollIntoView({ behavior: "smooth" });
                 }
                 return;
             }
@@ -203,6 +218,10 @@
             });
 
             const result = await response.json();
+            const feedback = $('#feedback');
+            const feedbackList = $('#feedback-list');
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
 
             if (response.ok) {
                 feedback.removeClass().addClass('alert alert-success fade-alert').text(result.message || "Mensagem enviada com sucesso!").show();
@@ -213,7 +232,6 @@
                 $('#pushForm')[0].reset();
                 $('.driver-checkbox').prop('checked', false).trigger('change');
                 $('#selectAll').prop('checked', false);
-                window.scrollTo({ top: 0, behavior: 'smooth' });
 
                 setTimeout(() => {
                     window.location.href = "{{ route('messages-push.index') }}";
@@ -221,23 +239,17 @@
             } else {
                 feedback.removeClass().addClass('alert alert-danger fade-alert').text(result.message || "Erro ao enviar mensagem.").show();
                 feedbackList.html('');
-                window.scrollTo({ top: 0, behavior: 'smooth' });
-            }
-        });
-
-        // Mostrar/ocultar token
-        $(document).on('click', '.toggle-token', function () {
-            const button = $(this);
-            const tokenContent = button.siblings('.token-content');
-
-            if (tokenContent.hasClass('d-none')) {
-                tokenContent.removeClass('d-none');
-                button.text('Ocultar');
-            } else {
-                tokenContent.addClass('d-none');
-                button.text('Mostrar');
             }
         });
     });
+
+    function toggleToken(button) {
+        const container = button.closest('.token-button-container');
+        const token = container.querySelector('.token-content');
+
+        const isVisible = !token.classList.contains('d-none');
+        token.classList.toggle('d-none', isVisible);
+        button.textContent = isVisible ? 'Mostrar' : 'Ocultar';
+    }
 </script>
 @endpush
