@@ -8,12 +8,34 @@
         background-color: #f8f9fa;
     }
 
-    .token-content {
+    .token-wrapper {
+        position: relative;
+        max-height: 40px;
+        overflow: hidden;
+        word-break: break-word;
+        transition: max-height 0.3s ease;
         background: #f1f3f5;
         padding: 5px;
         border-radius: 5px;
         font-family: monospace;
-        word-break: break-word;
+    }
+
+    .token-wrapper.expanded {
+        max-height: 500px;
+    }
+
+    .toggle-token {
+        background: none;
+        border: none;
+        font-weight: 600;
+        font-size: 0.85rem;
+        color: #0d6efd;
+        cursor: pointer;
+        padding-top: 5px;
+    }
+
+    #driversTable th, #driversTable td {
+        vertical-align: middle;
     }
 
     .fade-alert {
@@ -30,6 +52,11 @@
     tr.selected-row {
         background-color: #d0ebff !important;
         font-weight: 500;
+    }
+
+    .table-warning {
+        outline: 3px solid #ffc107;
+        transition: outline 0.4s ease;
     }
 </style>
 @endpush
@@ -107,9 +134,10 @@
                         <td>{{ $driver->name }}</td>
                         <td class="address-cell">{{ $driver->address }}</td>
                         <td>
-                            <div>
-                                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="toggleToken({{ $driver->id }})" id="btn-token-{{ $driver->id }}">Mostrar</button>
-                                <div class="token-content mt-2 d-none" id="token-{{ $driver->id }}">{{ $driver->token_push }}</div>
+                            <div class="token-wrapper" id="token-{{ $driver->id }}">
+                                <div class="token-text">{{ $driver->token_push }}</div>
+                                <button type="button" class="toggle-token">Mostrar</button>
+                                <div class="token-content mt-2 d-none">{{ $driver->token_push }}</div>
                             </div>
                         </td>
                     </tr>
@@ -184,6 +212,17 @@
 
             if (!title || !message || !screen || selectedDrivers.length === 0) {
                 alert("Preencha todos os campos e selecione pelo menos um motorista.");
+
+                if (selectedDrivers.length === 0) {
+                    const tableElement = document.getElementById('driversTable');
+                    tableElement.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+                    tableElement.classList.add('table-warning');
+                    setTimeout(() => {
+                        tableElement.classList.remove('table-warning');
+                    }, 2000);
+                }
+
                 return;
             }
 
@@ -207,7 +246,6 @@
             const feedback = $('#feedback');
             const feedbackList = $('#feedback-list');
 
-            // Scroll para o topo da página
             window.scrollTo({
                 top: 0,
                 behavior: 'smooth'
@@ -219,6 +257,7 @@
                 result.resultados.forEach(msg => {
                     feedbackList.append(`<li>${msg}</li>`);
                 });
+
                 $('#pushForm')[0].reset();
                 $('.driver-checkbox').prop('checked', false).trigger('change');
                 $('#selectAll').prop('checked', false);
@@ -231,13 +270,19 @@
                 feedbackList.html('');
             }
         });
-    });
 
-    function toggleToken(id) {
-        const token = document.getElementById(`token-${id}`);
-        const btn = document.getElementById(`btn-token-${id}`);
-        token.classList.toggle('d-none');
-        btn.textContent = token.classList.contains('d-none') ? 'Mostrar' : 'Ocultar';
-    }
+        $('.toggle-token').on('click', function () {
+            const tokenContent = $(this).next('.token-content');
+            const isHidden = tokenContent.hasClass('d-none');
+
+            if (isHidden) {
+                tokenContent.removeClass('d-none');
+                $(this).text('Ocultar');
+            } else {
+                tokenContent.addClass('d-none');
+                $(this).text('Mostrar');
+            }
+        });
+    });
 </script>
 @endpush
