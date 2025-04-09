@@ -8,26 +8,6 @@
         background-color: #f8f9fa;
     }
 
-    .token-wrapper {
-        word-break: break-word;
-        padding: 5px;
-        border-radius: 5px;
-        font-family: monospace;
-        border: 1px solid #ced4da;
-        margin-bottom: 5px;
-        background: transparent;
-    }
-
-    .toggle-token {
-        background: none;
-        border: none;
-        font-weight: 600;
-        font-size: 0.85rem;
-        color: #0d6efd;
-        cursor: pointer;
-        padding: 0;
-    }
-
     #driversTable th, #driversTable td {
         vertical-align: middle;
     }
@@ -123,12 +103,22 @@
                         <td class="address-cell">{{ $driver->address }}</td>
                         <td>
                             @if (!empty($driver->token_push))
-                            <div id="token-container-{{ $driver->id }}">
-                                <div class="token-wrapper" id="token-{{ $driver->id }}" style="display: none;">
-                                    {{ $driver->token_push }}
+                                <div id="token-container-{{ $driver->id }}">
+                                    <button
+                                        type="button"
+                                        class="btn btn-outline-secondary btn-sm"
+                                        onclick="toggleToken({{ $driver->id }})"
+                                        id="btn-token-{{ $driver->id }}"
+                                    >
+                                        Mostrar
+                                    </button>
+                                    <div
+                                        class="token-content mt-2 d-none"
+                                        id="token-{{ $driver->id }}"
+                                    >
+                                        {{ $driver->token_push }}
+                                    </div>
                                 </div>
-                                <button type="button" class="toggle-token" onclick="toggleToken({{ $driver->id }})">Mostrar</button>
-                            </div>
                             @else
                                 <span class="text-muted">Sem token</span>
                             @endif
@@ -250,12 +240,17 @@
 
     function toggleToken(id) {
         const tokenDiv = document.getElementById(`token-${id}`);
-        const btn = document.querySelector(`#token-container-${id} .toggle-token`);
+        const button = document.getElementById(`btn-token-${id}`);
 
-        const isVisible = tokenDiv.style.display === 'block';
+        const isHidden = tokenDiv.classList.contains('d-none');
 
-        tokenDiv.style.display = isVisible ? 'none' : 'block';
-        btn.innerText = isVisible ? 'Mostrar' : 'Ocultar';
+        if (isHidden) {
+            tokenDiv.classList.remove('d-none');
+            button.innerText = 'Ocultar';
+        } else {
+            tokenDiv.classList.add('d-none');
+            button.innerText = 'Mostrar';
+        }
     }
 </script>
 @endpush
