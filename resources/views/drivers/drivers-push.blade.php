@@ -14,7 +14,6 @@
         overflow: hidden;
         word-break: break-word;
         transition: max-height 0.3s ease;
-        background: #f1f3f5;
         padding: 5px;
         border-radius: 5px;
         font-family: monospace;
@@ -25,16 +24,19 @@
     }
 
     .toggle-token {
-        background: none;
+        background-color: #0d6efd;
         border: none;
+        color: white;
         font-weight: 600;
-        font-size: 0.85rem;
-        color: #0d6efd;
+        font-size: 0.8rem;
+        padding: 3px 8px;
+        border-radius: 5px;
         cursor: pointer;
-        padding-top: 5px;
+        margin-top: 5px;
     }
 
-    #driversTable th, #driversTable td {
+    #driversTable th,
+    #driversTable td {
         vertical-align: middle;
     }
 
@@ -43,10 +45,30 @@
     }
 
     @keyframes fadeInOut {
-        0% { opacity: 0; }
-        10% { opacity: 1; }
-        90% { opacity: 1; }
-        100% { opacity: 0; display: none; }
+        0% {
+            opacity: 0;
+        }
+
+        10% {
+            opacity: 1;
+        }
+
+        90% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 0;
+            display: none;
+        }
+    }
+
+    tr.selected-row .token-wrapper {
+        background-color: #f1f3f5;
+    }
+
+    tr:not(.selected-row) .token-wrapper {
+        background-color: transparent;
     }
 
     tr.selected-row {
@@ -57,7 +79,6 @@
 @endpush
 
 @section('content')
-
 <div class="container py-4">
     <h2 class="mb-4"><i class="fa-solid fa-paper-plane"></i> Enviar Push para Motoristas</h2>
 
@@ -98,7 +119,7 @@
                 <select id="filterCidade" class="form-select">
                     <option value="">Filtrar por cidade</option>
                     @foreach ($cidades as $cidade)
-                        <option value="{{ $cidade }}">{{ $cidade }}</option>
+                    <option value="{{ $cidade }}">{{ $cidade }}</option>
                     @endforeach
                 </select>
             </div>
@@ -106,7 +127,7 @@
                 <select id="filterEstado" class="form-select">
                     <option value="">Filtrar por estado</option>
                     @foreach ($estados as $estado)
-                        <option value="{{ $estado }}">{{ $estado }}</option>
+                    <option value="{{ $estado }}">{{ $estado }}</option>
                     @endforeach
                 </select>
             </div>
@@ -131,7 +152,7 @@
                         <td>
                             <div class="token-wrapper" id="token-{{ $driver->id }}">
                                 <div class="token-text">{{ $driver->token_push }}</div>
-                                <button type="button" class="toggle-token" onclick="toggleToken({{ $driver->id }})">Ver mais</button>
+                                <button type="button" class="toggle-token" onclick="toggleToken({{ $driver->id }})">Mostrar</button>
                             </div>
                         </td>
                     </tr>
@@ -239,7 +260,6 @@
                 $('.driver-checkbox').prop('checked', false).trigger('change');
                 $('#selectAll').prop('checked', false);
 
-                // Redirecionamento após 2 segundos
                 setTimeout(() => {
                     window.location.href = "{{ route('messages-push.index') }}";
                 }, 2000);
@@ -253,8 +273,9 @@
     function toggleToken(id) {
         const wrapper = document.getElementById(`token-${id}`);
         const btn = wrapper.querySelector('.toggle-token');
+
         wrapper.classList.toggle('expanded');
-        btn.innerText = wrapper.classList.contains('expanded') ? 'Ver menos' : 'Ver mais';
+        btn.textContent = wrapper.classList.contains('expanded') ? 'Ocultar' : 'Mostrar';
     }
 </script>
 @endpush
