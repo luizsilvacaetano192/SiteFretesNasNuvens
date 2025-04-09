@@ -56,7 +56,6 @@
                     <th>Erro</th> <!-- NOVA COLUNA -->
                     <th>Ações</th>
                     <th>Token</th>
-                    
                 </tr>
             </thead>
         </table>
@@ -129,11 +128,10 @@ $(document).ready(function () {
                         </div>`;
                 }
             }
-            
         ],
         createdRow: function (row, data, dataIndex) {
-            if (data.error && data.error !== '') {
-                $(row).addClass('table-danger');
+            if (data.erro && data.erro !== '') {
+                $(row).addClass('table-danger'); // fundo vermelho claro
             }
         },
         language: {
