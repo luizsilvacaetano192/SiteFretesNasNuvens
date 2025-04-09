@@ -55,6 +55,7 @@
                     <th>Tela</th>
                     <th>Ações</th>
                     <th>Token</th>
+                    <th>Erro</th> <!-- NOVA COLUNA -->
                 </tr>
             </thead>
         </table>
@@ -76,7 +77,7 @@ $(document).ready(function () {
     const table = $('#messages-table').DataTable({
         processing: true,
         serverSide: true,
-        order: [[5, 'desc']], // coluna 5 = 'data', ordena decrescente (mais recentes)
+        order: [[5, 'desc']],
         ajax: {
             url: '{{ route('messages-push.list') }}',
             data: function (d) {
@@ -118,6 +119,13 @@ $(document).ready(function () {
                             <button class="btn btn-outline-secondary btn-sm toggle-token">Mostrar</button>
                             <div class="token-content mt-2 d-none">${data}</div>
                         </div>`;
+                }
+            },
+            {
+                data: 'error',
+                name: 'error',
+                render: function (data) {
+                    return data ? `<span class="text-danger">${data}</span>` : '';
                 }
             }
         ],
