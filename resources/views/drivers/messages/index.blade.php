@@ -312,7 +312,7 @@ $(document).ready(function () {
                 render: function (data) {
                     return `
                         <div>
-                            <button class="btn btn-outline-secondary btn-sm toggle-token">Mostrar</button>
+                            <button class="btn btn-outline-secondary btn-sm ">Mostrar</button>
                             <div class="token-content mt-2 d-none">${data}</div>
                         </div>`;
                 }
