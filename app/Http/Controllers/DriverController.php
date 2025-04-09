@@ -57,7 +57,7 @@ class DriverController extends Controller
     public function messagesPush()
     {
         // Aqui você pode retornar uma view com o histórico ou alguma confirmação
-        return view('drivers.messages-push'); // Crie essa view em resources/views/drivers/messages-push.blade.php
+        return view('drivers.messages.drivers-push'); // Crie essa view em resources/views/drivers/messages-push.blade.php
     }
 
 
