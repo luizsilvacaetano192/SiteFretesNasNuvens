@@ -294,8 +294,11 @@ $(document).ready(function () {
                         <button onclick="activateDriver(${row.id}, '${row.status}')" class="btn btn-outline-${row.status === 'active' ? 'danger' : 'warning'}">
                             ${row.status === 'active' ? '🚫 Bloquear' : '✅ Ativar'}
                         </button>
-                        <button onclick="analyzeDriver(${row.id})" class="btn btn-outline-dark">🕵️ Analisar</button>
-                        <button onclick="openWhatsApp('${row.phone}')" class="btn btn-outline-success">💬 Conversar</button>
+                          <button class="btn btn-sm btn-info" onclick="analyzeDriver(${row.id})">🔍 Analisar</button>
+                            <button class="btn btn-sm btn-${row.status === 'active' ? 'danger' : 'success'}" onclick="activateDriver(${row.id}, '${row.status}')">
+                                ${row.status === 'active' ? 'Bloquear' : 'Ativar'}
+                            </button>
+                            <button class="btn btn-sm btn-success" onclick="openWhatsApp('${row.phone}')">💬 WhatsApp</button>
                     </div>
                 `
             }
