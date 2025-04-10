@@ -54,6 +54,18 @@ class DriverController extends Controller
         return view('drivers.drivers-push', compact('drivers', 'estados', 'cidades'));
     }
 
+    public function balanceInfo($id)
+    {
+        $driver = Driver::findOrFail($id);
+        $account = $driver->userAccount;
+        $transfers = $account ? $account->transfers()->get() : collect();
+
+        return response()->json([
+            'account' => $account,
+            'transfers' => $transfers
+        ]);
+    }
+
     public function sendPush(Request $request)
     {
         $request->validate([
