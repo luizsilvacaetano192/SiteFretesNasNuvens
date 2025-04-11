@@ -25,10 +25,10 @@
 </div>
 
 <!-- Modais (mantidos da versão anterior) -->
-@include('modals.image_modal')
-@include('modals.analyze_modal')
-@include('modals.block_modal')
-@include('modals.balance_modal')
+@include('drivers.modals.image_modal')
+@include('drivers.modals.analyze_modal')
+@include('drivers.modals.block_modal')
+@include('drivers.modals.balance_modal')
 
 
 <!-- Estilos e Scripts -->
