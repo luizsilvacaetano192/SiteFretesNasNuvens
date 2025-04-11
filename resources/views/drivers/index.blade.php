@@ -387,28 +387,55 @@ function showBalanceModal(driverId) {
         `);
         
         // Inicializa a DataTable para as transferências
+        // Inicializa a DataTable para as transferências
         $('#transfersTable').DataTable({
             data: data.transfers,
             columns: [
-                { data: 'type', render: type => {
-                    const types = {
-                        'PIX': '<span class="badge bg-success">PIX</span>',
-                        'TED': '<span class="badge bg-primary">TED</span>',
-                        'DOC': '<span class="badge bg-info">DOC</span>',
-                        'INTERNAL': '<span class="badge bg-secondary">Interna</span>'
-                    };
-                    return types[type] || type;
-                }},
-                { data: 'amount', render: amount => formatCurrency(amount) },
-                { data: 'description' },
-                { data: 'transfer_date', render: date => new Date(date).toLocaleString('pt-BR') },
-                { data: 'asaas_identifier' }
+                { 
+                    data: 'type', 
+                    render: type => {
+                        const types = {
+                            'INTERNAL': '<span class="badge bg-secondary">Interna</span>',
+                            'available_balance': '<span class="badge bg-success">Liberação de Saldo</span>',
+                            'blocked_balance': '<span class="badge bg-warning">Bloqueio de Saldo</span>',
+                            'debited_balance': '<span class="badge bg-danger">Transferência PIX</span>'
+                        };
+                        return types[type] || type;
+                    }
+                },
+                { 
+                    data: 'amount', 
+                    render: amount => formatCurrency(amount) 
+                },
+                { 
+                    data: 'description',
+                    render: (description, type, row) => {
+                        if (description) return description;
+                        
+                        // Descriptions based on transfer type
+                        const descriptions = {
+                            'available_balance': 'Transferência de liberação de saldo',
+                            'blocked_balance': 'Transferência de saldo bloqueado',
+                            'debited_balance': 'Transferência PIX feita pelo motorista'
+                        };
+                        
+                        return descriptions[row.type] || 'Transferência bancária';
+                    }
+                },
+                { 
+                    data: 'transfer_date', 
+                    render: date => new Date(date).toLocaleString('pt-BR') 
+                },
+                { 
+                    data: 'asaas_identifier' 
+                }
             ],
             order: [[3, 'desc']],
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
             }
-        });
+
+    });
     }).fail(function() {
         $('#balanceModal .modal-body').html(`
             <div class="alert alert-danger">
