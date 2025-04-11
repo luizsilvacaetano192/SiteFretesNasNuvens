@@ -65,7 +65,7 @@ class Driver extends Model
 
     public function userAccount()
     {
-        return $this->hasMany(UserAccount::class);
+        return $this->hasOne(UserAccount::class);
     }
 
 
