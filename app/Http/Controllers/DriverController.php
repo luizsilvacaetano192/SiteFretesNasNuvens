@@ -70,14 +70,7 @@ class DriverController extends Controller
         }
     
         
-        class DriverBalanceController extends Controller
-        {
-            /**
-             * Exibe a view de saldo e transferências
-             *
-             * @param Driver $driver
-             * @return View
-             */
+    
             public function show(Driver $driver): View
             {
                 try {
