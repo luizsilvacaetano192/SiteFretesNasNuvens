@@ -33,8 +33,19 @@ class DriverController extends Controller
 
 
 
+    protected function formatDate($date): string
+    {
+        if (is_string($date)) {
+            return Carbon::parse($date)->format('d/m/Y');
+        }
+        
+        return $date->format('d/m/Y');
+    }
+
     public function balanceData($driver): JsonResponse
     {
+
+        
         try {
             // Carrega o motorista com suas transferências
             if (!$driver instanceof Driver) {
@@ -62,14 +73,14 @@ class DriverController extends Controller
                         'motorista' => $driver->name,
                         'motorista_id' => $driver->id,
                         'transferencia_id' => $transfer->id,
-                        'data' => $transfer->transfer_date->format('d/m/Y'),
-                        'data_iso' => $transfer->transfer_date->format('Y-m-d'),
+                        'data' => $transfer->transfer_date->formatDate('d/m/Y'),
+                        'data_iso' => $transfer->transfer_date->formatDate('Y-m-d'),
                         'tipo' => $this->formatTransferType($transfer->type),
                         'valor' => (float) $transfer->amount,
                         'valor_formatado' => 'R$ ' . number_format($transfer->amount, 2, ',', '.'),
                         'descricao' => $transfer->description ?? 'Transferência',
                         'asaas_id' => $transfer->asaas_identifier ?? null,
-                        'created_at' => $transfer->created_at->format('d/m/Y H:i')
+                        'created_at' => $transfer->created_at->formatDate('d/m/Y H:i')
                     ];
 
                     // Informações do frete (se existir)
