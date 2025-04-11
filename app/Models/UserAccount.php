@@ -20,7 +20,7 @@ class UserAccount extends Model
     // Relacionamento com o motorista (driver)
     public function driver()
     {
-        return $this->belongsTo(Driver::class);
+        return $this->hasOne(Driver::class, 'id', 'id_driver');
     }
 
     // Relacionamento com as transferências
