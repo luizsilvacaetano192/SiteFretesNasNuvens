@@ -70,7 +70,7 @@ class DriverController extends Controller
         }
     
         
-        public function BalanceData(Driver $driver): JsonResponse
+        public function balanceData(Driver $driver): JsonResponse
         {
             try {
                 $driver->load(['userAccount.transfers' => function($query) {
