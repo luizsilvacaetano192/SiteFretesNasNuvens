@@ -296,6 +296,7 @@ function openWhatsApp(phone) {
 
 }
 
+// Função para mostrar o modal de saldo com agrupamento por dia
 function showBalanceModal(driverId) {
     const modal = new bootstrap.Modal('#balanceModal');
     
@@ -304,16 +305,168 @@ function showBalanceModal(driverId) {
         $('#transfersTable').DataTable().destroy();
     }
     
+    function format(d) {
+        let reason = '';
+        if (d.status === 'block' || d.status === 'transfer_block') {
+            reason = `<p><strong>Motivo:</strong> ${d.reason || 'Não informado'}</p>`;
+        }
+
+        return `
+            <div class="p-3 bg-light rounded">
+                <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
+                <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
+                <p><strong>CPF:</strong> ${maskCPF(d.cpf)}</p>
+                <p><strong>CNH:</strong> ${d.driver_license_number}</p>
+                <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
+                <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
+                <p><strong>Status:</strong> ${getStatusLabel(d.status)[0]}</p>
+                <p><strong>Senha:</strong> 
+                    <span id="password-${d.id}" class="password-hidden">••••••••</span>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="togglePassword('${d.id}', '${d.password}')">👁️</button>
+                </p>
+                ${reason}
+                <div class="row">
+                    ${renderImageColumn('Frente CNH', d.driver_license_front)}
+                    ${renderImageColumn('Verso CNH', d.driver_license_back)}
+                    ${renderImageColumn('Foto do Rosto', d.face_photo)}
+                    ${renderImageColumn('Comprovante de Endereço', d.address_proof)}
+                </div>
+            </div>
+        `;
+    }
     // Mostra loading
     $('#transfersTable tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Carregando transferências...</p></td></tr>');
     modal.show();
     
     $.get(`/drivers/${driverId}/balance-data`, function(data) {
-        // Restante da função...
+        // Atualiza os cards de saldo
+        $('#asaasIdentifier').text(data.account.asaas_identifier || 'Não informado');
+        $('#totalBalance').text(formatCurrency(data.account.total_balance));
+        $('#blockedBalance').text(formatCurrency(data.account.blocked_balance));
+        $('#availableBalance').text(formatCurrency(data.account.available_balance));
+        
+        // Agrupa transferências por data (ano-mês-dia)
+        const groupedTransfers = {};
+        data.transfers.forEach(transfer => {
+            const dateKey = transfer.date_group;
+            if (!groupedTransfers[dateKey]) {
+                groupedTransfers[dateKey] = {
+                    date: transfer.transfer_date,
+                    day_name: transfer.day_name,
+                    transfers: []
+                };
+            }
+            groupedTransfers[dateKey].transfers.push(transfer);
+        });
+
+        // Ordena as datas (mais recente primeiro)
+        const sortedDates = Object.keys(groupedTransfers).sort().reverse();
+        
+        // Prepara os dados para a DataTable
+        const tableData = [];
+        sortedDates.forEach(dateKey => {
+            const group = groupedTransfers[dateKey];
+            
+            // Adiciona linha de grupo (dia)
+            tableData.push({
+                type: 'group',
+                date: group.date,
+                title: group.day_name,
+                count: group.transfers.length,
+                amount: group.transfers.reduce((sum, t) => sum + parseFloat(t.amount), 0)
+            });
+            
+            // Adiciona as transferências do dia
+            group.transfers.forEach(transfer => {
+                tableData.push({
+                    type: 'transfer',
+                    ...transfer
+                });
+            });
+        });
+
+        // Configura o DataTables para usar moment.js para ordenação de datas
+        $.fn.dataTable.moment('DD/MM/YYYY HH:mm:ss');  // Formato que suas datas usam
+        // Inicializa a DataTable
+        const table = $('#transfersTable').DataTable({
+            data: tableData,
+            columns: [
+                { 
+                    data: 'type',
+                    render: function(data, type, row) {
+                        if (data === 'group') {
+                            return `<i class="bi bi-caret-down-fill me-2"></i> ${row.count} transferência(s)`;
+                        }
+                        const badgeClass = {
+                            'PIX': 'badge-pix',
+                            'TED': 'badge-ted',
+                            'DOC': 'badge-doc',
+                            'INTERNAL': 'badge-internal'
+                        }[row.type] || 'badge-secondary';
+                        return `<span class="badge ${badgeClass}">${row.type}</span>`;
+                    }
+                },
+                { 
+                    data: 'amount',
+                    render: function(data, type, row) {
+                        if (row.type === 'group') {
+                            return `<strong>${formatCurrency(row.amount)}</strong>`;
+                        }
+                        return formatCurrency(data);
+                    }
+                },
+                { data: 'description' },
+                { 
+                    data: 'transfer_date',
+                    render: function(data, type, row) {
+                        if (row.type === 'group') {
+                            return row.title;
+                        }
+                        return new Date(data).toLocaleString('pt-BR');
+                    }
+                },
+                { data: 'asaas_identifier' }
+            ],
+            order: [], // Desativa ordenação inicial
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
+            },
+            createdRow: function(row, data, dataIndex) {
+                if (data.type === 'group') {
+                    $(row).addClass('group-day-header');
+                } else {
+                    $(row).addClass('group-detail');
+                }
+            }
+        });
+
+        // Configura clique nos cabeçalhos de grupo
+        $('#transfersTable tbody').on('click', 'tr.group-day-header', function() {
+            const tr = $(this);
+            const row = table.row(tr);
+            const nextTr = tr.next('tr');
+            
+            while (nextTr.length && nextTr.hasClass('group-detail')) {
+                nextTr.toggleClass('shown');
+                nextTr = nextTr.next('tr');
+            }
+            
+            // Altera o ícone
+            const icon = tr.find('i');
+            if (icon.hasClass('bi-caret-down-fill')) {
+                icon.removeClass('bi-caret-down-fill').addClass('bi-caret-right-fill');
+            } else {
+                icon.removeClass('bi-caret-right-fill').addClass('bi-caret-down-fill');
+            }
+        });
+        
+        // Expande o primeiro grupo por padrão
+        $('#transfersTable tbody tr.group-day-header').first().click();
+
     }).fail(function() {
         $('#transfersTable tbody').html('<tr><td colspan="5" class="text-center py-4 text-danger">Erro ao carregar transferências. Tente novamente.</td></tr>');
     });
-} // Esta chave estava faltando
+}
     
     // Mostra loading
     $('#transfersTable tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Carregando transferências...</p></td></tr>');
