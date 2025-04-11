@@ -142,6 +142,43 @@
   </div>
 </div>
 
+<!-- Modal de Transferência -->
+<div class="modal fade" id="transferModal" tabindex="-1">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">💸 Realizar Transferência</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <form id="transferForm">
+          <input type="hidden" id="transferDriverId">
+          <div class="mb-3">
+            <label for="transferType" class="form-label">Tipo de Transferência</label>
+            <select class="form-select" id="transferType" required>
+              <option value="">Selecione...</option>
+              <option value="available_balance">Liberar valor</option>
+              <option value="blocked_balance">Enviar valor bloqueado</option>
+            </select>
+          </div>
+          <div class="mb-3">
+            <label for="transferAmount" class="form-label">Valor (R$)</label>
+            <input type="number" step="0.01" min="0.01" class="form-control" id="transferAmount" required>
+          </div>
+          <div class="mb-3">
+            <label for="transferDescription" class="form-label">Descrição</label>
+            <textarea class="form-control" id="transferDescription" rows="3"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="submitTransfer">Enviar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Estilos e Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -178,6 +215,14 @@ tr.shown td.dt-control::before {
 .card-text {
     font-size: 1.1rem;
     font-weight: bold;
+}
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+#newTransferBtn {
+    margin-right: 10px;
 }
 </style>
 
@@ -309,8 +354,44 @@ function openWhatsApp(phone) {
     window.open(`https://wa.me/55${formatted}`, '_blank');
 }
 
+function openTransferModal(driverId) {
+    $('#transferDriverId').val(driverId);
+    $('#transferForm')[0].reset();
+    new bootstrap.Modal('#transferModal').show();
+}
+
+function submitTransfer() {
+    const driverId = $('#transferDriverId').val();
+    const type = $('#transferType').val();
+    const amount = parseFloat($('#transferAmount').val());
+    const description = $('#transferDescription').val();
+
+    if (!type || !amount || amount <= 0) {
+        toastr.warning('Preencha todos os campos corretamente');
+        return;
+    }
+
+    $('#submitTransfer').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Enviando...');
+
+    $.post(`/drivers/${driverId}/transfer`, {
+        type,
+        amount,
+        description,
+        _token: '{{ csrf_token() }}'
+    }, function(response) {
+        toastr.success('Transferência realizada com sucesso!');
+        $('#transferModal').modal('hide');
+        showBalanceModal(driverId); // Refresh the balance data
+    }).fail(function(error) {
+        toastr.error(error.responseJSON?.message || 'Erro ao realizar transferência');
+    }).always(function() {
+        $('#submitTransfer').prop('disabled', false).html('Enviar');
+    });
+}
+
 function showBalanceModal(driverId) {
     const modal = new bootstrap.Modal('#balanceModal');
+    selectedDriverId = driverId; // Store the driver ID for transfers
     
     // Limpa a tabela de transferências se já existir
     if ($.fn.DataTable.isDataTable('#transfersTable')) {
@@ -324,6 +405,16 @@ function showBalanceModal(driverId) {
             <p class="mt-2">Carregando informações financeiras...</p>
         </div>
     `);
+    
+    // Update the modal header to include transfer button
+    $('#balanceModal .modal-header').html(`
+        <h5 class="modal-title">💰 Saldo e Transferências</h5>
+        <button type="button" class="btn btn-success" id="newTransferBtn">
+            ➕ Nova Transferência
+        </button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    `);
+    
     modal.show();
     
     // Faz a requisição AJAX para obter os dados
@@ -387,7 +478,6 @@ function showBalanceModal(driverId) {
         `);
         
         // Inicializa a DataTable para as transferências
-        // Inicializa a DataTable para as transferências
         $('#transfersTable').DataTable({
             data: data.transfers,
             columns: [
@@ -395,6 +485,9 @@ function showBalanceModal(driverId) {
                     data: 'type', 
                     render: type => {
                         const types = {
+                            'PIX': '<span class="badge bg-success">PIX</span>',
+                            'TED': '<span class="badge bg-primary">TED</span>',
+                            'DOC': '<span class="badge bg-info">DOC</span>',
                             'INTERNAL': '<span class="badge bg-secondary">Interna</span>',
                             'available_balance': '<span class="badge bg-success">Liberação de Saldo</span>',
                             'blocked_balance': '<span class="badge bg-warning">Bloqueio de Saldo</span>',
@@ -434,8 +527,12 @@ function showBalanceModal(driverId) {
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
             }
-
-    });
+        });
+        
+        // Add click handler for new transfer button
+        $('#newTransferBtn').off('click').on('click', function() {
+            openTransferModal(driverId);
+        });
     }).fail(function() {
         $('#balanceModal .modal-body').html(`
             <div class="alert alert-danger">
@@ -526,6 +623,7 @@ $(document).ready(function () {
 
     $('#blockUserBtn').click(() => updateDriverStatus(selectedDriverId, 'block'));
     $('#blockTransferBtn').click(() => updateDriverStatus(selectedDriverId, 'transfer_block'));
+    $('#submitTransfer').click(submitTransfer);
 });
 </script>
 @endsection
