@@ -8,10 +8,12 @@ use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Http;
 use App\Models\MessagePush;
-use Carbon\Carbon;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use App\Models\Transfer;
+use Illuminate\Http\JsonResponse;
+use Illuminate\View\View;
+use Carbon\Carbon;
 
 
 class DriverController extends Controller
@@ -42,25 +44,7 @@ class DriverController extends Controller
         return $date->format('d/m/Y');
     }
 
-    <?php
 
-    namespace App\Http\Controllers;
-    
-    use App\Models\Driver;
-    use App\Models\Transfer;
-    use Illuminate\Http\JsonResponse;
-    use Illuminate\View\View;
-    use Carbon\Carbon;
-    use Illuminate\Support\Facades\Log;
-    
-    class DriverBalanceController extends Controller
-    {
-        /**
-         * Exibe a view de saldo e transferências
-         *
-         * @param Driver $driver
-         * @return View
-         */
         public function show(Driver $driver): View
         {
             $driver->load(['userAccount.transfers' => function($query) {
