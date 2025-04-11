@@ -42,6 +42,23 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
 <style>
+    .year-group {
+    cursor: pointer;
+    font-weight: bold !important;
+    }
+    .month-group {
+        cursor: pointer;
+        font-weight: 600 !important;
+    }
+    .day-group {
+        cursor: pointer;
+    }
+    .transfer-detail {
+        display: none;
+    }
+    .transfer-detail.shown {
+        display: table-row;
+    }
     td.dt-control::before {
         content: "+";
         font-weight: bold;
@@ -279,113 +296,226 @@ function showBalanceModal(driverId) {
         $('#blockedBalance').text(formatCurrency(data.account.blocked_balance));
         $('#availableBalance').text(formatCurrency(data.account.available_balance));
         
+        // Agrupa transferências por ano, mês e dia
         const groupedTransfers = {};
+        
         data.transfers.forEach(transfer => {
-            const dateKey = transfer.date_group;
-            if (!groupedTransfers[dateKey]) {
-                groupedTransfers[dateKey] = {
-                    date: transfer.transfer_date,
-                    day_name: transfer.day_name,
-                    transfers: []
+            const date = new Date(transfer.transfer_date);
+            const year = date.getFullYear();
+            const month = date.getMonth() + 1; // Janeiro é 0
+            const day = date.getDate();
+            
+            // Cria estrutura hierárquica: ano -> mês -> dia
+            if (!groupedTransfers[year]) {
+                groupedTransfers[year] = {
+                    year: year,
+                    months: {},
+                    total: 0,
+                    count: 0
                 };
             }
-            groupedTransfers[dateKey].transfers.push(transfer);
+            
+            if (!groupedTransfers[year].months[month]) {
+                groupedTransfers[year].months[month] = {
+                    month: month,
+                    monthName: date.toLocaleString('pt-BR', { month: 'long' }),
+                    days: {},
+                    total: 0,
+                    count: 0
+                };
+            }
+            
+            if (!groupedTransfers[year].months[month].days[day]) {
+                groupedTransfers[year].months[month].days[day] = {
+                    day: day,
+                    dateStr: date.toLocaleDateString('pt-BR'),
+                    transfers: [],
+                    total: 0,
+                    count: 0
+                };
+            }
+            
+            // Adiciona a transferência
+            groupedTransfers[year].months[month].days[day].transfers.push(transfer);
+            
+            // Atualiza totais
+            const amount = parseFloat(transfer.amount);
+            groupedTransfers[year].total += amount;
+            groupedTransfers[year].count++;
+            groupedTransfers[year].months[month].total += amount;
+            groupedTransfers[year].months[month].count++;
+            groupedTransfers[year].months[month].days[day].total += amount;
+            groupedTransfers[year].months[month].days[day].count++;
         });
 
-        const sortedDates = Object.keys(groupedTransfers).sort().reverse();
+        // Prepara os dados para a DataTable
         const tableData = [];
         
-        sortedDates.forEach(dateKey => {
-            const group = groupedTransfers[dateKey];
+        // Ordena anos (decrescente)
+        const years = Object.keys(groupedTransfers).sort((a, b) => b - a);
+        
+        years.forEach(yearKey => {
+            const yearData = groupedTransfers[yearKey];
             
+            // Adiciona linha do ano
             tableData.push({
-                type: 'group',
-                date: group.date,
-                title: group.day_name,
-                count: group.transfers.length,
-                amount: group.transfers.reduce((sum, t) => sum + parseFloat(t.amount), 0)
+                type: 'year',
+                title: `Ano ${yearKey}`,
+                total: yearData.total,
+                count: yearData.count,
+                level: 0
             });
             
-            group.transfers.forEach(transfer => {
+            // Ordena meses (decrescente)
+            const months = Object.keys(yearData.months).sort((a, b) => b - a);
+            
+            months.forEach(monthKey => {
+                const monthData = yearData.months[monthKey];
+                
+                // Adiciona linha do mês
                 tableData.push({
-                    type: 'transfer',
-                    ...transfer
+                    type: 'month',
+                    title: `${monthData.monthName.charAt(0).toUpperCase() + monthData.monthName.slice(1)} ${yearKey}`,
+                    total: monthData.total,
+                    count: monthData.count,
+                    level: 1
+                });
+                
+                // Ordena dias (decrescente)
+                const days = Object.keys(monthData.days).sort((a, b) => b - a);
+                
+                days.forEach(dayKey => {
+                    const dayData = monthData.days[dayKey];
+                    
+                    // Adiciona linha do dia
+                    tableData.push({
+                        type: 'day',
+                        title: dayData.dateStr,
+                        total: dayData.total,
+                        count: dayData.count,
+                        level: 2
+                    });
+                    
+                    // Adiciona as transferências do dia
+                    dayData.transfers.forEach(transfer => {
+                        tableData.push({
+                            type: 'transfer',
+                            ...transfer,
+                            level: 3
+                        });
+                    });
                 });
             });
         });
 
+        // Configura o DataTables para usar moment.js para ordenação de datas
         $.fn.dataTable.moment('DD/MM/YYYY HH:mm:ss');
         
+        // Inicializa a DataTable
         const table = $('#transfersTable').DataTable({
             data: tableData,
             columns: [
                 { 
                     data: 'type',
                     render: function(data, type, row) {
-                        if (data === 'group') {
-                            return `<i class="bi bi-caret-down-fill me-2"></i> ${row.count} transferência(s)`;
+                        const indent = '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(row.level);
+                        
+                        if (data === 'year') {
+                            return `${indent}<i class="bi bi-calendar-event me-2"></i> <strong>${row.title}</strong>`;
+                        } else if (data === 'month') {
+                            return `${indent}<i class="bi bi-calendar-month me-2"></i> ${row.title}`;
+                        } else if (data === 'day') {
+                            return `${indent}<i class="bi bi-calendar-day me-2"></i> ${row.title}`;
+                        } else {
+                            const badgeClass = {
+                                'PIX': 'badge-pix',
+                                'TED': 'badge-ted',
+                                'DOC': 'badge-doc',
+                                'INTERNAL': 'badge-internal'
+                            }[row.type] || 'badge-secondary';
+                            return `${indent}<span class="badge ${badgeClass}">${row.type}</span>`;
                         }
-                        const badgeClass = {
-                            'PIX': 'badge-pix',
-                            'TED': 'badge-ted',
-                            'DOC': 'badge-doc',
-                            'INTERNAL': 'badge-internal'
-                        }[row.type] || 'badge-secondary';
-                        return `<span class="badge ${badgeClass}">${row.type}</span>`;
                     }
                 },
                 { 
                     data: 'amount',
                     render: function(data, type, row) {
-                        if (row.type === 'group') {
-                            return `<strong>${formatCurrency(row.amount)}</strong>`;
+                        if (row.type === 'year' || row.type === 'month' || row.type === 'day') {
+                            return `<strong>${formatCurrency(row.total)} (${row.count})</strong>`;
                         }
                         return formatCurrency(data);
                     }
                 },
-                { data: 'description' },
+                { 
+                    data: 'description',
+                    render: function(data, type, row) {
+                        if (row.type === 'year' || row.type === 'month' || row.type === 'day') {
+                            return '';
+                        }
+                        return data;
+                    }
+                },
                 { 
                     data: 'transfer_date',
                     render: function(data, type, row) {
-                        if (row.type === 'group') {
-                            return row.title;
+                        if (row.type === 'year' || row.type === 'month' || row.type === 'day') {
+                            return '';
                         }
                         return new Date(data).toLocaleString('pt-BR');
                     }
                 },
-                { data: 'asaas_identifier' }
+                { 
+                    data: 'asaas_identifier',
+                    render: function(data, type, row) {
+                        if (row.type === 'year' || row.type === 'month' || row.type === 'day') {
+                            return '';
+                        }
+                        return data;
+                    }
+                }
             ],
             order: [],
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
             },
             createdRow: function(row, data, dataIndex) {
-                if (data.type === 'group') {
-                    $(row).addClass('group-day-header');
+                if (data.type === 'year') {
+                    $(row).addClass('year-group bg-primary text-white');
+                } else if (data.type === 'month') {
+                    $(row).addClass('month-group bg-info text-dark');
+                } else if (data.type === 'day') {
+                    $(row).addClass('day-group bg-light');
                 } else {
-                    $(row).addClass('group-detail');
+                    $(row).addClass('transfer-detail');
                 }
             }
         });
 
-        $('#transfersTable tbody').on('click', 'tr.group-day-header', function() {
+        // Configura clique nos grupos para expandir/recolher
+        $('#transfersTable tbody').on('click', 'tr.year-group, tr.month-group, tr.day-group', function() {
             const tr = $(this);
+            const row = table.row(tr);
             let nextTr = tr.next('tr');
             
-            while (nextTr.length && nextTr.hasClass('group-detail')) {
+            while (nextTr.length && 
+                  (nextTr.hasClass('month-group') || nextTr.hasClass('day-group') || nextTr.hasClass('transfer-detail')) {
                 nextTr.toggleClass('shown');
                 nextTr = nextTr.next('tr');
             }
             
+            // Altera o ícone
             const icon = tr.find('i');
             if (icon.hasClass('bi-caret-down-fill')) {
                 icon.removeClass('bi-caret-down-fill').addClass('bi-caret-right-fill');
-            } else {
+            } else if (icon.hasClass('bi-caret-right-fill')) {
                 icon.removeClass('bi-caret-right-fill').addClass('bi-caret-down-fill');
             }
         });
         
-        $('#transfersTable tbody tr.group-day-header').first().click();
+        // Expande todos os anos inicialmente
+        $('#transfersTable tbody tr.year-group').each(function() {
+            $(this).click();
+        });
 
     }).fail(function() {
         $('#transfersTable tbody').html('<tr><td colspan="5" class="text-center py-4 text-danger">Erro ao carregar transferências. Tente novamente.</td></tr>');
