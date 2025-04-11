@@ -29,9 +29,9 @@ class DriverController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function balanceData(Driver $driver)
+    public function balanceData($driver)
     {
-        dd($driver->id);
+        dd($driver);
         $account = $driver->userAccount()->find($driver->id);
         dd($driver->id);
         $transfers = $account->transfers()
