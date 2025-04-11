@@ -42,23 +42,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
 <style>
-    .year-group {
-    cursor: pointer;
-    font-weight: bold !important;
-    }
-    .month-group {
-        cursor: pointer;
-        font-weight: 600 !important;
-    }
-    .day-group {
-        cursor: pointer;
-    }
-    .transfer-detail {
-        display: none;
-    }
-    .transfer-detail.shown {
-        display: table-row;
-    }
+    /* Estilos para a tabela de motoristas */
     td.dt-control::before {
         content: "+";
         font-weight: bold;
@@ -77,33 +61,28 @@
         font-family: 'monospace';
         letter-spacing: 2px;
     }
-    tr.group-header {
+    
+    /* Estilos para a tabela de transferências */
+    .year-group {
+        cursor: pointer;
+        font-weight: bold !important;
+        background-color: #0d6efd !important;
+        color: white !important;
+    }
+    .month-group {
+        cursor: pointer;
+        font-weight: 600 !important;
+        background-color: #0dcaf0 !important;
+        color: black !important;
+    }
+    .day-group {
+        cursor: pointer;
         background-color: #f8f9fa !important;
-        cursor: pointer;
     }
-    tr.group-header:hover {
-        background-color: #e9ecef !important;
-    }
-    tr.group-header td {
-        font-weight: bold;
-        font-size: 1.1em;
-        padding: 8px 10px;
-    }
-    tr.group-day-header {
-        background-color: #f1f1f1 !important;
-        cursor: pointer;
-    }
-    tr.group-day-header:hover {
-        background-color: #e2e2e2 !important;
-    }
-    tr.group-day-header td {
-        font-weight: 600;
-        padding: 6px 10px 6px 30px;
-    }
-    tr.group-detail {
+    .transfer-detail {
         display: none;
     }
-    tr.group-detail.shown {
+    .transfer-detail.shown {
         display: table-row;
     }
     .badge-pix {
@@ -117,6 +96,15 @@
     }
     .badge-internal {
         background-color: #6c757d;
+    }
+    .indent-1 {
+        padding-left: 20px !important;
+    }
+    .indent-2 {
+        padding-left: 40px !important;
+    }
+    .indent-3 {
+        padding-left: 60px !important;
     }
 </style>
 
@@ -418,14 +406,14 @@ function showBalanceModal(driverId) {
                 { 
                     data: 'type',
                     render: function(data, type, row) {
-                        const indent = '&nbsp;&nbsp;&nbsp;&nbsp;'.repeat(row.level);
+                        const indentClass = `indent-${row.level}`;
                         
                         if (data === 'year') {
-                            return `${indent}<i class="bi bi-calendar-event me-2"></i> <strong>${row.title}</strong>`;
+                            return `<div class="${indentClass}"><i class="bi bi-calendar-event me-2"></i> <strong>${row.title}</strong></div>`;
                         } else if (data === 'month') {
-                            return `${indent}<i class="bi bi-calendar-month me-2"></i> ${row.title}`;
+                            return `<div class="${indentClass}"><i class="bi bi-calendar-month me-2"></i> ${row.title}</div>`;
                         } else if (data === 'day') {
-                            return `${indent}<i class="bi bi-calendar-day me-2"></i> ${row.title}`;
+                            return `<div class="${indentClass}"><i class="bi bi-calendar-day me-2"></i> ${row.title}</div>`;
                         } else {
                             const badgeClass = {
                                 'PIX': 'badge-pix',
@@ -433,7 +421,7 @@ function showBalanceModal(driverId) {
                                 'DOC': 'badge-doc',
                                 'INTERNAL': 'badge-internal'
                             }[row.type] || 'badge-secondary';
-                            return `${indent}<span class="badge ${badgeClass}">${row.type}</span>`;
+                            return `<div class="${indentClass}"><span class="badge ${badgeClass}">${row.type}</span></div>`;
                         }
                     }
                 },
@@ -480,11 +468,11 @@ function showBalanceModal(driverId) {
             },
             createdRow: function(row, data, dataIndex) {
                 if (data.type === 'year') {
-                    $(row).addClass('year-group bg-primary text-white');
+                    $(row).addClass('year-group');
                 } else if (data.type === 'month') {
-                    $(row).addClass('month-group bg-info text-dark');
+                    $(row).addClass('month-group');
                 } else if (data.type === 'day') {
-                    $(row).addClass('day-group bg-light');
+                    $(row).addClass('day-group');
                 } else {
                     $(row).addClass('transfer-detail');
                 }
@@ -494,11 +482,14 @@ function showBalanceModal(driverId) {
         // Configura clique nos grupos para expandir/recolher
         $('#transfersTable tbody').on('click', 'tr.year-group, tr.month-group, tr.day-group', function() {
             const tr = $(this);
-            const row = table.row(tr);
             let nextTr = tr.next('tr');
+            const currentLevel = tr.hasClass('year-group') ? 0 : 
+                               tr.hasClass('month-group') ? 1 : 2;
             
             while (nextTr.length && 
-                  (nextTr.hasClass('month-group') || nextTr.hasClass('day-group') || nextTr.hasClass('transfer-detail')) {
+                  ((nextTr.hasClass('month-group') && currentLevel === 0) || 
+                   (nextTr.hasClass('day-group') && currentLevel === 1) ||
+                   (nextTr.hasClass('transfer-detail') && currentLevel === 2))) {
                 nextTr.toggleClass('shown');
                 nextTr = nextTr.next('tr');
             }
