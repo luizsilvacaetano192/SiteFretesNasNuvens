@@ -64,19 +64,41 @@
 @endsection
 
 @push('scripts')
-<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+<!-- jQuery (deve vir antes de DataTables e outros plugins que usam $) -->
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+
+<!-- DataTables -->
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<!-- Moment.js e Daterangepicker -->
+<script src="https://cdn.jsdelivr.net/momentjs/latest/moment.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/daterangepicker/daterangepicker.min.js"></script>
 
 <script>
     $(document).ready(function () {
         $('#transfers-table').DataTable({
-            responsive: true,
-            order: [[2, 'desc']],
+            pageLength: 25,
             language: {
                 url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
             }
         });
+
+        $('#date_range').daterangepicker({
+            locale: {
+                format: 'DD/MM/YYYY',
+                applyLabel: "Aplicar",
+                cancelLabel: "Cancelar",
+                daysOfWeek: ["Dom","Seg","Ter","Qua","Qui","Sex","Sab"],
+                monthNames: ["Janeiro","Fevereiro","Março","Abril","Maio","Junho","Julho","Agosto","Setembro","Outubro","Novembro","Dezembro"]
+            }
+        });
+
+        $('#reset-filters').click(function () {
+            $('#filters')[0].reset();
+            $('#date_range').val('');
+        });
     });
 </script>
 @endpush
+
