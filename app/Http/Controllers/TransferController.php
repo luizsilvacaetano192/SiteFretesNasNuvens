@@ -2,58 +2,42 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Driver;
-use Illuminate\View\View;
+use App\Models\Transfer;
+use Illuminate\Http\Request;
+use Carbon\Carbon;
 
-class DriverController extends Controller
+class TransferController extends Controller
 {
-    /**
-     * Exibe a view de saldo e transferências
-     */
-    public function showBalance(Driver $driver): View
+    public function index(Request $request)
     {
-        $driver->load(['userAccount.transfers' => function($query) {
-            $query->with(['freight.company'])
-                 ->orderBy('transfer_date', 'desc');
-        }]);
+        $transfers = Transfer::query();
 
-        return view('drivers.balance', [
-            'driver' => $driver,
-            'transfers' => $driver->userAccount->transfers ?? collect()
-        ]);
-    }
+        // Filtro por período de datas
+        if ($request->filled('date_range')) {
+            try {
+                [$start, $end] = explode(' - ', $request->date_range);
 
-    /**
-     * Formata o tipo de transferência para exibição
-     */
-    protected function formatTransferType(string $type): string
-    {
-        $types = [
-            'PIX' => 'PIX',
-            'TED' => 'TED',
-            'DOC' => 'DOC',
-            'INTERNAL' => 'Interna',
-            'BLOCKED' => 'Bloqueado',
-            'PIX_DEBIT' => 'PIX Débito'
-        ];
+                $startDate = Carbon::createFromFormat('d/m/Y', trim($start))->startOfDay();
+                $endDate = Carbon::createFromFormat('d/m/Y', trim($end))->endOfDay();
 
-        return $types[$type] ?? $type;
-    }
+                $transfers->whereBetween('created_at', [$startDate, $endDate]);
+            } catch (\Exception $e) {
+                // Se erro na conversão de data, ignora o filtro
+            }
+        }
 
-    /**
-     * Retorna a cor do badge conforme o tipo
-     */
-    protected function transferBadgeColor(string $type): string
-    {
-        $colors = [
-            'PIX' => 'pix',
-            'TED' => 'ted',
-            'DOC' => 'doc',
-            'INTERNAL' => 'internal',
-            'BLOCKED' => 'blocked',
-            'PIX_DEBIT' => 'success'
-        ];
+        // Outros filtros podem ser aplicados aqui, exemplo:
+        if ($request->filled('freight_id')) {
+            $transfers->where('freight_id', $request->freight_id);
+        }
 
-        return $colors[$type] ?? 'secondary';
+        if ($request->filled('type')) {
+            $transfers->where('type', $request->type);
+        }
+
+        // Ordenação e paginação
+        $transfers = $transfers->orderBy('created_at', 'desc')->paginate(50);
+
+        return view('transfers.index', compact('transfers'));
     }
 }
