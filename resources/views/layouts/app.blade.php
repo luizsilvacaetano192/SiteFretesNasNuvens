@@ -1,4 +1,3 @@
-<!-- resources/views/layouts/app.blade.php -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -38,7 +37,7 @@
             top: 0;
             left: 0;
             background-color: #343a40;
-            padding-top: 70px;
+            padding-top: 20px;
             transition: width 0.3s;
         }
 
@@ -66,7 +65,7 @@
         .content {
             margin-left: 280px;
             padding: 20px;
-            text-align: left; /* Alinhando títulos à esquerda */
+            text-align: left;
         }
 
         .title-container {
@@ -80,13 +79,11 @@
             padding-left: 20px;
         }
 
-        /* Botões alinhados à esquerda */
         .btn-left {
             display: flex;
             justify-content: left;
         }
 
-        /* Responsividade */
         @media (max-width: 768px) {
             .sidebar {
                 width: 60px;
@@ -119,26 +116,25 @@
     </nav>
 
     <!-- Sidebar -->
-    <!-- Sidebar -->
-<div class="sidebar">
-    <a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a>
-    <a href="/freights"><i class="fas fa-truck"></i> Gerenciar Fretes</a>
-    <a href="/shipments"><i class="fas fa-box"></i> Cargas</a>
-    <a href="/companies"><i class="fas fa-building"></i> Empresas</a>
-    <a href="/drivers"><i class="fas fa-id-card"></i> Motoristas</a>
-    <a href="/drivers/send-push"><i class="fas fa-paper-plane"></i> Enviar Push</a>
-    <a href="/messages-push"><i class="fas fa-bell"></i> Mensagens Push</a>
-    <a href="/freight-statuses"><i class="fas fa-tasks"></i> Status</a>
-    <a href="#"><i class="fas fa-cogs"></i> Configurações</a>
-    <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
-</div>
-
+    <div class="sidebar">
+        <div class="text-center mb-4">
+            <img src="{{ asset('images/icone-frete-nas-nuvens.png') }}" alt="Logo" class="img-fluid mt-3" style="max-height: 60px;">
+        </div>
+        <a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/freights"><i class="fas fa-truck"></i> Gerenciar Fretes</a>
+        <a href="/shipments"><i class="fas fa-box"></i> Cargas</a>
+        <a href="/companies"><i class="fas fa-building"></i> Empresas</a>
+        <a href="/drivers"><i class="fas fa-id-card"></i> Motoristas</a>
+        <a href="/drivers/send-push"><i class="fas fa-paper-plane"></i> Enviar Push</a>
+        <a href="/messages-push"><i class="fas fa-bell"></i> Mensagens Push</a>
+        <a href="/freight-statuses"><i class="fas fa-tasks"></i> Status</a>
+        <a href="#"><i class="fas fa-cogs"></i> Configurações</a>
+        <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
+    </div>
 
     <!-- Conteúdo -->
     <div class="content">
         @yield('content', '<div class="title-container">Bem-vindo ao Gestão de Fretes 🚛</div>')
-        
-   
     </div>
 
     <!-- Scripts -->

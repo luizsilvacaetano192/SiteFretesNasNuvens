@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Aws\S3\Transfer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasOne;
@@ -50,5 +51,10 @@ class Freight extends Model
     public function status()
     {
         return $this->belongsTo(FreightStatus::class);
+    }
+
+    public function transfers()
+    {
+        return $this->hasMany(Transfer::class);
     }
 }
