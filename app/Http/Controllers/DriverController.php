@@ -41,7 +41,7 @@ class DriverController extends Controller
         ]);
     }
 
-    public function getDriverFreights($driverId)
+    public function getDriverFreightsWithShipments($driverId)
     {
         try {
             // Verifica se o motorista existe
@@ -53,21 +53,33 @@ class DriverController extends Controller
                 ], 404);
             }
 
-            // Busca os fretes do motorista com relacionamento com a empresa
-            $freights = Freight::with(['company' => function($query) {
-                    $query->select('id', 'name');
-                }])
+            // Busca os fretes do motorista com relacionamentos
+            $freights = Freight::with([
+                    'company:id,name',
+                    'shipment:id,cargo_type,description' // Inclui o relacionamento com shipments
+                ])
                 ->where('driver_id', $driverId)
                 ->select([
                     'id',
                     'company_id',
-                    'cargo_type',
+                    'shipment_id', // Certifique-se que este campo existe na tabela freights
                     'freight_date',
                     'status',
                     'created_at'
                 ])
                 ->orderBy('freight_date', 'desc')
-                ->get();
+                ->get()
+                ->map(function ($freight) {
+                    // Adiciona o tipo de carga do shipment ao resultado
+                    return [
+                        'id' => $freight->id,
+                        'company' => $freight->company,
+                        'cargo_type' => $freight->shipment ? $freight->shipment->cargo_type : 'N/A',
+                        'freight_date' => $freight->freight_date,
+                        'status' => $freight->status,
+                        'created_at' => $freight->created_at
+                    ];
+                });
 
             return response()->json([
                 'success' => true,
@@ -82,8 +94,7 @@ class DriverController extends Controller
             ], 500);
         }
     }
-
-
+    
     public function showSendPushForm()
     {
         $drivers = Driver::select('id', 'name',  'address', 'token_push')->get();
