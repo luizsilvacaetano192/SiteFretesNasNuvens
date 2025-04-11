@@ -191,6 +191,107 @@ function format(d) {
     `;
 }
 
+function openImageModal(src) {
+    $('#modalImage').attr('src', src);
+    new bootstrap.Modal('#imageModal').show();
+}
+
+function renderImageColumn(title, src) {
+    return `
+        <div class="col-md-3 text-center mb-3">
+            <p><strong>${title}</strong></p>
+            <img src="${src}" class="img-fluid rounded" style="max-height:150px;" onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';"/>
+            <br>
+            <a href="${src}" download class="btn btn-sm btn-outline-primary mt-2">⬇ Baixar</a>
+            <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${src}')">🔍 Ampliar</button>
+        </div>
+    `;
+}
+
+function updateDriverStatus(id, status) {
+    const reason = $('#blockReason').val().trim();
+
+    if ((status === 'block' || status === 'transfer_block') && !reason) {
+        toastr.warning('Por favor, informe o motivo do bloqueio.');
+        return;
+    }
+
+    $.post(`/drivers/${id}/update-status`, {
+        status,
+        reason,
+        _token: '{{ csrf_token() }}'
+    }, () => {
+        $('#drivers-table').DataTable().ajax.reload(null, false);
+        bootstrap.Modal.getInstance(document.getElementById('blockModal'))?.hide();
+        toastr.success(`Status atualizado para ${status}`);
+        $('#blockReason').val(''); // Limpa o campo
+    }).fail(() => toastr.error("Erro ao atualizar status."));
+}
+
+$('#blockUserBtn').click(() => updateDriverStatus(selectedDriverId, 'block'));
+$('#blockTransferBtn').click(() => updateDriverStatus(selectedDriverId, 'transfer_block'));
+
+
+function activateDriver(id, status) {
+    if (status === 'active') {
+        selectedDriverId = id;
+        new bootstrap.Modal('#blockModal').show();
+    } else {
+        updateDriverStatus(id, 'active');
+    }
+}
+
+function analyzeDriver(driverId) {
+    const modal = new bootstrap.Modal('#analyzeModal');
+    $('#analysisContent').html(`
+        <div class="text-center">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
+        </div>
+    `);
+    modal.show();
+
+    $.get(`/drivers/${driverId}/analyze`, result => {
+        $('#analysisContent').html(`
+            <div class="alert alert-info">
+                <h5>🧠 Resultado da Análise via IA:</h5>
+                <p>${result.message.replace(/\n/g, "<br>")}</p>
+            </div>
+            <div class="row">
+                ${renderImageColumn('Frente CNH', result.driver_license_front)}
+                ${renderImageColumn('Comprovante de Endereço', result.address_proof)}
+                ${renderImageColumn('Foto do Rosto', result.face_photo)}
+            </div>
+        `);
+    }).fail(() => {
+        $('#analysisContent').html(`<div class="alert alert-danger">❌ Erro na análise com IA.</div>`);
+    });
+}
+
+function togglePassword(id, password) {
+    const span = document.getElementById(`password-${id}`);
+    if (span.innerText === '••••••••') {
+        span.innerText = password;
+    } else {
+        span.innerText = '••••••••';
+    }
+}
+
+function getStatusLabel(status) {
+    const labels = {
+        'create': ['Aguardando Ativação', 'warning'],
+        'active': ['Ativo', 'success'],
+        'block': ['Bloqueado', 'danger'],
+        'transfer_block': ['Transferências Bloqueadas', 'danger'],
+    };
+    return labels[status] || ['Desconhecido', 'secondary'];
+}
+
+function openWhatsApp(phone) {
+    if (!phone) return alert("Número de telefone não disponível.");
+    const formatted = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/55${formatted}`, '_blank');
+
 // Função para mostrar o modal de saldo com agrupamento por dia
 function showBalanceModal(driverId) {
     const modal = new bootstrap.Modal('#balanceModal');
