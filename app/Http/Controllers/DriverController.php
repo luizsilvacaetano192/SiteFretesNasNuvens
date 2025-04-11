@@ -65,7 +65,6 @@ class DriverController extends Controller
                     'company_id',
                     'shipment_id',
                     'status_id', // Campo que relaciona com freight_statuses
-                    'freight_date',
                     'created_at'
                 ])
                 ->get()
@@ -74,7 +73,7 @@ class DriverController extends Controller
                         'id' => $freight->id,
                         'company' => $freight->company,
                         'cargo_type' => $freight->shipment ? $freight->shipment->cargo_type : 'N/A',
-                        'freight_date' => '2025-04-11',
+                        'freight_date' => $freight->created_at,
                         'status' => $freight->status,
                         'created_at' => $freight->created_at
                     ];
