@@ -118,7 +118,7 @@
     <!-- Sidebar -->
     <div class="sidebar">
         <div class="text-center mb-4">
-            <img src="{{ asset('images/icone-frete-nas-nuvens.png') }}" alt="Logo" class="img-fluid mt-3" style="max-height: 60px;">
+            <img src="{{ asset('images/logo_fretes_nas_nuvenss.png') }}" alt="Logo" class="img-fluid mt-3" style="max-height: 60px;">
         </div>
         <a href="#" class="active"><i class="fas fa-home"></i> Dashboard</a>
         <a href="/freights"><i class="fas fa-truck"></i> Gerenciar Fretes</a>
