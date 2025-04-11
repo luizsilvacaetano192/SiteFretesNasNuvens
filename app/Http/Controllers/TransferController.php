@@ -2,42 +2,58 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Transfer;
-use Illuminate\Http\Request;
-use Carbon\Carbon;
+use App\Models\Driver;
+use Illuminate\View\View;
 
-class TransferController extends Controller
+class DriverController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Exibe a view de saldo e transferências
+     */
+    public function showBalance(Driver $driver): View
     {
-        $transfers = Transfer::query();
+        $driver->load(['userAccount.transfers' => function($query) {
+            $query->with(['freight.company'])
+                 ->orderBy('transfer_date', 'desc');
+        }]);
 
-        // Filtro por período de datas
-        if ($request->filled('date_range')) {
-            try {
-                [$start, $end] = explode(' - ', $request->date_range);
+        return view('drivers.balance', [
+            'driver' => $driver,
+            'transfers' => $driver->userAccount->transfers ?? collect()
+        ]);
+    }
 
-                $startDate = Carbon::createFromFormat('d/m/Y', trim($start))->startOfDay();
-                $endDate = Carbon::createFromFormat('d/m/Y', trim($end))->endOfDay();
+    /**
+     * Formata o tipo de transferência para exibição
+     */
+    protected function formatTransferType(string $type): string
+    {
+        $types = [
+            'PIX' => 'PIX',
+            'TED' => 'TED',
+            'DOC' => 'DOC',
+            'INTERNAL' => 'Interna',
+            'BLOCKED' => 'Bloqueado',
+            'PIX_DEBIT' => 'PIX Débito'
+        ];
 
-                $transfers->whereBetween('created_at', [$startDate, $endDate]);
-            } catch (\Exception $e) {
-                // Se erro na conversão de data, ignora o filtro
-            }
-        }
+        return $types[$type] ?? $type;
+    }
 
-        // Outros filtros podem ser aplicados aqui, exemplo:
-        if ($request->filled('freight_id')) {
-            $transfers->where('freight_id', $request->freight_id);
-        }
+    /**
+     * Retorna a cor do badge conforme o tipo
+     */
+    protected function transferBadgeColor(string $type): string
+    {
+        $colors = [
+            'PIX' => 'pix',
+            'TED' => 'ted',
+            'DOC' => 'doc',
+            'INTERNAL' => 'internal',
+            'BLOCKED' => 'blocked',
+            'PIX_DEBIT' => 'success'
+        ];
 
-        if ($request->filled('type')) {
-            $transfers->where('type', $request->type);
-        }
-
-        // Ordenação e paginação
-        $transfers = $transfers->orderBy('created_at', 'desc')->paginate(50);
-
-        return view('transfers.index', compact('transfers'));
+        return $colors[$type] ?? 'secondary';
     }
 }

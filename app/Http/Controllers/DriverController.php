@@ -31,71 +31,144 @@ class DriverController extends Controller
         return response()->json(['success' => true]);
     }
 
-    public function balanceData($driver): JsonResponse
+
+    
+    class DriverController extends Controller
     {
-        try {
-            if (!$driver instanceof Driver) {
-                $driver = Driver::with('userAccount')->findOrFail($driver);
-            }
+        /**
+         * Retorna os dados de saldo e transferências do motorista
+         * Inclui transferências com e sem frete associado
+         *
+         * @param int|Driver $driver ID ou instância do Driver
+         * @return JsonResponse
+         */
+        public function balanceData($driver): JsonResponse
+        {
+            try {
+                // Carrega o motorista com suas transferências
+                if (!$driver instanceof Driver) {
+                    $driver = Driver::with(['userAccount.transfers.freight.company'])
+                        ->findOrFail($driver);
+                }
     
-            if (!$driver->userAccount) {
+                // Verifica se existe conta associada
+                if (!$driver->userAccount) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'Conta não encontrada para este motorista',
+                        'account_status' => 'not_found'
+                    ], 404);
+                }
+    
+                $account = $driver->userAccount;
+                
+                // Formata todas as transferências
+                $formattedTransfers = $account->transfers
+                    ->sortByDesc('transfer_date')
+                    ->map(function ($transfer) use ($driver) {
+                        // Informações base
+                        $transferData = [
+                            'motorista' => $driver->name,
+                            'motorista_id' => $driver->id,
+                            'transferencia_id' => $transfer->id,
+                            'data' => $transfer->transfer_date->format('d/m/Y'),
+                            'data_iso' => $transfer->transfer_date->format('Y-m-d'),
+                            'tipo' => $this->formatTransferType($transfer->type),
+                            'valor' => (float) $transfer->amount,
+                            'valor_formatado' => 'R$ ' . number_format($transfer->amount, 2, ',', '.'),
+                            'descricao' => $transfer->description ?? 'Transferência',
+                            'asaas_id' => $transfer->asaas_identifier ?? null,
+                            'created_at' => $transfer->created_at->format('d/m/Y H:i')
+                        ];
+    
+                        // Informações do frete (se existir)
+                        if ($transfer->freight) {
+                            $transferData['frete'] = [
+                                'frete_id' => $transfer->freight->id,
+                                'cliente' => optional($transfer->freight->company)->name ?? 'Cliente não informado',
+                                'cliente_id' => optional($transfer->freight->company)->id
+                            ];
+                        } else {
+                            $transferData['frete'] = [
+                                'frete_id' => null,
+                                'cliente' => 'Não vinculado a frete',
+                                'cliente_id' => null
+                            ];
+                        }
+    
+                        return $transferData;
+                    });
+    
+                // Calcula totais
+                $totalTransferencias = $formattedTransfers->count();
+                $totalValor = $formattedTransfers->sum('valor');
+    
                 return response()->json([
-                    'error' => 'Conta não encontrada para este motorista',
-                    'account_status' => 'not_found'
+                    'success' => true,
+                    'data' => [
+                        'motorista' => [
+                            'id' => $driver->id,
+                            'nome' => $driver->name,
+                            'conta_asaas' => $account->asaas_identifier
+                        ],
+                        'saldos' => [
+                            'total' => (float) $account->total_balance,
+                            'total_formatado' => 'R$ ' . number_format($account->total_balance, 2, ',', '.'),
+                            'bloqueado' => (float) $account->blocked_balance,
+                            'bloqueado_formatado' => 'R$ ' . number_format($account->blocked_balance, 2, ',', '.'),
+                            'disponivel' => (float) $account->available_balance,
+                            'disponivel_formatado' => 'R$ ' . number_format($account->available_balance, 2, ',', '.'),
+                            'ultima_atualizacao' => $account->updated_at->format('d/m/Y H:i')
+                        ],
+                        'transferencias' => $formattedTransfers->values(), // Reindexa o array
+                        'totalizadores' => [
+                            'quantidade' => $totalTransferencias,
+                            'valor_total' => $totalValor,
+                            'valor_total_formatado' => 'R$ ' . number_format($totalValor, 2, ',', '.')
+                        ]
+                    ]
+                ]);
+    
+            } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Motorista não encontrado',
+                    'message' => $e->getMessage()
                 ], 404);
+    
+            } catch (\Exception $e) {
+                Log::error("Erro no balanceData - " . $e->getMessage());
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Erro ao processar requisição',
+                    'message' => $e->getMessage()
+                ], 500);
             }
+        }
     
-            $account = $driver->userAccount;
-            
-            $transfers = $account->transfers()
-                ->select([
-                    'id',
-                    'type',
-                    'amount',
-                    'description',
-                    'transfer_date',
-                    'asaas_identifier',
-                    'created_at'
-                ])
-                ->orderBy('transfer_date', 'desc')
-                ->get();
+        /**
+         * Formata o tipo de transferência para exibição
+         * 
+         * @param string $type
+         * @return string
+         */
+        private function formatTransferType(string $type): string
+        {
+            $types = [
+                'PIX' => 'PIX',
+                'TED' => 'TED',
+                'DOC' => 'DOC',
+                'INTERNAL' => 'Transferência Interna',
+                'BLOCKED' => 'Valor Bloqueado',
+                'PIX_DEBIT' => 'Débito via PIX',
+                'WITHDRAW' => 'Saque',
+                'DEPOSIT' => 'Depósito'
+            ];
     
-            return response()->json([
-                'account' => [
-                    'asaas_identifier' => $account->asaas_identifier,
-                    'total_balance' => (float) $account->total_balance,
-                    'blocked_balance' => (float) $account->blocked_balance,
-                    'available_balance' => (float) $account->available_balance,
-                    'last_updated' => optional($account->updated_at)->toDateTimeString(),
-                ],
-                'transfers' => $transfers->map(function ($transfer) {
-                    return [
-                        'id' => $transfer->id,
-                        'type' => $transfer->type,
-                        'amount' => (float) $transfer->amount,
-                        'description' => $transfer->description,
-                        'transfer_date' => $transfer->transfer_date,
-                        'asaas_identifier' => $transfer->asaas_identifier,
-                        'month_year' => $transfer->transfer_date ? date('m/Y', strtotime($transfer->transfer_date)) : null,
-                        'month_name' => $transfer->transfer_date ? ucfirst(\Carbon\Carbon::parse($transfer->transfer_date)->formatLocalized('%B %Y')) : null,
-                        'created_at' => optional($transfer->created_at)->toDateTimeString(),
-                    ];
-                }),
-                'summary' => [
-                    'total_transfers' => $transfers->count(),
-                    'total_amount' => (float) $transfers->sum('amount'),
-                    'last_transfer_date' => $transfers->isNotEmpty() ? $transfers->first()->transfer_date : null,
-                ]
-            ]);
-    
-        } catch (\Exception $e) {
-            Log::error("Erro no balanceData: " . $e->getMessage());
-            return response()->json([
-                'error' => 'Erro ao processar requisição',
-                'message' => $e->getMessage()
-            ], 500);
+            return $types[$type] ?? $type;
         }
     }
+}
 
 
     public function showSendPushForm()
