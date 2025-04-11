@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Driver;
+use App\Models\Freight;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\Storage;
@@ -39,6 +40,49 @@ class DriverController extends Controller
             'transfers' => $transfers
         ]);
     }
+
+    public function getDriverFreights($driverId)
+    {
+        try {
+            // Verifica se o motorista existe
+            $driver = Driver::find($driverId);
+            if (!$driver) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Motorista não encontrado'
+                ], 404);
+            }
+
+            // Busca os fretes do motorista com relacionamento com a empresa
+            $freights = Freight::with(['company' => function($query) {
+                    $query->select('id', 'name');
+                }])
+                ->where('driver_id', $driverId)
+                ->select([
+                    'id',
+                    'company_id',
+                    'cargo_type',
+                    'freight_date',
+                    'status',
+                    'created_at'
+                ])
+                ->orderBy('freight_date', 'desc')
+                ->get();
+
+            return response()->json([
+                'success' => true,
+                'freights' => $freights
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao buscar fretes do motorista',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
 
     public function showSendPushForm()
     {
