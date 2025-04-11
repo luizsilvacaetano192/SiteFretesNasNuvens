@@ -108,21 +108,34 @@
 </style>
 
 <script>
-// Funções auxiliares (mantidas da versão anterior)
-function maskRG(value) { /* ... */ }
-function maskPhone(value) { /* ... */ }
-function maskCPF(cpf) { /* ... */ }
-function formatDateBR(dateStr) { /* ... */ }
-function formatCurrency(value) { /* ... */ }
-function openImageModal(src) { /* ... */ }
-function renderImageColumn(title, src) { /* ... */ }
-function updateDriverStatus(id, status) { /* ... */ }
-function activateDriver(id, status) { /* ... */ }
-function analyzeDriver(driverId) { /* ... */ }
-function togglePassword(id, password) { /* ... */ }
-function getStatusLabel(status) { /* ... */ }
-function openWhatsApp(phone) { /* ... */ }
-function format(d) { /* ... */ }
+
+function maskRG(value) {
+    if (!value) return '';
+    return value.replace(/^(\d{1,2})(\d{3})(\d{3})([\dxX])?$/, (_, p1, p2, p3, p4) => `${p1}.${p2}.${p3}${p4 ? '-' + p4 : ''}`);
+}
+
+function maskPhone(value) {
+    if (!value) return '';
+    return value.replace(/\D/g, '').replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+}
+
+function maskCPF(cpf) {
+    return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+}
+
+function formatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR');
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value || 0);
+}
+
 
 // Função para mostrar o modal de saldo com agrupamento por dia
 function showBalanceModal(driverId) {
