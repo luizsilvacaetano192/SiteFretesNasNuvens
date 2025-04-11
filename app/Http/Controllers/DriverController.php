@@ -64,11 +64,10 @@ class DriverController extends Controller
                     'id',
                     'company_id',
                     'shipment_id',
-                    'freight_status_id', // Campo que relaciona com freight_statuses
+                    'status_id', // Campo que relaciona com freight_statuses
                     'freight_date',
                     'created_at'
                 ])
-                ->orderBy('freight_date', 'desc')
                 ->get()
                 ->map(function ($freight) {
                     return [
