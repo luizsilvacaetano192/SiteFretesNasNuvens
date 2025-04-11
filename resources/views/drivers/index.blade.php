@@ -300,6 +300,7 @@ function showBalanceModal(driverId) {
     if ($.fn.DataTable.isDataTable('#transfersTable')) {
         $('#transfersTable').DataTable().destroy();
     }
+}
     
     // Mostra loading
     $('#transfersTable tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Carregando transferências...</p></td></tr>');
