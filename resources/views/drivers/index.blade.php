@@ -252,6 +252,8 @@ function showBalanceModal(driverId) {
             });
         });
 
+        // Configura o DataTables para usar moment.js para ordenação de datas
+        $.fn.dataTable.moment('DD/MM/YYYY HH:mm:ss');  // Formato que suas datas usam
         // Inicializa a DataTable
         const table = $('#transfersTable').DataTable({
             data: tableData,
