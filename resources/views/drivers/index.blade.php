@@ -41,7 +41,9 @@
 <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-
+<!-- Adicione antes do datetime-moment.js -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.1/moment.min.js"></script>
+<script src="https://cdn.datatables.net/plug-ins/1.13.4/sorting/datetime-moment.js"></script>
 <style>
     /* Estilos para a tabela de motoristas */
     td.dt-control::before {
@@ -292,7 +294,8 @@ function openWhatsApp(phone) {
     const formatted = phone.replace(/\D/g, '');
     window.open(`https://wa.me/55${formatted}`, '_blank');
 
-// Função para mostrar o modal de saldo com agrupamento por dia
+}
+
 function showBalanceModal(driverId) {
     const modal = new bootstrap.Modal('#balanceModal');
     
@@ -300,7 +303,17 @@ function showBalanceModal(driverId) {
     if ($.fn.DataTable.isDataTable('#transfersTable')) {
         $('#transfersTable').DataTable().destroy();
     }
-}
+    
+    // Mostra loading
+    $('#transfersTable tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Carregando transferências...</p></td></tr>');
+    modal.show();
+    
+    $.get(`/drivers/${driverId}/balance-data`, function(data) {
+        // Restante da função...
+    }).fail(function() {
+        $('#transfersTable tbody').html('<tr><td colspan="5" class="text-center py-4 text-danger">Erro ao carregar transferências. Tente novamente.</td></tr>');
+    });
+} // Esta chave estava faltando
     
     // Mostra loading
     $('#transfersTable tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Carregando transferências...</p></td></tr>');
