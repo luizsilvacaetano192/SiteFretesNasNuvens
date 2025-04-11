@@ -41,7 +41,7 @@ class DriverController extends Controller
         ]);
     }
 
-    public function getDriverFreightsWithShipments($driverId)
+    public function getDriverFreightsWithDetails($driverId)
     {
         try {
             // Verifica se o motorista existe
@@ -53,28 +53,29 @@ class DriverController extends Controller
                 ], 404);
             }
 
-            // Busca os fretes do motorista com relacionamentos
+            // Busca os fretes do motorista com todos os relacionamentos
             $freights = Freight::with([
                     'company:id,name',
-                    'shipment:id,cargo_type,description' // Inclui o relacionamento com shipments
+                    'shipment:id,cargo_type,description',
+                    'status:id,name,color' // Relacionamento com freight_statuses
                 ])
                 ->where('driver_id', $driverId)
                 ->select([
                     'id',
                     'company_id',
-                    'shipment_id', // Certifique-se que este campo existe na tabela freights
-                    'status',
+                    'shipment_id',
+                    'freight_status_id', // Campo que relaciona com freight_statuses
+                    'freight_date',
                     'created_at'
                 ])
                 ->orderBy('freight_date', 'desc')
                 ->get()
                 ->map(function ($freight) {
-                    // Adiciona o tipo de carga do shipment ao resultado
                     return [
                         'id' => $freight->id,
                         'company' => $freight->company,
                         'cargo_type' => $freight->shipment ? $freight->shipment->cargo_type : 'N/A',
-                        'freight_date' => 'sem data',
+                        'freight_date' => $freight->freight_date,
                         'status' => $freight->status,
                         'created_at' => $freight->created_at
                     ];
@@ -93,6 +94,7 @@ class DriverController extends Controller
             ], 500);
         }
     }
+
     
     public function showSendPushForm()
     {
