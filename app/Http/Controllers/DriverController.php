@@ -32,11 +32,29 @@ class DriverController extends Controller
     public function balanceData(Driver $driver)
     {
         $account = $driver->userAccount()->firstOrFail();
-        $transfers = $account->transfers()->orderBy('transfer_date', 'desc')->get();
+        $transfers = $account->transfers()
+            ->selectRaw('*, MONTH(transfer_date) as month, YEAR(transfer_date) as year')
+            ->orderBy('transfer_date', 'desc')
+            ->get();
         
         return response()->json([
-            'account' => $account,
-            'transfers' => $transfers
+            'account' => [
+                'asaas_identifier' => $account->asaas_identifier,
+                'total_balance' => $account->total_balance,
+                'blocked_balance' => $account->blocked_balance,
+                'available_balance' => $account->available_balance,
+            ],
+            'transfers' => $transfers->map(function ($transfer) {
+                return [
+                    'type' => $transfer->type,
+                    'amount' => $transfer->amount,
+                    'description' => $transfer->description,
+                    'transfer_date' => $transfer->transfer_date,
+                    'asaas_identifier' => $transfer->asaas_identifier,
+                    'month_year' => date('m/Y', strtotime($transfer->transfer_date)),
+                    'month_name' => ucfirst(strftime('%B %Y', strtotime($transfer->transfer_date))),
+                ];
+            })
         ]);
     }
 
