@@ -29,6 +29,17 @@ class DriverController extends Controller
         return response()->json(['success' => true]);
     }
 
+    public function balanceData(Driver $driver)
+    {
+        $account = $driver->userAccount()->firstOrFail();
+        $transfers = $account->transfers()->orderBy('transfer_date', 'desc')->get();
+        
+        return response()->json([
+            'account' => $account,
+            'transfers' => $transfers
+        ]);
+    }
+
     public function showSendPushForm()
     {
         $drivers = Driver::select('id', 'name',  'address', 'token_push')->get();

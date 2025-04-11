@@ -68,6 +68,7 @@ Route::prefix('messages-push')->group(function () {
 
 Route::get('/drivers/{id}/balance-info', [DriverController::class, 'balanceInfo']);
 
+Route::get('/drivers/{driver}/balance-data', [DriverController::class, 'balanceData'])->name('drivers.balance-data');
 
 Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate']);
 Route::post('/drivers/{driver}/block', [DriverController::class, 'block']);
