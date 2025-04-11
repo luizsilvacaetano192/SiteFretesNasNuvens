@@ -62,4 +62,11 @@ class Driver extends Model
             ? Storage::disk('s3')->url($this->address_proof_photo)
             : null;
     }
+
+    public function userAccount()
+    {
+        return $this->hasMany(UserAccount::class);
+    }
+
+
 }
