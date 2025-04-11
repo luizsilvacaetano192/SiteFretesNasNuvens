@@ -37,7 +37,7 @@ class TransferController extends Controller
 
         $transfers = $query->get();
 
-        return view('admin.transfers.index', compact('transfers'));
+        return view('transfers.index', compact('transfers'));
     }
 
 }
