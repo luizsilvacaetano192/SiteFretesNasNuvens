@@ -1,43 +1,43 @@
 <?php
 
 namespace App\Http\Controllers;
-use App\Models\Transfer;
 
+use App\Models\Transfer;
 use Illuminate\Http\Request;
+use Carbon\Carbon;
 
 class TransferController extends Controller
 {
     public function index(Request $request)
     {
-        $freightId = $request->freight_id;
-        $type = $request->type;
-        $date = $request->date;
+        $transfers = Transfer::query();
 
-        $query = Transfer::with([
-            'userAccount.driver',
-            'userAccount.driver.freights.shipment.company'
-        ])
-        ->select('transfers.*')
-        ->join('user_accounts', 'transfers.user_account_id', '=', 'user_accounts.id')
-        ->join('drivers', 'user_accounts.driver_id', '=', 'drivers.id')
-        ->join('freights', 'drivers.id', '=', 'freights.driver_id')
-        ->join('shipments', 'freights.shipment_id', '=', 'shipments.id');
+        // Filtro por período de datas
+        if ($request->filled('date_range')) {
+            try {
+                [$start, $end] = explode(' - ', $request->date_range);
 
-        if ($freightId) {
-            $query->where('freights.id', $freightId);
+                $startDate = Carbon::createFromFormat('d/m/Y', trim($start))->startOfDay();
+                $endDate = Carbon::createFromFormat('d/m/Y', trim($end))->endOfDay();
+
+                $transfers->whereBetween('created_at', [$startDate, $endDate]);
+            } catch (\Exception $e) {
+                // Se erro na conversão de data, ignora o filtro
+            }
         }
 
-        if ($type) {
-            $query->where('transfers.type', $type);
+        // Outros filtros podem ser aplicados aqui, exemplo:
+        if ($request->filled('freight_id')) {
+            $transfers->where('freight_id', $request->freight_id);
         }
 
-        if ($date) {
-            $query->whereDate('transfers.transfer_date', $date);
+        if ($request->filled('type')) {
+            $transfers->where('type', $request->type);
         }
 
-        $transfers = $query->get();
+        // Ordenação e paginação
+        $transfers = $transfers->orderBy('created_at', 'desc')->paginate(50);
 
         return view('transfers.index', compact('transfers'));
     }
-
 }
