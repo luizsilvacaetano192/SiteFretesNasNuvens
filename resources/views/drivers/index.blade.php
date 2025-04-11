@@ -15,6 +15,7 @@
                 <th></th>
                 <th>Nome</th>
                 <th>Endereço</th>
+                <th>RG</th>
                 <th>Telefone</th>
                 <th>Status</th>
                 <th>Ações</th>
@@ -303,6 +304,7 @@ $(document).ready(function () {
             { className: 'dt-control', orderable: false, data: null, defaultContent: '' },
             { data: 'name' },
             { data: 'address' },
+            { data: 'identity_card' },
             { data: 'phone', render: maskPhone },
             {
                 data: 'status',
