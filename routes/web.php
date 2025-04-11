@@ -70,7 +70,7 @@ Route::prefix('messages-push')->group(function () {
 
 Route::get('/drivers/{id}/balance-info', [DriverController::class, 'balanceInfo']);
 
-Route::get('/Transfers', [TransferController::class, 'index']);
+Route::get('/transfers', [TransferController::class, 'index']);
 
 Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate']);
 Route::post('/drivers/{driver}/block', [DriverController::class, 'block']);
