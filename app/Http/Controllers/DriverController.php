@@ -31,6 +31,7 @@ class DriverController extends Controller
 
     public function balanceData(Driver $driver)
     {
+        dd($driver);
         $account = $driver->userAccount()->firstOrFail();
         dd($account);
         $transfers = $account->transfers()
