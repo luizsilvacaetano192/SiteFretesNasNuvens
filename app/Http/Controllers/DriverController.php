@@ -31,6 +31,7 @@ class DriverController extends Controller
 
     public function balanceData(Driver $driver)
     {
+        die('ta aq');
         $account = $driver->userAccount()->firstOrFail();
         $transfers = $account->transfers()
             ->selectRaw('*, MONTH(transfer_date) as month, YEAR(transfer_date) as year')
