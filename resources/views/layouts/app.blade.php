@@ -128,7 +128,7 @@
         <a href="/drivers/send-push"><i class="fas fa-paper-plane"></i> Enviar Push</a>
         <a href="/messages-push"><i class="fas fa-bell"></i> Mensagens Push</a>
         <a href="/freight-statuses"><i class="fas fa-tasks"></i> Status</a>
-        <a href="{{ route('transfer.report') }}"><i class="fas fa-money-check-alt"></i> Transferências</a>
+        <a href="{{ route('transfers') }}"><i class="fas fa-money-check-alt"></i> Transferências</a>
         <a href="#"><i class="fas fa-cogs"></i> Configurações</a>
         <a href="#"><i class="fas fa-sign-out-alt"></i> Sair</a>
 
