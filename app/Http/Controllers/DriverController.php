@@ -31,8 +31,9 @@ class DriverController extends Controller
 
     public function balanceData(Driver $driver)
     {
+        dd($driver->id);
         $account = $driver->userAccount()->find($driver->id);
-        dd($account);
+        dd($driver->id);
         $transfers = $account->transfers()
             ->selectRaw('*, MONTH(transfer_date) as month, YEAR(transfer_date) as year')
             ->orderBy('transfer_date', 'desc')
