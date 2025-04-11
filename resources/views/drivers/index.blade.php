@@ -161,7 +161,35 @@ function openWhatsApp(phone) {
     window.open(`https://wa.me/55${formatted}`, '_blank');
 }
 
+function format(d) {
+    let reason = '';
+    if (d.status === 'block' || d.status === 'transfer_block') {
+        reason = `<p><strong>Motivo:</strong> ${d.reason || 'Não informado'}</p>`;
+    }
 
+    return `
+        <div class="p-3 bg-light rounded">
+            <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
+            <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
+            <p><strong>CPF:</strong> ${maskCPF(d.cpf)}</p>
+            <p><strong>CNH:</strong> ${d.driver_license_number}</p>
+            <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
+            <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
+            <p><strong>Status:</strong> ${getStatusLabel(d.status)[0]}</p>
+            <p><strong>Senha:</strong> 
+                <span id="password-${d.id}" class="password-hidden">••••••••</span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="togglePassword('${d.id}', '${d.password}')">👁️</button>
+            </p>
+            ${reason}
+            <div class="row">
+                ${renderImageColumn('Frente CNH', d.driver_license_front)}
+                ${renderImageColumn('Verso CNH', d.driver_license_back)}
+                ${renderImageColumn('Foto do Rosto', d.face_photo)}
+                ${renderImageColumn('Comprovante de Endereço', d.address_proof)}
+            </div>
+        </div>
+    `;
+}
 
 // Função para mostrar o modal de saldo com agrupamento por dia
 function showBalanceModal(driverId) {
@@ -172,35 +200,6 @@ function showBalanceModal(driverId) {
         $('#transfersTable').DataTable().destroy();
     }
     
-    function format(d) {
-        let reason = '';
-        if (d.status === 'block' || d.status === 'transfer_block') {
-            reason = `<p><strong>Motivo:</strong> ${d.reason || 'Não informado'}</p>`;
-        }
-
-        return `
-            <div class="p-3 bg-light rounded">
-                <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
-                <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
-                <p><strong>CPF:</strong> ${maskCPF(d.cpf)}</p>
-                <p><strong>CNH:</strong> ${d.driver_license_number}</p>
-                <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
-                <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
-                <p><strong>Status:</strong> ${getStatusLabel(d.status)[0]}</p>
-                <p><strong>Senha:</strong> 
-                    <span id="password-${d.id}" class="password-hidden">••••••••</span>
-                    <button class="btn btn-sm btn-outline-secondary" onclick="togglePassword('${d.id}', '${d.password}')">👁️</button>
-                </p>
-                ${reason}
-                <div class="row">
-                    ${renderImageColumn('Frente CNH', d.driver_license_front)}
-                    ${renderImageColumn('Verso CNH', d.driver_license_back)}
-                    ${renderImageColumn('Foto do Rosto', d.face_photo)}
-                    ${renderImageColumn('Comprovante de Endereço', d.address_proof)}
-                </div>
-            </div>
-        `;
-    }
     // Mostra loading
     $('#transfersTable tbody').html('<tr><td colspan="5" class="text-center py-4"><div class="spinner-border text-primary" role="status"></div><p class="mt-2">Carregando transferências...</p></td></tr>');
     modal.show();
