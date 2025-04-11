@@ -70,68 +70,167 @@ class DriverController extends Controller
         }
     
         
-        public function balanceData(Driver $driver): JsonResponse
+        class DriverBalanceController extends Controller
         {
-            try {
-                $driver->load(['userAccount.transfers' => function($query) {
-                    $query->orderBy('transfer_date', 'desc');
-                }]);
-    
-                if (!$driver->userAccount) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => 'Conta não encontrada'
-                    ], 404);
+            /**
+             * Exibe a view de saldo e transferências
+             *
+             * @param Driver $driver
+             * @return View
+             */
+            public function show(Driver $driver): View
+            {
+                try {
+                    // Carrega as relações necessárias com tratamento de erros
+                    $driver->load(['userAccount.transfers' => function($query) {
+                        $query->with(['freight.company'])
+                             ->orderBy('transfer_date', 'desc');
+                    }]);
+        
+                    // Obtém a conta ou cria uma instância vazia para evitar erros
+                    $account = $this->getUserAccount($driver);
+                    
+                    // Pré-formata as transferências
+                    $transfers = $this->prepareTransfers($account);
+        
+                    return view('drivers.balance', [
+                        'driver' => $driver,
+                        'account' => $account,
+                        'transfers' => $transfers
+                    ]);
+        
+                } catch (\Exception $e) {
+                    Log::error('DriverBalanceController error: ' . $e->getMessage());
+                    
+                    // Retorna a view com dados vazios em caso de erro
+                    return view('drivers.balance', [
+                        'driver' => $driver ?? new Driver(),
+                        'account' => new UserAccount(),
+                        'transfers' => collect(),
+                        'error' => 'Ocorreu um erro ao carregar os dados'
+                    ]);
                 }
-    
-                $transfers = $driver->userAccount->transfers->map(function ($transfer) {
-                    return [
-                        'id' => $transfer->id,
-                        'date' => $this->safeFormatDate($transfer->transfer_date, 'Y-m-d'),
-                        'formatted_date' => $this->safeFormatDate($transfer->transfer_date),
-                        'type' => $transfer->type,
-                        'type_formatted' => $this->formatTransferType($transfer->type),
-                        'amount' => (float) $transfer->amount,
-                        'formatted_amount' => 'R$ ' . number_format($transfer->amount, 2, ',', '.'),
-                        'description' => $transfer->description,
-                        'freight_id' => $transfer->freight_id,
-                        'asaas_id' => $transfer->asaas_identifier,
-                        'created_at' => $this->safeFormatDate($transfer->created_at, 'Y-m-d H:i:s')
-                    ];
-                });
-    
-                return response()->json([
-                    'success' => true,
-                    'data' => [
-                        'driver' => [
-                            'id' => $driver->id,
-                            'name' => $driver->name
-                        ],
-                        'account' => [
-                            'id' => $driver->userAccount->id,
-                            'asaas_identifier' => $driver->userAccount->asaas_identifier,
-                            'total_balance' => (float) $driver->userAccount->total_balance,
-                            'blocked_balance' => (float) $driver->userAccount->blocked_balance,
-                            'available_balance' => (float) $driver->userAccount->available_balance,
-                            'formatted_total' => 'R$ ' . number_format($driver->userAccount->total_balance, 2, ',', '.'),
-                            'formatted_blocked' => 'R$ ' . number_format($driver->userAccount->blocked_balance, 2, ',', '.'),
-                            'formatted_available' => 'R$ ' . number_format($driver->userAccount->available_balance, 2, ',', '.')
-                        ],
-                        'transfers' => $transfers,
-                        'summary' => [
-                            'count' => $transfers->count(),
-                            'total_amount' => (float) $transfers->sum('amount'),
-                            'formatted_total' => 'R$ ' . number_format($transfers->sum('amount'), 2, ',', '.')
-                        ]
-                    ]
-                ]);
-    
-            } catch (\Exception $e) {
-                Log::error('DriverBalanceController error: ' . $e->getMessage());
-                return response()->json([
-                    'success' => false,
-                    'message' => 'Erro ao processar requisição'
-                ], 500);
+            }
+        
+            /**
+             * Obtém a conta do usuário com tratamento seguro
+             *
+             * @param Driver $driver
+             * @return UserAccount
+             */
+            private function getUserAccount(Driver $driver): UserAccount
+            {
+                try {
+                    return $driver->userAccount ?? new UserAccount();
+                } catch (\Exception $e) {
+                    Log::warning("Failed to get user account for driver {$driver->id}: " . $e->getMessage());
+                    return new UserAccount();
+                }
+            }
+        
+            /**
+             * Prepara e formata as transferências para exibição
+             *
+             * @param UserAccount $account
+             * @return \Illuminate\Support\Collection
+             */
+            private function prepareTransfers(UserAccount $account)
+            {
+                try {
+                    $transfers = $account->transfers ?? collect();
+                    
+                    return $transfers->map(function ($transfer) {
+                        return (object)[
+                            'id' => $transfer->id ?? null,
+                            'transfer_date' => $transfer->transfer_date ?? null,
+                            'formatted_date' => $this->safeFormatDate($transfer->transfer_date ?? null),
+                            'type' => $transfer->type ?? null,
+                            'type_formatted' => $this->formatTransferType($transfer->type ?? ''),
+                            'amount' => $transfer->amount ?? 0,
+                            'formatted_amount' => number_format($transfer->amount ?? 0, 2, ',', '.'),
+                            'description' => $transfer->description ?? 'Transferência',
+                            'freight' => $transfer->freight ?? null,
+                            'freight_id' => $transfer->freight_id ?? null,
+                            'asaas_identifier' => $transfer->asaas_identifier ?? null,
+                            'badge_color' => $this->transferBadgeColor($transfer->type ?? ''),
+                            'created_at' => $transfer->created_at ?? null,
+                            'formatted_created_at' => $this->safeFormatDate($transfer->created_at ?? null, 'd/m/Y H:i')
+                        ];
+                    });
+                    
+                } catch (\Exception $e) {
+                    Log::warning("Failed to prepare transfers: " . $e->getMessage());
+                    return collect();
+                }
+            }
+        
+            /**
+             * Formata uma data de forma segura
+             *
+             * @param mixed $date
+             * @param string $format
+             * @return string
+             */
+            private function safeFormatDate($date, string $format = 'd/m/Y'): string
+            {
+                try {
+                    if (empty($date)) {
+                        return '';
+                    }
+        
+                    if ($date instanceof \Carbon\Carbon) {
+                        return $date->format($format);
+                    }
+        
+                    return Carbon::parse($date)->format($format);
+                } catch (\Exception $e) {
+                    Log::warning("Date formatting failed: " . $e->getMessage());
+                    return '';
+                }
+            }
+        
+            /**
+             * Formata o tipo de transferência para exibição
+             *
+             * @param string $type
+             * @return string
+             */
+            private function formatTransferType(string $type): string
+            {
+                $types = [
+                    'PIX' => 'PIX',
+                    'TED' => 'TED',
+                    'DOC' => 'DOC',
+                    'INTERNAL' => 'Interna',
+                    'BLOCKED' => 'Bloqueado',
+                    'PIX_DEBIT' => 'PIX Débito',
+                    'WITHDRAW' => 'Saque',
+                    'DEPOSIT' => 'Depósito'
+                ];
+        
+                return $types[$type] ?? $type;
+            }
+        
+            /**
+             * Retorna a classe CSS para o badge conforme o tipo
+             *
+             * @param string $type
+             * @return string
+             */
+            private function transferBadgeColor(string $type): string
+            {
+                $colors = [
+                    'PIX' => 'bg-success',
+                    'TED' => 'bg-primary',
+                    'DOC' => 'bg-info',
+                    'INTERNAL' => 'bg-secondary',
+                    'BLOCKED' => 'bg-warning text-dark',
+                    'PIX_DEBIT' => 'bg-danger',
+                    'WITHDRAW' => 'bg-dark',
+                    'DEPOSIT' => 'bg-success'
+                ];
+        
+                return $colors[$type] ?? 'bg-secondary';
             }
         }
     
