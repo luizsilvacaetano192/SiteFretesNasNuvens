@@ -109,32 +109,58 @@
 
 <script>
 
-function maskRG(value) {
-    if (!value) return '';
-    return value.replace(/^(\d{1,2})(\d{3})(\d{3})([\dxX])?$/, (_, p1, p2, p3, p4) => `${p1}.${p2}.${p3}${p4 ? '-' + p4 : ''}`);
+    function maskRG(value) {
+        if (!value) return '';
+        return value.replace(/^(\d{1,2})(\d{3})(\d{3})([\dxX])?$/, (_, p1, p2, p3, p4) => `${p1}.${p2}.${p3}${p4 ? '-' + p4 : ''}`);
+    }
+
+    function maskPhone(value) {
+        if (!value) return '';
+        return value.replace(/\D/g, '').replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    }
+
+    function maskCPF(cpf) {
+        return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+    }
+
+    function formatDateBR(dateStr) {
+        if (!dateStr) return '';
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('pt-BR');
+    }
+
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('pt-BR', {
+            style: 'currency',
+            currency: 'BRL'
+        }).format(value || 0);
+    }
+
+    function togglePassword(id, password) {
+    const span = document.getElementById(`password-${id}`);
+    if (span.innerText === '••••••••') {
+        span.innerText = password;
+    } else {
+        span.innerText = '••••••••';
+    }
 }
 
-function maskPhone(value) {
-    if (!value) return '';
-    return value.replace(/\D/g, '').replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+function getStatusLabel(status) {
+    const labels = {
+        'create': ['Aguardando Ativação', 'warning'],
+        'active': ['Ativo', 'success'],
+        'block': ['Bloqueado', 'danger'],
+        'transfer_block': ['Transferências Bloqueadas', 'danger'],
+    };
+    return labels[status] || ['Desconhecido', 'secondary'];
 }
 
-function maskCPF(cpf) {
-    return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+function openWhatsApp(phone) {
+    if (!phone) return alert("Número de telefone não disponível.");
+    const formatted = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/55${formatted}`, '_blank');
 }
 
-function formatDateBR(dateStr) {
-    if (!dateStr) return '';
-    const date = new Date(dateStr);
-    return date.toLocaleDateString('pt-BR');
-}
-
-function formatCurrency(value) {
-    return new Intl.NumberFormat('pt-BR', {
-        style: 'currency',
-        currency: 'BRL'
-    }).format(value || 0);
-}
 
 
 // Função para mostrar o modal de saldo com agrupamento por dia
