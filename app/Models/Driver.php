@@ -65,7 +65,8 @@ class Driver extends Model
 
     public function userAccount()
     {
-        return $this->belongsTo(UserAccount::class);
+        return $this->hasOne(UserAccount::class);
+        // ou mantém o belongsTo se a chave estrangeira estiver na tabela user_accounts
     }
 
 
