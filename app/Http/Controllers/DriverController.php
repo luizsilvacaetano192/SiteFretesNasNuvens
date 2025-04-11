@@ -34,48 +34,39 @@ class DriverController extends Controller
     public function balanceData($driver): JsonResponse
     {
         try {
-            // Se não for instância de Driver, carrega o modelo
             if (!$driver instanceof Driver) {
-                $driver = Cache::remember("driver_{$driver}", now()->addHour(), function() use ($driver) {
-                    return Driver::with('userAccount')->findOrFail($driver);
-                });
+                $driver = Driver::with('userAccount')->findOrFail($driver);
             }
-
-            // Verifica se o motorista tem conta associada
+    
             if (!$driver->userAccount) {
                 return response()->json([
                     'error' => 'Conta não encontrada para este motorista',
                     'account_status' => 'not_found'
                 ], 404);
             }
-
-            // Obtém os dados da conta
+    
             $account = $driver->userAccount;
             
-            // Carrega as transferências com cache de 5 minutos
-            $transfers = Cache::remember("driver_transfers_{$driver->id}", now()->addMinutes(5), function() use ($account) {
-                return $account->transfers()
-                    ->select([
-                        'id',
-                        'type',
-                        'amount',
-                        'description',
-                        'transfer_date',
-                        'asaas_identifier',
-                        'created_at'
-                    ])
-                    ->orderBy('transfer_date', 'desc')
-                    ->get();
-            });
-
-            // Formata a resposta
+            $transfers = $account->transfers()
+                ->select([
+                    'id',
+                    'type',
+                    'amount',
+                    'description',
+                    'transfer_date',
+                    'asaas_identifier',
+                    'created_at'
+                ])
+                ->orderBy('transfer_date', 'desc')
+                ->get();
+    
             return response()->json([
                 'account' => [
                     'asaas_identifier' => $account->asaas_identifier,
                     'total_balance' => (float) $account->total_balance,
                     'blocked_balance' => (float) $account->blocked_balance,
                     'available_balance' => (float) $account->available_balance,
-                    'last_updated' => $account->updated_at->toDateTimeString(),
+                    'last_updated' => optional($account->updated_at)->toDateTimeString(),
                 ],
                 'transfers' => $transfers->map(function ($transfer) {
                     return [
@@ -85,31 +76,23 @@ class DriverController extends Controller
                         'description' => $transfer->description,
                         'transfer_date' => $transfer->transfer_date,
                         'asaas_identifier' => $transfer->asaas_identifier,
-                        'month_year' => date('m/Y', strtotime($transfer->transfer_date)),
-                        'month_name' => ucfirst(\Carbon\Carbon::parse($transfer->transfer_date)->formatLocalized('%B %Y')),
-                        'created_at' => $transfer->created_at->toDateTimeString(),
+                        'month_year' => $transfer->transfer_date ? date('m/Y', strtotime($transfer->transfer_date)) : null,
+                        'month_name' => $transfer->transfer_date ? ucfirst(\Carbon\Carbon::parse($transfer->transfer_date)->formatLocalized('%B %Y')) : null,
+                        'created_at' => optional($transfer->created_at)->toDateTimeString(),
                     ];
                 }),
                 'summary' => [
                     'total_transfers' => $transfers->count(),
                     'total_amount' => (float) $transfers->sum('amount'),
-                    'last_transfer_date' => optional($transfers->first())->transfer_date,
+                    'last_transfer_date' => $transfers->isNotEmpty() ? $transfers->first()->transfer_date : null,
                 ]
             ]);
-
-        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            Log::error("Motorista não encontrado: " . $e->getMessage());
-            return response()->json([
-                'error' => 'Motorista não encontrado',
-                'code' => 'driver_not_found'
-            ], 404);
-
+    
         } catch (\Exception $e) {
-            Log::error("Erro ao buscar saldo do motorista: " . $e->getMessage());
+            Log::error("Erro no balanceData: " . $e->getMessage());
             return response()->json([
-                'error' => 'Erro interno ao processar sua requisição',
-                'message' => $e->getMessage(),
-                'code' => 'internal_error'
+                'error' => 'Erro ao processar requisição',
+                'message' => $e->getMessage()
             ], 500);
         }
     }
