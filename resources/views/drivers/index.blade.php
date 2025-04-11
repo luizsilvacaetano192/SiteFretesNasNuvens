@@ -179,6 +179,38 @@
   </div>
 </div>
 
+<!-- Modal de Fretes do Motorista -->
+<div class="modal fade" id="freightsModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">🚚 Fretes do Motorista</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <table id="freightsTable" class="table table-striped" style="width:100%">
+          <thead>
+            <tr>
+              <th width="5%">
+                <input type="checkbox" id="selectAllFreights">
+              </th>
+              <th>ID Frete</th>
+              <th>Empresa</th>
+              <th>Tipo de Carga</th>
+              <th>Data do Frete</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- Estilos e Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -223,6 +255,21 @@ tr.shown td.dt-control::before {
 }
 #newTransferBtn {
     margin-right: 10px;
+}
+#freightsTable th:first-child, 
+#freightsTable td:first-child {
+    text-align: center;
+    vertical-align: middle;
+}
+.freightCheckbox {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+#selectAllFreights {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
 }
 </style>
 
@@ -352,6 +399,79 @@ function openWhatsApp(phone) {
     if (!phone) return alert("Número de telefone não disponível.");
     const formatted = phone.replace(/\D/g, '');
     window.open(`https://wa.me/55${formatted}`, '_blank');
+}
+
+function showFreightsModal(driverId) {
+    const modal = new bootstrap.Modal('#freightsModal');
+    
+    // Limpa a tabela se já existir
+    if ($.fn.DataTable.isDataTable('#freightsTable')) {
+        $('#freightsTable').DataTable().destroy();
+    }
+    
+    // Mostra o modal com loader
+    $('#freightsModal .modal-body').html(`
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Carregando lista de fretes...</p>
+        </div>
+    `);
+    modal.show();
+    
+    // Faz a requisição AJAX para obter os dados
+    $.get(`/drivers/${driverId}/freights`, function(data) {
+        // Inicializa a DataTable para os fretes
+        const freightsTable = $('#freightsTable').DataTable({
+            data: data.freights,
+            pageLength: 5, // Mostra 5 registros por página
+            lengthMenu: [5, 10, 25, 50],
+            columns: [
+                { 
+                    data: null,
+                    orderable: false,
+                    render: function() {
+                        return '<input type="checkbox" class="freightCheckbox">';
+                    }
+                },
+                { data: 'id' },
+                { data: 'company.name' },
+                { data: 'cargo_type' },
+                { 
+                    data: 'freight_date',
+                    render: function(data) {
+                        return new Date(data).toLocaleDateString('pt-BR');
+                    }
+                },
+                { 
+                    data: 'status',
+                    render: function(data) {
+                        const statusClasses = {
+                            'pending': 'warning',
+                            'in_progress': 'primary',
+                            'completed': 'success',
+                            'canceled': 'danger'
+                        };
+                        return `<span class="badge bg-${statusClasses[data] || 'secondary'}">${data}</span>`;
+                    }
+                }
+            ],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
+            }
+        });
+
+        // Marca/desmarca todos os checkboxes
+        $('#selectAllFreights').click(function() {
+            $('.freightCheckbox').prop('checked', this.checked);
+        });
+
+    }).fail(function() {
+        $('#freightsModal .modal-body').html(`
+            <div class="alert alert-danger">
+                Erro ao carregar lista de fretes. Tente novamente mais tarde.
+            </div>
+        `);
+    });
 }
 
 function openTransferModal(driverId) {
@@ -597,7 +717,7 @@ $(document).ready(function () {
                 render: (data, type, row) => `
                     <div class="btn-group btn-group-sm">
                         <button onclick="showBalanceModal(${row.id})" class="btn btn-outline-success">💰 Saldo</button>
-                        <a href="/drivers/${row.id}/freights" class="btn btn-outline-primary">🚚 Ver Fretes</a>
+                        <button onclick="showFreightsModal(${row.id})" class="btn btn-outline-primary">🚚 Fretes</button>
                         <button onclick="activateDriver(${row.id}, '${row.status}')" class="btn btn-outline-${row.status === 'active' ? 'danger' : 'warning'}">
                             ${row.status === 'active' ? '🚫 Bloquear' : '✅ Ativar'}
                         </button>
