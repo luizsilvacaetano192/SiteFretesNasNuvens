@@ -77,7 +77,70 @@
   </div>
 </div>
 
-
+<!-- Modal de Saldo e Transferências -->
+<div class="modal fade" id="balanceModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title">💰 Saldo e Transferências</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="row mb-4">
+          <div class="col-md-3">
+            <div class="card bg-primary text-white">
+              <div class="card-body">
+                <h6 class="card-title">ID Conta Asaas</h6>
+                <p class="card-text" id="asaasIdentifier">-</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-success text-white">
+              <div class="card-body">
+                <h6 class="card-title">Saldo Total</h6>
+                <p class="card-text" id="totalBalance">R$ 0,00</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-warning text-dark">
+              <div class="card-body">
+                <h6 class="card-title">Saldo Bloqueado</h6>
+                <p class="card-text" id="blockedBalance">R$ 0,00</p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-3">
+            <div class="card bg-info text-white">
+              <div class="card-body">
+                <h6 class="card-title">Saldo Disponível</h6>
+                <p class="card-text" id="availableBalance">R$ 0,00</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <h5 class="mb-3">Histórico de Transferências</h5>
+        <table id="transfersTable" class="table table-striped" style="width:100%">
+          <thead>
+            <tr>
+              <th>Tipo</th>
+              <th>Valor</th>
+              <th>Descrição</th>
+              <th>Data</th>
+              <th>ID Asaas</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Estilos e Scripts -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
@@ -108,6 +171,14 @@ tr.shown td.dt-control::before {
     font-family: 'monospace';
     letter-spacing: 2px;
 }
+.card-title {
+    font-size: 0.9rem;
+    margin-bottom: 0.5rem;
+}
+.card-text {
+    font-size: 1.1rem;
+    font-weight: bold;
+}
 </style>
 
 <script>
@@ -131,6 +202,13 @@ function formatDateBR(dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleDateString('pt-BR');
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value || 0);
 }
 
 function openImageModal(src) {
@@ -169,10 +247,6 @@ function updateDriverStatus(id, status) {
         $('#blockReason').val(''); // Limpa o campo
     }).fail(() => toastr.error("Erro ao atualizar status."));
 }
-
-$('#blockUserBtn').click(() => updateDriverStatus(selectedDriverId, 'block'));
-$('#blockTransferBtn').click(() => updateDriverStatus(selectedDriverId, 'transfer_block'));
-
 
 function activateDriver(id, status) {
     if (status === 'active') {
@@ -235,6 +309,115 @@ function openWhatsApp(phone) {
     window.open(`https://wa.me/55${formatted}`, '_blank');
 }
 
+function showBalanceModal(driverId) {
+    const modal = new bootstrap.Modal('#balanceModal');
+    
+    // Limpa a tabela de transferências se já existir
+    if ($.fn.DataTable.isDataTable('#transfersTable')) {
+        $('#transfersTable').DataTable().destroy();
+    }
+    
+    // Mostra o modal com loader
+    $('#balanceModal .modal-body').html(`
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Carregando informações financeiras...</p>
+        </div>
+    `);
+    modal.show();
+    
+    // Faz a requisição AJAX para obter os dados
+    $.get(`/drivers/${driverId}/balance-data`, function(data) {
+        // Preenche os dados da conta
+        $('#asaasIdentifier').text(data.account.asaas_identifier || 'Não informado');
+        $('#totalBalance').text(formatCurrency(data.account.total_balance));
+        $('#blockedBalance').text(formatCurrency(data.account.blocked_balance));
+        $('#availableBalance').text(formatCurrency(data.account.available_balance));
+        
+        // Inicializa a tabela de transferências
+        $('#balanceModal .modal-body').html(`
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card bg-primary text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">ID Conta Asaas</h6>
+                            <p class="card-text" id="asaasIdentifier">${data.account.asaas_identifier || '-'}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-success text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">Saldo Total</h6>
+                            <p class="card-text" id="totalBalance">${formatCurrency(data.account.total_balance)}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-warning text-dark">
+                        <div class="card-body">
+                            <h6 class="card-title">Saldo Bloqueado</h6>
+                            <p class="card-text" id="blockedBalance">${formatCurrency(data.account.blocked_balance)}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card bg-info text-white">
+                        <div class="card-body">
+                            <h6 class="card-title">Saldo Disponível</h6>
+                            <p class="card-text" id="availableBalance">${formatCurrency(data.account.available_balance)}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <h5 class="mb-3">Histórico de Transferências</h5>
+            <table id="transfersTable" class="table table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Tipo</th>
+                        <th>Valor</th>
+                        <th>Descrição</th>
+                        <th>Data</th>
+                        <th>ID Asaas</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        `);
+        
+        // Inicializa a DataTable para as transferências
+        $('#transfersTable').DataTable({
+            data: data.transfers,
+            columns: [
+                { data: 'type', render: type => {
+                    const types = {
+                        'PIX': '<span class="badge bg-success">PIX</span>',
+                        'TED': '<span class="badge bg-primary">TED</span>',
+                        'DOC': '<span class="badge bg-info">DOC</span>',
+                        'INTERNAL': '<span class="badge bg-secondary">Interna</span>'
+                    };
+                    return types[type] || type;
+                }},
+                { data: 'amount', render: amount => formatCurrency(amount) },
+                { data: 'description' },
+                { data: 'transfer_date', render: date => new Date(date).toLocaleString('pt-BR') },
+                { data: 'asaas_identifier' }
+            ],
+            order: [[3, 'desc']],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
+            }
+        });
+    }).fail(function() {
+        $('#balanceModal .modal-body').html(`
+            <div class="alert alert-danger">
+                Erro ao carregar informações financeiras. Tente novamente mais tarde.
+            </div>
+        `);
+    });
+}
+
 function format(d) {
     let reason = '';
     if (d.status === 'block' || d.status === 'transfer_block') {
@@ -289,16 +472,13 @@ $(document).ready(function () {
                 searchable: false,
                 render: (data, type, row) => `
                     <div class="btn-group btn-group-sm">
-                        <a href="/drivers/${row.id}/balance" class="btn btn-outline-success">💰 Saldo</a>
+                        <button onclick="showBalanceModal(${row.id})" class="btn btn-outline-success">💰 Saldo</button>
                         <a href="/drivers/${row.id}/freights" class="btn btn-outline-primary">🚚 Ver Fretes</a>
                         <button onclick="activateDriver(${row.id}, '${row.status}')" class="btn btn-outline-${row.status === 'active' ? 'danger' : 'warning'}">
                             ${row.status === 'active' ? '🚫 Bloquear' : '✅ Ativar'}
                         </button>
-                          <button class="btn btn-sm btn-info" onclick="analyzeDriver(${row.id})">🔍 Analisar</button>
-                            <button class="btn btn-sm btn-${row.status === 'active' ? 'danger' : 'success'}" onclick="activateDriver(${row.id}, '${row.status}')">
-                                ${row.status === 'active' ? 'Bloquear' : 'Ativar'}
-                            </button>
-                            <button class="btn btn-sm btn-success" onclick="openWhatsApp('${row.phone}')">💬 WhatsApp</button>
+                        <button class="btn btn-sm btn-info" onclick="analyzeDriver(${row.id})">🔍 Analisar</button>
+                        <button class="btn btn-sm btn-success" onclick="openWhatsApp('${row.phone}')">💬 WhatsApp</button>
                     </div>
                 `
             }
