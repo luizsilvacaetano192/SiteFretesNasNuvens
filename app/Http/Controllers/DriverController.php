@@ -74,7 +74,7 @@ class DriverController extends Controller
                         'id' => $freight->id,
                         'company' => $freight->company,
                         'cargo_type' => $freight->shipment ? $freight->shipment->cargo_type : 'N/A',
-                        'freight_date' => $freight->freight_date,
+                        'freight_date' => '2025-04-11',
                         'status' => $freight->status,
                         'created_at' => $freight->created_at
                     ];
