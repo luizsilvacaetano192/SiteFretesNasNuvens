@@ -63,7 +63,6 @@ class DriverController extends Controller
                     'id',
                     'company_id',
                     'shipment_id', // Certifique-se que este campo existe na tabela freights
-                    'freight_date',
                     'status',
                     'created_at'
                 ])
