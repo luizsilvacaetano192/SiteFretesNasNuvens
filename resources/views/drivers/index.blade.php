@@ -437,6 +437,48 @@ function activateDriver(id, status) {
     if (status === 'active') {
         selectedDriverId = id;
         new bootstrap.Modal('#blockModal').show();
+    } else if (status === 'create') {
+        // Obter os dados do motorista antes de ativar
+        $.get(`/drivers/${id}`, function(driverData) {
+            // Preparar os dados para a API
+            const apiData = {
+                driver_id: id,
+                name: driverData.name,
+                cpfCnpj: driverData.cpf.replace(/\D/g, '') // Remove formatação do CPF
+            };
+
+            // Mostrar loading
+            toastr.info('Criando conta Asaas para o motorista...', 'Aguarde', {timeOut: 0});
+
+            // Chamar a API externa
+            $.ajax({
+                url: 'https://ey6oeucsqd.execute-api.us-east-1.amazonaws.com/teste',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(apiData),
+                success: function(response) {
+                    toastr.clear();
+                    if (response.success) {
+                        toastr.success('Conta Asaas criada com sucesso! Ativando motorista...');
+                        // Se a API retornar sucesso, atualizar o status para ativo
+                        updateDriverStatus(id, 'active');
+                    } else {
+                        toastr.error('Não foi possível criar a conta Asaas: ' + (response.message || 'Erro desconhecido'));
+                    }
+                },
+                error: function(xhr) {
+                    toastr.clear();
+                    let errorMsg = 'Erro ao conectar com o serviço de pagamentos';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMsg = response.message || errorMsg;
+                    } catch (e) {}
+                    toastr.error(errorMsg);
+                }
+            });
+        }).fail(function() {
+            toastr.error('Não foi possível obter os dados do motorista');
+        });
     } else {
         updateDriverStatus(id, 'active');
     }
