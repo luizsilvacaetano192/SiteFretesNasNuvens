@@ -6,6 +6,7 @@ use App\Models\Shipment;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\FreightController;
 use App\Http\Controllers\DriverAnalysisController;
+use App\Http\Controllers\DriverController;
 
 
 /*
@@ -32,3 +33,5 @@ Route::get('/shipments', [ShipmentController::class, 'getAllShipments']);
 Route::get('/freights', [FreightController::class, 'getFreights']); 
 
 Route::post('/freights/{id}/update-position', [FreightController::class, 'updatePosition']);
+
+Route::post('/create-asaas-account', [DriverController::class, 'createAsaasAccount']);

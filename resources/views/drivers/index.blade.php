@@ -454,7 +454,7 @@ function activateDriver(id, status) {
 
             // Chamar a API externa
             $.ajax({
-                url: 'https://ey6oeucsqd.execute-api.us-east-1.amazonaws.com/teste',
+                url: '/api/create-asaas-account',
                 type: 'POST',
                 contentType: 'application/json',
                 data: JSON.stringify(apiData),

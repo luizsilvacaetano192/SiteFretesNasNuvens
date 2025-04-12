@@ -13,6 +13,7 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 
 
+
 class DriverController extends Controller
 {
     public function index()
@@ -28,6 +29,27 @@ class DriverController extends Controller
             'name' => $driver->name,
             'cpf' => $driver->cpf
         ]);
+    }
+
+    public function createAsaasAccount(Request $request)
+    {
+        $response = Http::withHeaders([
+            'Content-Type' => 'application/json',
+            'Accept' => 'application/json'
+        ])->post('https://ey6oeucsqd.execute-api.us-east-1.amazonaws.com/teste', [
+            'driver_id' => $request->driver_id,
+            'name' => $request->name,
+            'cpfCnpj' => $request->cpfCnpj
+        ]);
+
+        if ($response->successful()) {
+            return response()->json($response->json());
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $response->body() ?: 'Erro ao conectar com o serviço de pagamentos'
+        ], 400);
     }
 
 
