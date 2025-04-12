@@ -87,7 +87,7 @@ class TransferController extends Controller
 
     protected function prepareApiPayload(array $validated, Driver $driver)
     {
-        die('chegou no paly prepare');
+   
         $payload = [
             'driver_id' => $driver->id,
             'type' => $validated['type'],
@@ -96,6 +96,7 @@ class TransferController extends Controller
             'transfer_date' => Carbon::now()->toISOString(),
             'freight_value' => $validated['freight_value']
         ];
+        die('terminou o pay');
 
 
 
