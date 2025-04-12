@@ -129,21 +129,18 @@ class TransferController extends Controller
     protected function callExternalApi(array $payload)
     {
         return Http::withOptions([
-            'timeout' => 30
+            'timeout' => 3000
         ])
         ->withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-            'X-Requested-With' => 'XMLHttpRequest'
         ])
-        ->timeout(30)
-        ->retry(3, 1000)
         ->post('https://4fuy7ttno9.execute-api.us-east-1.amazonaws.com/teste', $payload);
     }
 
     protected function handleApiResponse($response, Driver $driver, array $validated)
     {
-        if ($response->status() === 200) {
+        if ($response->status() == 200) {
             try {
                 $responseData = $response->json();
                 
