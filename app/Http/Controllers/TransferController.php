@@ -92,11 +92,11 @@ class TransferController extends Controller
             'amount' => $validated['amount'],
             'description' => $validated['description'] ?? 'Transferência realizada pelo sistema',
             'transfer_date' => Carbon::now()->toISOString(),
+            'freight_value' => $validated['freight_value']
         ];
 
-        if (isset($validated['freight_value'])) {
-            $payload['freight_value'] = $validated['freight_value'];
-        }
+        dd($payload);
+
 
         return $payload;
     }
