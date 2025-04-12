@@ -46,6 +46,7 @@ class TransferController extends Controller
 
     public function transfer(Request $request, $driverId)
     {
+        die('esta aq');
         // Validação dos dados de entrada
         $validated = $this->validateRequest($request);
         
