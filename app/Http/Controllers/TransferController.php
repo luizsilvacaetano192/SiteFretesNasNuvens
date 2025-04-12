@@ -104,8 +104,6 @@ class TransferController extends Controller
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
         ])
-        ->timeout(10000)
-        ->retry(3, 1000)
         ->post('https://4fuy7ttno9.execute-api.us-east-1.amazonaws.com/teste', $payload);
     }
 
