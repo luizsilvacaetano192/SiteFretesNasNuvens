@@ -49,8 +49,6 @@ class TransferController extends Controller
        
         // Validação dos dados de entrada
         $validated = $this->validateRequest($request);
-        
-        die($driverId);
 
         try {
             // Busca o motorista com verificação
@@ -83,7 +81,7 @@ class TransferController extends Controller
             'type' => 'required|in:available_balance,blocked_balance',
             'amount' => 'required|numeric|min:0.01|max:999999.99',
             'description' => 'nullable|string|max:255',
-            'freight_value' => 'required|numeric|min:0'
+            'freight_value' => 'nullable|numeric|min:0'
         ]);
     }
 
@@ -106,12 +104,12 @@ class TransferController extends Controller
 
     protected function callExternalApi(array $payload)
     {
+        die('chegou na requisicao ');
         return Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer '.config('services.transfer_api.key')
         ])
-        ->timeout(25)
+        ->timeout(10000)
         ->retry(3, 1000)
         ->post('https://4fuy7ttno9.execute-api.us-east-1.amazonaws.com/teste', $payload);
     }
