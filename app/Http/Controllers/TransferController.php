@@ -25,7 +25,7 @@ class TransferController extends Controller
                 $endDate = Carbon::createFromFormat('d/m/Y', trim($end))->endOfDay();
                 $transfers->whereBetween('created_at', [$startDate, $endDate]);
             } catch (\Exception $e) {
-                Log::warning('Filtro de data inválido', ['input' => $request->date_range]);
+                Log::warning('Invalid date filter', ['input' => $request->date_range]);
             }
         }
 
@@ -63,13 +63,13 @@ class TransferController extends Controller
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
             DB::rollBack();
-            return $this->errorResponse('Motorista não encontrado', 404);
+            return $this->errorResponse('Driver not found', 404);
             
         } catch (\Illuminate\Validation\ValidationException $e) {
             DB::rollBack();
             return response()->json([
                 'success' => false,
-                'message' => 'Erro de validação',
+                'message' => 'Validation error',
                 'errors' => $e->errors()
             ], 422);
             
@@ -79,7 +79,7 @@ class TransferController extends Controller
                 'driver_id' => $driverId,
                 'trace' => $e->getTraceAsString()
             ]);
-            return $this->errorResponse('Erro interno no servidor: '.$e->getMessage(), 500);
+            return $this->errorResponse('Server error: '.$e->getMessage(), 500);
         }
     }
 
@@ -94,7 +94,7 @@ class TransferController extends Controller
                 'max:999999.99',
                 function ($attribute, $value, $fail) {
                     if (!is_numeric($value)) {
-                        $fail('O valor deve ser numérico');
+                        $fail('Amount must be numeric');
                     }
                 }
             ],
@@ -109,7 +109,7 @@ class TransferController extends Controller
             'driver_id' => (int)$driver->id,
             'type' => (string)$validated['type'],
             'amount' => (float)$validated['amount'],
-            'description' => (string)($validated['description'] ?? 'Transferência realizada pelo sistema'),
+            'description' => (string)($validated['description'] ?? 'System transfer'),
             'transfer_date' => Carbon::now()->format('Y-m-d'),
             'driver_info' => [
                 'name' => (string)$driver->name,
@@ -130,7 +130,7 @@ class TransferController extends Controller
     {
         return Http::withOptions([
             'debug' => config('app.debug'),
-            'verify' => config('app.env') === 'production' ? storage_path('certs/cacert.pem') : false,
+            'verify' => config('app.env') === 'production',
             'timeout' => 30
         ])
         ->withHeaders([
@@ -145,95 +145,116 @@ class TransferController extends Controller
 
     protected function handleApiResponse($response, Driver $driver, array $validated)
     {
-        // Check for HTTP 200 status
         if ($response->status() === 200) {
             try {
                 $responseData = $response->json();
                 
-                // Check if error is false or not present
-                if (!isset($responseData['error']) || $responseData['error'] === false) {
+                // Check for successful transfer response structure
+                if (isset($responseData['transferDetails']) && isset($responseData['message']) && 
+                    stripos($responseData['message'], 'success') !== false) {
+                    
                     $transfer = Transfer::create([
                         'driver_id' => $driver->id,
                         'type' => $validated['type'],
                         'amount' => $validated['amount'],
-                        'description' => $validated['description'] ?? 'Transferência realizada pelo sistema',
+                        'description' => $validated['description'] ?? 'System transfer',
                         'status' => 'completed',
-                        'external_reference' => $responseData['transferDetails']['asaasTransferId'] ?? null,
-                        'response_payload' => json_encode($responseData)
+                        'external_reference' => $responseData['transferDetails']['asaasTransferId'],
+                        'response_payload' => json_encode($responseData),
+                        'metadata' => [
+                            'internal_id' => $responseData['transferDetails']['internalTransferId'],
+                            'balance' => $responseData['operationsStatus']['balanceUpdate']['currentBalance'] ?? null
+                        ]
                     ]);
                     
                     DB::commit();
                     
                     return response()->json([
                         'success' => true,
-                        'message' => 'Transferência realizada com sucesso',
-                        'data' => $transfer
+                        'message' => $responseData['message'],
+                        'data' => [
+                            'transfer_id' => $transfer->id,
+                            'asaas_id' => $transfer->external_reference,
+                            'amount' => $transfer->amount,
+                            'new_balance' => $responseData['operationsStatus']['balanceUpdate']['currentBalance'] ?? null
+                        ]
                     ]);
                 }
                 
-                // HTTP 200 but error is true
-                Log::error('API Error', [
+                // Check for explicit error in response
+                if (isset($responseData['error']) && $responseData['error'] === true) {
+                    return $this->handleApiError($responseData, $driver);
+                }
+                
+                // Unknown response format
+                Log::warning('Unknown API response format', [
                     'driver_id' => $driver->id,
-                    'response' => $responseData,
-                    'payload' => $this->lastRequestPayload
+                    'response' => $responseData
                 ]);
                 
-                DB::rollBack();
-                
-                return response()->json([
-                    'success' => false,
-                    'message' => $responseData['message'] ?? 'Erro na transferência',
-                    'api_response' => $responseData
-                ], 200); // Maintain 200 status as that's what API returned
+                return $this->errorResponse('Unknown API response format', 502);
                 
             } catch (\Exception $e) {
                 DB::rollBack();
-                Log::error('API Response Parsing Error', [
+                Log::error('API response processing failed', [
                     'driver_id' => $driver->id,
                     'error' => $e->getMessage(),
                     'response' => $response->body()
                 ]);
-                
-                return $this->errorResponse('Erro ao processar resposta da API', 500);
+                return $this->errorResponse('Failed to process API response', 500);
             }
         }
         
         // Handle non-200 responses
-        return $this->handleApiError($response, $driver);
+        return $this->handleHttpError($response, $driver);
     }
 
-    protected function handleApiError($response, $driver)
+    protected function handleApiError(array $responseData, Driver $driver)
+    {
+        DB::rollBack();
+        
+        Log::error('API transfer error', [
+            'driver_id' => $driver->id,
+            'response' => $responseData
+        ]);
+        
+        return response()->json([
+            'success' => false,
+            'message' => $responseData['message'] ?? 'Transfer failed',
+            'api_error' => $responseData
+        ], 200);
+    }
+
+    protected function handleHttpError($response, $driver)
     {
         DB::rollBack();
         
         try {
             $errorData = $response->json();
-            $errorMessage = $errorData['message'] ?? 'Erro na API de transferência';
+            $errorMessage = $errorData['message'] ?? 'API communication error';
             
-            Log::error('API Transfer Error', [
-                'status_code' => $response->status(),
+            Log::error('API HTTP error', [
+                'status' => $response->status(),
                 'driver_id' => $driver->id,
-                'api_response' => $errorData
+                'response' => $errorData
             ]);
             
             return response()->json([
                 'success' => false,
                 'message' => $errorMessage,
-                'api_error' => $errorData,
                 'status_code' => $response->status()
             ], $response->status());
             
         } catch (\Exception $e) {
-            Log::error('API Transfer Raw Error', [
-                'status_code' => $response->status(),
+            Log::error('Failed to parse API error', [
+                'status' => $response->status(),
                 'driver_id' => $driver->id,
                 'raw_response' => $response->body()
             ]);
             
             return response()->json([
                 'success' => false,
-                'message' => 'Erro inesperado na API de transferência',
-                'raw_response' => $response->body(),
+                'message' => 'Unexpected API error',
                 'status_code' => $response->status()
             ], $response->status());
         }
