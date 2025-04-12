@@ -140,6 +140,8 @@ class TransferController extends Controller
 
     protected function handleApiResponse($response, Driver $driver, array $validated)
     {
+
+        dd($response->status());
         if ($response->status() == 200) {
             try {
                 $responseData = $response->json();
