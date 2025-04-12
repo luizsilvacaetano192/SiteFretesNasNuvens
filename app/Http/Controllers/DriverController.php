@@ -22,8 +22,7 @@ class DriverController extends Controller
 
     public function show($id)
     {
-        $driver = Driver::with(['company', 'bankAccount'])
-            ->findOrFail($id);
+        $driver = Driver::findOrFail($id);
             
         return response()->json([
             'name' => $driver->name,
