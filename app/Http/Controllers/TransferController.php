@@ -136,12 +136,12 @@ class TransferController extends Controller
     protected function handleApiResponse($response, Driver $driver, array $validated)
     {
         if ($response->status() === 200) {
-            print_r($response);die;
+       
             try {
                 $responseData = $response->json();
-                print_r($responseData['success']);die;
+            
                 if (isset($responseData['success']) && $responseData['success'] == true) {
-                    die('esta aqs');
+              
 
                     return response()->json([
                         'success' => true,
@@ -167,6 +167,7 @@ class TransferController extends Controller
                 return $this->errorResponse('Unknown API response format', 502);
                 
             } catch (\Exception $e) {
+                print_r('esta caindo aq');die;
                 Log::error('API response processing failed', [
                     'driver_id' => $driver->id,
                     'error' => $e->getMessage(),
