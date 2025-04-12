@@ -62,11 +62,11 @@ class TransferController extends Controller
             return $this->handleApiResponse($apiResponse, $driver, $validated);
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-            DB::rollBack();
+   
             return $this->errorResponse('Driver not found', 404);
             
         } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
+          
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
@@ -74,7 +74,7 @@ class TransferController extends Controller
             ], 422);
             
         } catch (\Exception $e) {
-            DB::rollBack();
+          
             Log::error('Transfer Error: '.$e->getMessage(), [
                 'driver_id' => $driverId,
                 'trace' => $e->getTraceAsString()
