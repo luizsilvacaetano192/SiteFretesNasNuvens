@@ -170,7 +170,6 @@ class TransferController extends Controller
                 
                 // Verifica se a API retornou sucesso mesmo com HTTP 200
                 if (isset($responseData['success']) && $responseData['success'] === true) {
-                    $transfer = $this->createTransferRecord($driver, $validated, $responseData);
                     
                     DB::commit();
                     
@@ -203,22 +202,6 @@ class TransferController extends Controller
         
         // Se a resposta não foi bem-sucedida (não 2xx)
         return $this->handleApiError($response, $driver);
-    }
-
-    protected function createTransferRecord(Driver $driver, array $validated, array $apiData)
-    {
-        return Transfer::create([
-            'driver_id' => (int)$driver->id,
-            'amount' => (float)$validated['amount'],
-            'type' => (string)$validated['type'],
-            'description' => isset($validated['description']) ? (string)$validated['description'] : null,
-            'status' => 'completed',
-            'external_reference' => isset($apiData['transaction_id']) ? (string)$apiData['transaction_id'] : null,
-            'metadata' => [
-                'api_response' => $apiData,
-                'freight_value' => isset($validated['freight_value']) ? (float)$validated['freight_value'] : null
-            ]
-        ]);
     }
 
     protected function handleApiError($response, $driver)
