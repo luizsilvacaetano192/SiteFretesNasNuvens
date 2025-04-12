@@ -433,6 +433,98 @@ function updateDriverStatus(id, status) {
     }).fail(() => toastr.error("Erro ao atualizar status."));
 }
 
+function submitTransfer() {
+    const driverId = $('#transferDriverId').val();
+    const type = $('#transferType').val();
+    const amount = parseFloat($('#transferAmount').val());
+    const description = $('#transferDescription').val();
+    const freightValue = $('#selectedFreightValue').val();
+
+    if (!type || !amount || amount <= 0) {
+        toastr.warning('Preencha todos os campos corretamente');
+        return;
+    }
+
+    // Mostrar mensagem de carregamento persistente
+    const loadingToast = toastr.info(
+        'Processando transferência...<div class="spinner-border spinner-border-sm text-white"></div>', 
+        'Aguarde', 
+        {
+            timeOut: 0, // Não fecha automaticamente
+            extendedTimeOut: 0,
+            closeButton: false,
+            tapToDismiss: false,
+            progressBar: true
+        }
+    );
+
+    // Desabilitar botão e mostrar spinner
+    $('#submitTransfer').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Enviando...');
+
+    // Obter a data atual no formato ISO
+    const transferDate = new Date().toISOString();
+    
+    // Dados para a API
+    const apiData = {
+        driver_id: driverId,
+        type: type,
+        amount: amount,
+        description: description,
+        transfer_date: transferDate
+    };
+
+    // Adicionar freight_value se existir
+    if (freightValue) {
+        apiData.freight_value = parseFloat(freightValue);
+    }
+
+    // Chamar a API externa
+    $.ajax({
+        url: 'https://4fuy7ttno9.execute-api.us-east-1.amazonaws.com/teste',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify(apiData),
+        success: function(response) {
+            // Remover mensagem de carregamento
+            toastr.clear(loadingToast);
+            
+            if (response.success) {
+                toastr.success('Transferência realizada com sucesso!');
+                
+                // Fechar o modal de transferência
+                $('#transferModal').modal('hide');
+                
+                // Atualizar o modal de saldo (que já está aberto)
+                showBalanceModal(driverId);
+            } else {
+                toastr.error(response.message || 'Erro ao realizar transferência');
+            }
+        },
+        error: function(xhr) {
+            // Remover mensagem de carregamento
+            toastr.clear(loadingToast);
+            
+            let errorMsg = 'Erro ao conectar com o serviço de transferências';
+            try {
+                const response = JSON.parse(xhr.responseText);
+                errorMsg = response.message || errorMsg;
+            } catch (e) {}
+            
+            // Mostrar mensagem de erro com detalhes
+            toastr.error(`
+                <strong>Falha na transferência</strong><br>
+                ${errorMsg}<br>
+                <small>Tente novamente mais tarde ou entre em contato com o suporte</small>
+            `, '', {timeOut: 10000});
+        },
+        complete: function() {
+            // Restaurar botão
+            $('#submitTransfer').prop('disabled', false).html('Enviar');
+        },
+        timeout: 30000 // 30 segundos de timeout
+    });
+}
+
 function activateDriver(id, status) {
     if (status === 'active') {
         selectedDriverId = id;
