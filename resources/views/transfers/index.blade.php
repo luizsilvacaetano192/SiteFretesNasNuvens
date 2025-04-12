@@ -26,29 +26,21 @@
             <label for="type" class="form-label">Tipo</label>
             <select class="form-select" id="type" name="type">
                 <option value="">Todos</option>
-                <td>
-                    @php
-                        $label = match($transfer->type) {
-                            'available_balance' => 'Transferência: Liberação de Saldo',
-                            'blocked_balance' => 'Transferência: Saldo Bloqueado',
-                            'debited_balance' => 'Transferência: Pix Cliente',
-                            default => ucfirst($transfer->type),
-                        };
-
-                        $color = match($transfer->type) {
-                            'available_balance' => 'success',
-                            'blocked_balance' => 'warning',
-                            'debited_balance' => 'danger',
-                            default => 'secondary',
-                        };
-                    @endphp
-
-                    <span class="badge bg-{{ $color }}">
-                        {{ $label }}
-                    </span>
-                </td>
-
-                
+                <option value="available_balance" {{ request('type') == 'available_balance' ? 'selected' : '' }}>
+                    Liberação de Saldo
+                </option>
+                <option value="blocked_balance" {{ request('type') == 'blocked_balance' ? 'selected' : '' }}>
+                    Saldo Bloqueado
+                </option>
+                <option value="debited_balance" {{ request('type') == 'debited_balance' ? 'selected' : '' }}>
+                    Pix Cliente
+                </option>
+                <option value="entrada" {{ request('type') == 'entrada' ? 'selected' : '' }}>
+                    Entrada
+                </option>
+                <option value="saída" {{ request('type') == 'saída' ? 'selected' : '' }}>
+                    Saída
+                </option>
             </select>
         </div>
         <div class="col-md-2 d-flex align-items-end">
@@ -74,8 +66,26 @@
                     <td>#{{ $transfer->freight_id }}</td>
                     <td>{{ $transfer->driver->name ?? '-' }}</td>
                     <td>
-                        <span class="badge bg-{{ $transfer->type == 'entrada' ? 'success' : 'danger' }}">
-                            {{ ucfirst($transfer->type) }}
+                        @php
+                            $label = match($transfer->type) {
+                                'available_balance' => 'Liberação de Saldo',
+                                'blocked_balance' => 'Saldo Bloqueado',
+                                'debited_balance' => 'Pix Cliente',
+                                'entrada' => 'Entrada',
+                                'saída' => 'Saída',
+                                default => ucfirst($transfer->type),
+                            };
+
+                            $color = match($transfer->type) {
+                                'available_balance', 'entrada' => 'success',
+                                'blocked_balance' => 'warning',
+                                'debited_balance', 'saída' => 'danger',
+                                default => 'secondary',
+                            };
+                        @endphp
+
+                        <span class="badge bg-{{ $color }}">
+                            {{ $label }}
                         </span>
                     </td>
                     <td>R$ {{ number_format($transfer->amount, 2, ',', '.') }}</td>
