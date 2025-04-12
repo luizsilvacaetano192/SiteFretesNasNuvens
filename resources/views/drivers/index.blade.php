@@ -807,41 +807,7 @@ function openTransferModal(driverId) {
     });
 }
 
-function submitTransfer() {
-    const driverId = $('#transferDriverId').val();
-    const type = $('#transferType').val();
-    const amount = parseFloat($('#transferAmount').val());
-    const description = $('#transferDescription').val();
-    const freightValue = $('#selectedFreightValue').val();
 
-    if (!type || !amount || amount <= 0) {
-        toastr.warning('Preencha todos os campos corretamente');
-        return;
-    }
-
-    $('#submitTransfer').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Enviando...');
-
-    const requestData = {
-        type,
-        amount,
-        description,
-        _token: '{{ csrf_token() }}'
-    };
-
-    if (freightValue) {
-        requestData.freight_value = freightValue;
-    }
-
-    $.post(`/drivers/${driverId}/transfer`, requestData, function(response) {
-        toastr.success('Transferência realizada com sucesso!');
-        $('#transferModal').modal('hide');
-        showBalanceModal(driverId);
-    }).fail(function(error) {
-        toastr.error(error.responseJSON?.message || 'Erro ao realizar transferência');
-    }).always(function() {
-        $('#submitTransfer').prop('disabled', false).html('Enviar');
-    });
-}
 
 function showBalanceModal(driverId) {
     const modal = new bootstrap.Modal('#balanceModal');
