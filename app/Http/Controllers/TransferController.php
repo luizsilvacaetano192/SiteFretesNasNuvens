@@ -137,7 +137,7 @@ class TransferController extends Controller
     {
         if ($response->status() === 200) {
             try {
-                $responseData = $response->json();
+                $responseData = $response;
                 print_r($responseData['success']);die;
                 if (isset($responseData['success']) && $responseData['success'] == true) {
                     die('esta aqs');
