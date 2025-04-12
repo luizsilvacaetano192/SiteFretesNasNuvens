@@ -129,8 +129,6 @@ class TransferController extends Controller
     protected function callExternalApi(array $payload)
     {
         return Http::withOptions([
-            'debug' => config('app.debug'),
-            'verify' => config('app.env') === 'production',
             'timeout' => 30
         ])
         ->withHeaders([
@@ -150,8 +148,7 @@ class TransferController extends Controller
                 $responseData = $response->json();
                 
                 // Check for successful transfer response structure
-                if (isset($responseData['transferDetails']) && isset($responseData['message']) && 
-                    stripos($responseData['message'], 'success') !== false) {
+                if (isset($responseData['transferDetails']) ) {
                     
                     $transfer = Transfer::create([
                         'driver_id' => $driver->id,
