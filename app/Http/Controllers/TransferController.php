@@ -46,10 +46,12 @@ class TransferController extends Controller
 
     public function transfer(Request $request, $driverId)
     {
-        die('esta aq');
+       
         // Validação dos dados de entrada
         $validated = $this->validateRequest($request);
         
+        die($driverId);
+
         try {
             // Busca o motorista com verificação
             $driver = Driver::findOrFail($driverId);
@@ -81,7 +83,7 @@ class TransferController extends Controller
             'type' => 'required|in:available_balance,blocked_balance',
             'amount' => 'required|numeric|min:0.01|max:999999.99',
             'description' => 'nullable|string|max:255',
-            'freight_value' => 'nullable|numeric|min:0'
+            'freight_value' => 'required|numeric|min:0'
         ]);
     }
 
