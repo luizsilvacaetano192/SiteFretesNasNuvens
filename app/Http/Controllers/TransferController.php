@@ -51,8 +51,6 @@ class TransferController extends Controller
 
     public function transfer(Request $request, $driverId)
     {
-       
-        
         try {
             $validated = $this->validateRequest($request);
             $driver = Driver::findOrFail($driverId);
@@ -62,11 +60,9 @@ class TransferController extends Controller
             return $this->handleApiResponse($apiResponse, $driver, $validated);
             
         } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
-   
             return $this->errorResponse('Driver not found', 404);
             
         } catch (\Illuminate\Validation\ValidationException $e) {
-          
             return response()->json([
                 'success' => false,
                 'message' => 'Validation error',
@@ -74,7 +70,6 @@ class TransferController extends Controller
             ], 422);
             
         } catch (\Exception $e) {
-          
             Log::error('Transfer Error: '.$e->getMessage(), [
                 'driver_id' => $driverId,
                 'trace' => $e->getTraceAsString()
@@ -140,36 +135,27 @@ class TransferController extends Controller
 
     protected function handleApiResponse($response, Driver $driver, array $validated)
     {
-
-     
         if ($response->status() === 200) {
             try {
                 $responseData = $response->json();
                 
-                // Check for successful transfer response structure
-                
-                    
-                   
-           
-                    
+                if (isset($responseData['success']) && $responseData['success'] === true) {
                     return response()->json([
                         'success' => true,
-                        'message' => $responseData['message'],
+                        'message' => $responseData['message'] ?? 'Transfer completed successfully',
                         'data' => [
-                            'transfer_id' => $transfer->id,
-                            'asaas_id' => $transfer->external_reference,
-                            'amount' => $transfer->amount,
-                            'new_balance' => $responseData['operationsStatus']['balanceUpdate']['currentBalance'] ?? null
+                            'amount' => $validated['amount'],
+                            'new_balance' => $responseData['data']['new_balance'] ?? null,
+                            'asaas_id' => $responseData['data']['asaas_id'] ?? null,
+                            'driver_id' => $driver->id
                         ]
                     ]);
+                }
                 
-                
-                // Check for explicit error in response
                 if (isset($responseData['error']) && $responseData['error'] === true) {
                     return $this->handleApiError($responseData, $driver);
                 }
                 
-                // Unknown response format
                 Log::warning('Unknown API response format', [
                     'driver_id' => $driver->id,
                     'response' => $responseData
@@ -178,7 +164,6 @@ class TransferController extends Controller
                 return $this->errorResponse('Unknown API response format', 502);
                 
             } catch (\Exception $e) {
-                DB::rollBack();
                 Log::error('API response processing failed', [
                     'driver_id' => $driver->id,
                     'error' => $e->getMessage(),
@@ -188,14 +173,11 @@ class TransferController extends Controller
             }
         }
         
-        // Handle non-200 responses
         return $this->handleHttpError($response, $driver);
     }
 
     protected function handleApiError(array $responseData, Driver $driver)
     {
-        DB::rollBack();
-        
         Log::error('API transfer error', [
             'driver_id' => $driver->id,
             'response' => $responseData
@@ -210,8 +192,6 @@ class TransferController extends Controller
 
     protected function handleHttpError($response, $driver)
     {
-        DB::rollBack();
-        
         try {
             $errorData = $response->json();
             $errorMessage = $errorData['message'] ?? 'API communication error';
