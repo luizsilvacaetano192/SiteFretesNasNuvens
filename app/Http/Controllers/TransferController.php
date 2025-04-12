@@ -148,15 +148,12 @@ class TransferController extends Controller
     protected function callExternalApi(array $payload)
     {
         return Http::withOptions([
-            'debug' => config('app.debug'),
-            'verify' => storage_path('certs/amazon-root-ca.pem'), // Provide path to CA bundle
             'timeout' => 30, // Slightly increased timeout
         ])
         ->withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
             'X-Requested-With' => 'XMLHttpRequest',
-            'X-Api-Key' => config('services.transfer_api.key') // If API requires key
         ])
         ->timeout(30)
         ->retry(3, 1000, function ($exception) {
