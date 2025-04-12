@@ -144,32 +144,53 @@
 
 <!-- Modal de Transferência -->
 <div class="modal fade" id="transferModal" tabindex="-1">
-  <div class="modal-dialog modal-dialog-centered">
+  <div class="modal-dialog modal-lg modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">💸 Realizar Transferência</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body">
-        <form id="transferForm">
-          <input type="hidden" id="transferDriverId">
-          <div class="mb-3">
-            <label for="transferType" class="form-label">Tipo de Transferência</label>
-            <select class="form-select" id="transferType" required>
-              <option value="">Selecione...</option>
-              <option value="available_balance">Liberar valor</option>
-              <option value="blocked_balance">Enviar valor bloqueado</option>
-            </select>
+        <div class="row">
+          <div class="col-md-6">
+            <form id="transferForm">
+              <input type="hidden" id="transferDriverId">
+              <input type="hidden" id="selectedFreightValue">
+              <div class="mb-3">
+                <label for="transferType" class="form-label">Tipo de Transferência</label>
+                <select class="form-select" id="transferType" required>
+                  <option value="">Selecione...</option>
+                  <option value="available_balance">Liberar valor</option>
+                  <option value="blocked_balance">Enviar valor bloqueado</option>
+                </select>
+              </div>
+              <div class="mb-3">
+                <label for="transferAmount" class="form-label">Valor (R$)</label>
+                <input type="number" step="0.01" min="0.01" class="form-control" id="transferAmount" required>
+              </div>
+              <div class="mb-3">
+                <label for="transferDescription" class="form-label">Descrição</label>
+                <textarea class="form-control" id="transferDescription" rows="3"></textarea>
+              </div>
+            </form>
           </div>
-          <div class="mb-3">
-            <label for="transferAmount" class="form-label">Valor (R$)</label>
-            <input type="number" step="0.01" min="0.01" class="form-control" id="transferAmount" required>
+          <div class="col-md-6">
+            <h6 class="mb-3">Fretes disponíveis (opcional)</h6>
+            <div class="table-responsive" style="min-height: 150px;">
+              <table id="transferFreightsTable" class="table table-sm table-striped">
+                <thead>
+                  <tr>
+                    <th width="5%"></th>
+                    <th>ID</th>
+                    <th>Empresa</th>
+                    <th>Valor</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
           </div>
-          <div class="mb-3">
-            <label for="transferDescription" class="form-label">Descrição</label>
-            <textarea class="form-control" id="transferDescription" rows="3"></textarea>
-          </div>
-        </form>
+        </div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
@@ -261,7 +282,7 @@ tr.shown td.dt-control::before {
     text-align: center;
     vertical-align: middle;
 }
-.freightCheckbox {
+.freightCheckbox, .freightRadio {
     width: 18px;
     height: 18px;
     cursor: pointer;
@@ -270,6 +291,22 @@ tr.shown td.dt-control::before {
     width: 18px;
     height: 18px;
     cursor: pointer;
+}
+#transferFreightsTable {
+    min-height: 100px;
+    width: 100%;
+    font-size: 0.9rem;
+}
+#transferFreightsTable th, 
+#transferFreightsTable td {
+    padding: 0.3rem 0.5rem;
+}
+.dataTables_empty {
+    padding: 20px !important;
+}
+#transferModal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
 }
 </style>
 
@@ -336,7 +373,7 @@ function updateDriverStatus(id, status) {
         $('#drivers-table').DataTable().ajax.reload(null, false);
         bootstrap.Modal.getInstance(document.getElementById('blockModal'))?.hide();
         toastr.success(`Status atualizado para ${status}`);
-        $('#blockReason').val(''); // Limpa o campo
+        $('#blockReason').val('');
     }).fail(() => toastr.error("Erro ao atualizar status."));
 }
 
@@ -404,12 +441,10 @@ function openWhatsApp(phone) {
 function showFreightsModal(driverId) {
     const modal = new bootstrap.Modal('#freightsModal');
     
-    // Limpa a tabela se já existir
     if ($.fn.DataTable.isDataTable('#freightsTable')) {
         $('#freightsTable').DataTable().destroy();
     }
     
-    // Mostra o modal com loader
     $('#freightsModal .modal-body').html(`
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
@@ -418,12 +453,10 @@ function showFreightsModal(driverId) {
     `);
     modal.show();
     
-    // Faz a requisição AJAX para obter os dados
     $.get(`/drivers/${driverId}/freights`, function(data) {
-        // Inicializa a DataTable para os fretes
         const freightsTable = $('#freightsTable').DataTable({
             data: data.freights,
-            pageLength: 5, // Mostra 5 registros por página
+            pageLength: 5,
             lengthMenu: [5, 10, 25, 50],
             columns: [
                 { 
@@ -460,7 +493,6 @@ function showFreightsModal(driverId) {
             }
         });
 
-        // Marca/desmarca todos os checkboxes
         $('#selectAllFreights').click(function() {
             $('.freightCheckbox').prop('checked', this.checked);
         });
@@ -477,7 +509,61 @@ function showFreightsModal(driverId) {
 function openTransferModal(driverId) {
     $('#transferDriverId').val(driverId);
     $('#transferForm')[0].reset();
-    new bootstrap.Modal('#transferModal').show();
+    $('#selectedFreightValue').val('');
+    
+    if ($.fn.DataTable.isDataTable('#transferFreightsTable')) {
+        $('#transferFreightsTable').DataTable().destroy();
+    }
+    
+    const modal = new bootstrap.Modal('#transferModal');
+    modal.show();
+    
+    const table = $('#transferFreightsTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json',
+            zeroRecords: "Nenhum frete disponível"
+        },
+        pageLength: 3,
+        lengthMenu: [3, 5, 10],
+        columns: [
+            { 
+                data: null,
+                orderable: false,
+                render: function() {
+                    return '<input type="radio" name="freightRadio" class="freightRadio">';
+                }
+            },
+            { data: 'id' },
+            { data: 'company.name' },
+            { 
+                data: 'value',
+                render: function(data) {
+                    return data ? formatCurrency(data) : '';
+                }
+            }
+        ]
+    });
+    
+    $.get(`/drivers/${driverId}/freights`, function(data) {
+        if (data.freights && data.freights.length > 0) {
+            table.clear().rows.add(data.freights).draw();
+        } else {
+            table.clear().draw();
+        }
+
+        $('#transferFreightsTable tbody').on('click', '.freightRadio', function() {
+            const rowData = table.row($(this).closest('tr')).data();
+            if (rowData) {
+                $('#transferAmount').val(rowData.value ? rowData.value.toFixed(2) : '');
+                $('#selectedFreightValue').val(rowData.value || '');
+                $('.freightRadio').not(this).prop('checked', false);
+            }
+        });
+        
+    }).fail(function() {
+        console.error('Erro ao carregar fretes');
+        table.clear().draw();
+    });
 }
 
 function submitTransfer() {
@@ -485,6 +571,7 @@ function submitTransfer() {
     const type = $('#transferType').val();
     const amount = parseFloat($('#transferAmount').val());
     const description = $('#transferDescription').val();
+    const freightValue = $('#selectedFreightValue').val();
 
     if (!type || !amount || amount <= 0) {
         toastr.warning('Preencha todos os campos corretamente');
@@ -493,15 +580,21 @@ function submitTransfer() {
 
     $('#submitTransfer').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Enviando...');
 
-    $.post(`/drivers/${driverId}/transfer`, {
+    const requestData = {
         type,
         amount,
         description,
         _token: '{{ csrf_token() }}'
-    }, function(response) {
+    };
+
+    if (freightValue) {
+        requestData.freight_value = freightValue;
+    }
+
+    $.post(`/drivers/${driverId}/transfer`, requestData, function(response) {
         toastr.success('Transferência realizada com sucesso!');
         $('#transferModal').modal('hide');
-        showBalanceModal(driverId); // Refresh the balance data
+        showBalanceModal(driverId);
     }).fail(function(error) {
         toastr.error(error.responseJSON?.message || 'Erro ao realizar transferência');
     }).always(function() {
@@ -511,14 +604,12 @@ function submitTransfer() {
 
 function showBalanceModal(driverId) {
     const modal = new bootstrap.Modal('#balanceModal');
-    selectedDriverId = driverId; // Store the driver ID for transfers
+    selectedDriverId = driverId;
     
-    // Limpa a tabela de transferências se já existir
     if ($.fn.DataTable.isDataTable('#transfersTable')) {
         $('#transfersTable').DataTable().destroy();
     }
     
-    // Mostra o modal com loader
     $('#balanceModal .modal-body').html(`
         <div class="text-center py-5">
             <div class="spinner-border text-primary" role="status"></div>
@@ -526,7 +617,6 @@ function showBalanceModal(driverId) {
         </div>
     `);
     
-    // Update the modal header to include transfer button
     $('#balanceModal .modal-header').html(`
         <h5 class="modal-title">💰 Saldo e Transferências</h5>
         <button type="button" class="btn btn-success" id="newTransferBtn">
@@ -537,15 +627,12 @@ function showBalanceModal(driverId) {
     
     modal.show();
     
-    // Faz a requisição AJAX para obter os dados
     $.get(`/drivers/${driverId}/balance-data`, function(data) {
-        // Preenche os dados da conta
         $('#asaasIdentifier').text(data.account.asaas_identifier || 'Não informado');
         $('#totalBalance').text(formatCurrency(data.account.total_balance));
         $('#blockedBalance').text(formatCurrency(data.account.blocked_balance));
         $('#availableBalance').text(formatCurrency(data.account.available_balance));
         
-        // Inicializa a tabela de transferências
         $('#balanceModal .modal-body').html(`
             <div class="row mb-4">
                 <div class="col-md-3">
@@ -597,7 +684,6 @@ function showBalanceModal(driverId) {
             </table>
         `);
         
-        // Inicializa a DataTable para as transferências
         $('#transfersTable').DataTable({
             data: data.transfers,
             columns: [
@@ -625,7 +711,6 @@ function showBalanceModal(driverId) {
                     render: (description, type, row) => {
                         if (description) return description;
                         
-                        // Descriptions based on transfer type
                         const descriptions = {
                             'available_balance': 'Transferência de liberação de saldo',
                             'blocked_balance': 'Transferência de saldo bloqueado',
@@ -649,7 +734,6 @@ function showBalanceModal(driverId) {
             }
         });
         
-        // Add click handler for new transfer button
         $('#newTransferBtn').off('click').on('click', function() {
             openTransferModal(driverId);
         });
