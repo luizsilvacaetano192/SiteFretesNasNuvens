@@ -129,7 +129,6 @@ class DriverController extends Controller
     
     public function showSendPushForm()
     {
-        die('esta aq');
         $drivers = Driver::select('id', 'name',  'address', 'token_push')->get();
         $enderecos = $drivers->pluck('address')->filter()->unique();
 
