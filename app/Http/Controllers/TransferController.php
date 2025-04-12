@@ -95,6 +95,8 @@ class TransferController extends Controller
             'transfer_date' => Carbon::now()->toISOString()
         ];
 
+        dd(Carbon::now()->toISOString());
+
         return $payload;
     }
 
