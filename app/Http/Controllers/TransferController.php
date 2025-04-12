@@ -158,7 +158,7 @@ class TransferController extends Controller
                 if (isset($responseData['error']) && $responseData['error'] === true) {
                     return $this->handleApiError($responseData, $driver);
                 }
-                
+                die('chegou aq no log');
                 Log::warning('Unknown API response format', [
                     'driver_id' => $driver->id,
                     'response' => $responseData
