@@ -6,8 +6,8 @@ use App\Models\Transfer;
 use App\Models\Driver;
 use Illuminate\Http\Request;
 use Carbon\Carbon;
-use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Http;
 
 class TransferController extends Controller
 {
