@@ -51,7 +51,7 @@ class TransferController extends Controller
 
     public function transfer(Request $request, $driverId)
     {
-        DB::beginTransaction();
+       
         
         try {
             $validated = $this->validateRequest($request);
@@ -142,28 +142,15 @@ class TransferController extends Controller
     {
 
      
-        if ($response->status() == 200) {
+        if ($response->status() === 200) {
             try {
                 $responseData = $response->json();
                 
                 // Check for successful transfer response structure
                 
                     
-                    $transfer = Transfer::create([
-                        'driver_id' => $driver->id,
-                        'type' => $validated['type'],
-                        'amount' => $validated['amount'],
-                        'description' => $validated['description'] ?? 'System transfer',
-                        'status' => 'completed',
-                        'external_reference' => $responseData['transferDetails']['asaasTransferId'],
-                        'response_payload' => json_encode($responseData),
-                        'metadata' => [
-                            'internal_id' => $responseData['transferDetails']['internalTransferId'],
-                            'balance' => $responseData['operationsStatus']['balanceUpdate']['currentBalance'] ?? null
-                        ]
-                    ]);
-                    
-                    DB::commit();
+                   
+           
                     
                     return response()->json([
                         'success' => true,
