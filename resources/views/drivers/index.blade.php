@@ -144,7 +144,7 @@
 
 <!-- Modal de Transferência -->
 <div class="modal fade" id="transferModal" tabindex="-1">
-  <div class="modal-dialog modal-lg modal-dialog-centered">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header">
         <h5 class="modal-title">💸 Realizar Transferência</h5>
@@ -152,7 +152,7 @@
       </div>
       <div class="modal-body">
         <div class="row">
-          <div class="col-md-6">
+          <div class="col-md-4"> <!-- Reduzido para 4 colunas -->
             <form id="transferForm">
               <input type="hidden" id="transferDriverId">
               <input type="hidden" id="selectedFreightValue">
@@ -174,16 +174,19 @@
               </div>
             </form>
           </div>
-          <div class="col-md-6">
+          <div class="col-md-8"> <!-- Expandido para 8 colunas -->
             <h6 class="mb-3">Fretes disponíveis (opcional)</h6>
             <div class="table-responsive" style="min-height: 150px;">
-              <table id="transferFreightsTable" class="table table-sm table-striped">
+              <table id="transferFreightsTable" class="table table-sm table-striped" style="width:100%">
                 <thead>
                   <tr>
-                    <th width="5%"></th>
-                    <th>ID</th>
-                    <th>Empresa</th>
-                    <th>Valor</th>
+                    <th width="3%"></th>
+                    <th width="8%">ID</th>
+                    <th width="20%">Empresa</th>
+                    <th width="20%">Tipo de Carga</th>
+                    <th width="15%">Valor</th>
+                    <th width="15%">Data</th>
+                    <th width="19%">Status</th>
                   </tr>
                 </thead>
                 <tbody></tbody>
@@ -243,6 +246,59 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <style>
+/* Estilos para o modal de transferência */
+#transferModal .modal-dialog {
+    max-width: 1300px;
+    width: 95%;
+}
+
+#transferFreightsTable {
+    font-size: 0.85rem;
+    table-layout: fixed;
+}
+
+#transferFreightsTable th, 
+#transferFreightsTable td {
+    padding: 0.5rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+#transferFreightsTable thead th {
+    position: sticky;
+    top: 0;
+    background-color: #f8f9fa;
+    z-index: 10;
+}
+
+#transferModal .modal-body {
+    max-height: 70vh;
+    overflow-y: auto;
+    padding: 20px;
+}
+
+.dataTables_scrollBody {
+    overflow-x: auto !important;
+}
+
+/* Melhorias na responsividade */
+@media (max-width: 1400px) {
+    #transferModal .modal-dialog {
+        max-width: 95%;
+    }
+}
+
+@media (max-width: 768px) {
+    #transferModal .row {
+        flex-direction: column;
+    }
+    #transferModal .col-md-4, 
+    #transferModal .col-md-8 {
+        width: 100%;
+        max-width: 100%;
+    }
+}    
 td.dt-control::before {
     content: "+";
     font-weight: bold;
@@ -523,25 +579,60 @@ function openTransferModal(driverId) {
             url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json',
             zeroRecords: "Nenhum frete disponível"
         },
-        pageLength: 3,
-        lengthMenu: [3, 5, 10],
+        pageLength: 5,
+        lengthMenu: [5, 10, 15],
         columns: [
             { 
                 data: null,
                 orderable: false,
+                width: '3%',
                 render: function() {
                     return '<input type="radio" name="freightRadio" class="freightRadio">';
                 }
             },
-            { data: 'id' },
-            { data: 'company.name' },
+            { 
+                data: 'id',
+                width: '8%' 
+            },
+            { 
+                data: 'company.name',
+                width: '20%' 
+            },
+            { 
+                data: 'cargo_type',
+                width: '20%' 
+            },
             { 
                 data: 'value',
+                width: '15%',
                 render: function(data) {
                     return data ? formatCurrency(data) : '';
                 }
+            },
+            { 
+                data: 'freight_date',
+                width: '15%',
+                render: function(data) {
+                    return data ? formatDateBR(data) : '';
+                }
+            },
+            { 
+                data: 'status',
+                width: '19%',
+                render: function(data) {
+                    const statusClasses = {
+                        'pending': 'warning',
+                        'in_progress': 'primary',
+                        'completed': 'success',
+                        'canceled': 'danger'
+                    };
+                    return `<span class="badge bg-${statusClasses[data] || 'secondary'}">${data}</span>`;
+                }
             }
-        ]
+        ],
+        scrollX: true,
+        autoWidth: false,
+        fixedColumns: true
     });
     
     $.get(`/drivers/${driverId}/freights`, function(data) {
