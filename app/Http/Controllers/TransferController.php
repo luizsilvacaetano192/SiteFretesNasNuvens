@@ -138,6 +138,8 @@ class TransferController extends Controller
         if ($response->status() === 200) {
             try {
                 $responseData = $response->json();
+
+                print_r($responseData);die;
                 
                 if (isset($responseData['success']) && $responseData['success'] === true) {
                     return response()->json([
