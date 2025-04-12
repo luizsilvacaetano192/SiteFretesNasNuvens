@@ -14,7 +14,7 @@
 
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5>Informações da Carga</h5>
+                    <h5>Informações Básicas</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
@@ -32,25 +32,30 @@
 
             <div class="card mb-4">
                 <div class="card-header">
-                    <h5>Detalhes do Frete</h5>
+                    <h5>Endereços</h5>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="start_address" class="form-label">Endereço de Coleta</label>
+                            <label for="start_address" class="form-label">Origem</label>
                             <input id="start_address" name="start_address" type="text" class="form-control" required>
-                            <small class="text-muted">Digite o endereço completo</small>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="destination_address" class="form-label">Endereço de Entrega</label>
+                            <label for="destination_address" class="form-label">Destino</label>
                             <input id="destination_address" name="destination_address" type="text" class="form-control" required>
-                            <small class="text-muted">Digite o endereço completo</small>
                         </div>
                     </div>
+                </div>
+            </div>
 
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5>Configuração do Frete</h5>
+                </div>
+                <div class="card-body">
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label class="form-label">Tipo de Caminhão</label>
+                            <label class="form-label">Tipo de Veículo</label>
                             <select id="truck_type" name="truck_type" class="form-control">
                                 <option value="pequeno">Pequeno (até 3 ton)</option>
                                 <option value="medio">Médio (3-8 ton)</option>
@@ -61,9 +66,12 @@
                             <label for="freight_value" class="form-label">Valor do Frete (R$)</label>
                             <div class="input-group">
                                 <span class="input-group-text">R$</span>
-                                <input type="text" id="freight_value" name="freight_value" class="form-control" readonly>
+                                <input type="number" id="freight_value" name="freight_value" class="form-control" step="0.01" min="0">
+                                <button type="button" id="resetFreightValue" class="btn btn-outline-secondary" title="Reverter para valor calculado">
+                                    <i class="fas fa-undo"></i>
+                                </button>
                             </div>
-                            <small class="text-muted">Calculado automaticamente</small>
+                            <small class="text-muted">Valor calculado: <span id="calculated_value">R$ 0,00</span></small>
                         </div>
                     </div>
                 </div>
@@ -79,38 +87,32 @@
             <input type="hidden" id="destination_lng" name="destination_lng">
 
             <div class="card mb-4">
-                <div class="card-header">
-                    <h5>Rota do Frete</h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5>Rota e Detalhes</h5>
+                    <button type="button" id="calculateRouteBtn" class="btn btn-sm btn-primary">
+                        <i class="fas fa-route me-1"></i> Calcular Rota
+                    </button>
                 </div>
                 <div class="card-body">
-                    <div id="map" style="height: 400px; width: 100%;"></div>
-                </div>
-            </div>
-
-            <div class="card mb-4">
-                <div class="card-header">
-                    <h5>Resumo</h5>
-                </div>
-                <div class="card-body">
-                    <div id="result">
-                        <div class="row">
-                            <div class="col-md-4">
-                                <div class="alert alert-info">
-                                    <h6>Distância</h6>
-                                    <p id="distance" class="h4">Calculando...</p>
-                                </div>
+                    <div id="map" style="height: 400px; width: 100%; margin-bottom: 20px;"></div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="alert alert-info">
+                                <h6>Distância</h6>
+                                <p id="distance" class="h4">-</p>
                             </div>
-                            <div class="col-md-4">
-                                <div class="alert alert-info">
-                                    <h6>Tempo Estimado</h6>
-                                    <p id="duration" class="h4">Calculando...</p>
-                                </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-info">
+                                <h6>Tempo Estimado</h6>
+                                <p id="duration" class="h4">-</p>
                             </div>
-                            <div class="col-md-4">
-                                <div class="alert alert-success">
-                                    <h6>Valor Total</h6>
-                                    <p id="freight_value_display" class="h4">R$ 0,00</p>
-                                </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="alert alert-success">
+                                <h6>Valor Sugerido</h6>
+                                <p id="suggested_value" class="h4">R$ 0,00</p>
                             </div>
                         </div>
                     </div>
@@ -118,8 +120,12 @@
             </div>
 
             <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-                <button type="button" class="btn btn-secondary me-md-2" onclick="window.history.back()">Cancelar</button>
-                <button type="submit" class="btn btn-primary">Confirmar Frete</button>
+                <button type="button" class="btn btn-secondary me-md-2" onclick="window.history.back()">
+                    <i class="fas fa-times me-1"></i> Cancelar
+                </button>
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-check me-1"></i> Confirmar Frete
+                </button>
             </div>
         </form>
     </div>
@@ -128,9 +134,11 @@
 @push('scripts')
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initMap" async defer></script>
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 
     <script>
         let map, directionsService, directionsRenderer, autocompleteStart, autocompleteDestination;
+        let calculatedFreightValue = 0;
 
         function initMap() {
             const mapDiv = document.getElementById('map');
@@ -138,7 +146,7 @@
 
             map = new google.maps.Map(mapDiv, {
                 center: { lat: -23.5505, lng: -46.6333 },
-                zoom: 13
+                zoom: 7
             });
 
             directionsService = new google.maps.DirectionsService();
@@ -147,7 +155,7 @@
                 polylineOptions: {
                     strokeColor: '#4285F4',
                     strokeOpacity: 1.0,
-                    strokeWeight: 4
+                    strokeWeight: 5
                 }
             });
             directionsRenderer.setMap(map);
@@ -170,9 +178,6 @@
                 fields: ['address_components', 'geometry'],
                 componentRestrictions: { country: 'br' }
             });
-
-            autocompleteStart.addListener('place_changed', calculateRoute);
-            autocompleteDestination.addListener('place_changed', calculateRoute);
         }
 
         function calculateFreightValue(distanceInKm, truckType) {
@@ -203,7 +208,7 @@
             const destinationPlace = autocompleteDestination.getPlace();
 
             if (!startPlace?.geometry || !destinationPlace?.geometry) {
-                alert('Por favor, selecione endereços válidos para coleta e entrega.');
+                alert('Por favor, selecione endereços válidos para origem e destino.');
                 return;
             }
 
@@ -240,11 +245,16 @@
                     const distanceText = route.distance.text.replace(' km', '').replace(',', '.');
                     const distanceInKm = parseFloat(distanceText);
                     const truckType = $('#truck_type').val();
-                    const freightValue = calculateFreightValue(distanceInKm, truckType);
+                    calculatedFreightValue = calculateFreightValue(distanceInKm, truckType);
 
-                    // Atualizar campo de valor
-                    $('#freight_value').val(freightValue.toFixed(2));
-                    $('#freight_value_display').text(formatCurrency(freightValue));
+                    // Atualizar campos de valor
+                    $('#calculated_value').text(formatCurrency(calculatedFreightValue));
+                    $('#suggested_value').text(formatCurrency(calculatedFreightValue));
+                    
+                    // Se o campo de valor estiver vazio ou com valor padrão, atualize
+                    if (!$('#freight_value').val() || $('#freight_value').val() == '0') {
+                        $('#freight_value').val(calculatedFreightValue.toFixed(2));
+                    }
                 } else {
                     alert('Não foi possível calcular o trajeto. Verifique os endereços.');
                 }
@@ -252,17 +262,36 @@
         }
 
         $(document).ready(function() {
-            // Recalcular valor quando mudar o tipo de caminhão
+            // Calcular rota quando o botão for clicado
+            $('#calculateRouteBtn').click(calculateRoute);
+
+            // Recalcular valor sugerido quando mudar o tipo de caminhão
             $('#truck_type').change(function() {
-                const distanceText = $('#distance').text().replace(' km', '').replace(',', '.');
-                const distanceInKm = parseFloat(distanceText);
-                
-                if (!isNaN(distanceInKm)) {
+                if ($('#distance').text() !== '-') {
+                    const distanceText = $('#distance').text().replace(' km', '').replace(',', '.');
+                    const distanceInKm = parseFloat(distanceText);
                     const truckType = $(this).val();
-                    const freightValue = calculateFreightValue(distanceInKm, truckType);
+                    calculatedFreightValue = calculateFreightValue(distanceInKm, truckType);
                     
-                    $('#freight_value').val(freightValue.toFixed(2));
-                    $('#freight_value_display').text(formatCurrency(freightValue));
+                    $('#calculated_value').text(formatCurrency(calculatedFreightValue));
+                    $('#suggested_value').text(formatCurrency(calculatedFreightValue));
+                }
+            });
+
+            // Botão para reverter para o valor calculado
+            $('#resetFreightValue').click(function() {
+                if (calculatedFreightValue > 0) {
+                    $('#freight_value').val(calculatedFreightValue.toFixed(2));
+                }
+            });
+
+            // Formatar valor manualmente inserido
+            $('#freight_value').on('change', function() {
+                const value = parseFloat($(this).val());
+                if (!isNaN(value) && value >= 0) {
+                    $(this).val(value.toFixed(2));
+                } else {
+                    $(this).val('0.00');
                 }
             });
 
@@ -270,7 +299,12 @@
             $('#freightRequestForm').on('submit', function(e) {
                 e.preventDefault();
 
-                if (!$('#freight_value').val() || $('#freight_value').val() == '0.00') {
+                if (!$('#freight_value').val() || parseFloat($('#freight_value').val()) <= 0) {
+                    alert('Por favor, insira um valor válido para o frete.');
+                    return;
+                }
+
+                if ($('#distance').text() === '-') {
                     alert('Por favor, calcule a rota antes de enviar.');
                     return;
                 }
@@ -291,7 +325,8 @@
                     freight_value: $('#freight_value').val(),
                     status_id: $('#status_id').val(),
                     distance: $('#distance').text(),
-                    duration: $('#duration').text()
+                    duration: $('#duration').text(),
+                    suggested_value: calculatedFreightValue
                 };
 
                 $.ajax({
@@ -301,11 +336,15 @@
                     headers: {
                         'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
                     },
+                    beforeSend: function() {
+                        $('button[type="submit"]').prop('disabled', true).html('<i class="fas fa-spinner fa-spin me-1"></i> Enviando...');
+                    },
                     success: function(response) {
                         alert('Frete criado com sucesso! ID: ' + response.id);
                         window.location.href = "{{ route('freights.index') }}";
                     },
                     error: function(xhr) {
+                        $('button[type="submit"]').prop('disabled', false).html('<i class="fas fa-check me-1"></i> Confirmar Frete');
                         let errorMsg = 'Erro ao salvar o frete';
                         if (xhr.responseJSON?.message) {
                             errorMsg += ': ' + xhr.responseJSON.message;
@@ -349,7 +388,12 @@
         }
         #freight_value {
             font-weight: bold;
+        }
+        #resetFreightValue:hover {
             background-color: #f8f9fa;
+        }
+        .alert {
+            border-radius: 8px;
         }
     </style>
 @endsection
