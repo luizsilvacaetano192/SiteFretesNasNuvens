@@ -94,9 +94,7 @@ class TransferController extends Controller
             'description' => $validated['description'] ?? 'Transferência realizada pelo sistema',
             'transfer_date' =>  Carbon::now()->toDateString()
         ];
-
-        dd($payload);
-
+        
         return $payload;
     }
 
