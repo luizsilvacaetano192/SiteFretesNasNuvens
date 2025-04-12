@@ -136,29 +136,33 @@ class TransferController extends Controller
     protected function handleApiResponse($response, Driver $driver, array $validated)
     {
         if ($response->status() === 200) {
-       
             try {
                 $responseData = $response->json();
-            
-                if (isset($responseData['success']) && $responseData['success'] == true) {
-              
-
+                
+                // Verifica tanto 'success' quanto 'sussess' (erro de digitação)
+                $isSuccess = $responseData['success'] ?? $responseData['sussess'] ?? false;
+                
+                if ($isSuccess === true) {
                     return response()->json([
                         'success' => true,
                         'message' => $responseData['message'] ?? 'Transfer completed successfully',
                         'data' => [
-                            'amount' => $validated['amount'],
-                            'new_balance' => $responseData['data']['new_balance'] ?? null,
-                            'asaas_id' => $responseData['data']['asaas_id'] ?? null,
-                            'driver_id' => $driver->id
+                            'amount' => $responseData['transferDetails']['amount'] ?? $validated['amount'],
+                            'asaas_id' => $responseData['transferDetails']['asaasTransferId'] ?? null,
+                            'internal_id' => $responseData['transferDetails']['internalTransferId'] ?? null,
+                            'current_balance' => $responseData['operationsStatus']['balanceUpdate']['currentBalance'] ?? null,
+                            'driver_id' => $driver->id,
+                            'transfer_date' => $responseData['transferDetails']['date'] ?? Carbon::now()->format('Y-m-d'),
+                            'transfer_details' => $responseData['transferDetails'] ?? null
                         ]
                     ]);
                 }
                 
+                // Verifica por erro explícito na resposta
                 if (isset($responseData['error']) && $responseData['error'] === true) {
                     return $this->handleApiError($responseData, $driver);
                 }
-                die('chegou aq no log');
+                
                 Log::warning('Unknown API response format', [
                     'driver_id' => $driver->id,
                     'response' => $responseData
@@ -167,7 +171,6 @@ class TransferController extends Controller
                 return $this->errorResponse('Unknown API response format', 502);
                 
             } catch (\Exception $e) {
-                print_r('esta caindo aq');die;
                 Log::error('API response processing failed', [
                     'driver_id' => $driver->id,
                     'error' => $e->getMessage(),
