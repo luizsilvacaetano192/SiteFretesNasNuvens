@@ -57,11 +57,12 @@ Route::post('/drivers/store', [DriverController::class, 'store'])->name('drivers
 Route::get('/drivers/create', [DriverController::class, 'create'])->name('drivers.create');
 Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
 Route::get('/drivers/data', [DriverController::class, 'getData'])->name('drivers.data');
+Route::post('/transfer/{driver}', [TransferController::class, 'transfer'])
+    ->name('transfer');
 
 Route::get('/drivers/send-push', [DriverController::class, 'showSendPushForm'])->name('drivers.pushForm');
 Route::get('/drivers/{id}', [DriverController::class, 'show'])->name('drivers.show');
 Route::post('/drivers/send-push', [DriverController::class, 'sendPush'])->name('drivers.sendPush');
-
 
 Route::prefix('messages-push')->group(function () {
     Route::get('/', [MessagePushController::class, 'index'])->name('messages-push.index');
