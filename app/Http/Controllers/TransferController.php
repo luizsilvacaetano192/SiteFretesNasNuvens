@@ -16,7 +16,7 @@ class TransferController extends Controller
 
     public function index(Request $request)
     {
-        $transfers = Transfer::with('driver')->query();
+        $transfers = Transfer::with('driver')->getQuery();
 
         if ($request->filled('date_range')) {
             try {
