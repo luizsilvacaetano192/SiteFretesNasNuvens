@@ -20,6 +20,18 @@ class DriverController extends Controller
         return view('drivers.index');
     }
 
+    public function show($id)
+    {
+        $driver = Driver::with(['company', 'bankAccount'])
+            ->findOrFail($id);
+            
+        return response()->json([
+            'name' => $driver->name,
+            'cpf' => $driver->cpf
+        ]);
+    }
+
+
     public function updateStatus(Request $request, $id)
     {
         $driver = Driver::findOrFail($id);

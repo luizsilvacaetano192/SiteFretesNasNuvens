@@ -440,6 +440,8 @@ function activateDriver(id, status) {
     } else if (status === 'create') {
         // Obter os dados do motorista antes de ativar
         $.get(`/drivers/${id}`, function(driverData) {
+
+            console.log('driverData', driverData)
             // Preparar os dados para a API
             const apiData = {
                 driver_id: id,

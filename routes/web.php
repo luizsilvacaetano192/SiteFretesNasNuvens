@@ -57,6 +57,7 @@ Route::post('/drivers/store', [DriverController::class, 'store'])->name('drivers
 Route::get('/drivers/create', [DriverController::class, 'create'])->name('drivers.create');
 Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index');
 Route::get('/drivers/data', [DriverController::class, 'getData'])->name('drivers.data');
+Route::get('/drivers/{id}', [DriverController::class, 'show'])->name('drivers.show');
 
 Route::post('/drivers/send-push', [App\Http\Controllers\DriverController::class, 'sendPush'])->name('drivers.sendPush');
 
