@@ -59,6 +59,8 @@ class TransferController extends Controller
             
             // Faz a requisição para a API externa
             $apiResponse = $this->callExternalApi($apiPayload);
+
+            dd($apiResponse);
             
             // Processa a resposta
             return $this->handleApiResponse($apiResponse, $driver, $validated);
@@ -94,7 +96,6 @@ class TransferController extends Controller
             'description' => $validated['description'] ?? 'Transferência realizada pelo sistema',
             'transfer_date' =>  Carbon::now()->toDateString()
         ];
-        
         return $payload;
     }
 
