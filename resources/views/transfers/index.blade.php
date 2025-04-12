@@ -48,52 +48,59 @@
         </div>
     </form>
 
-    <table class="table table-bordered table-striped" id="transferTable">
-        <thead class="table-dark">
-            <tr>
-                <th>Data</th>
-                <th>Frete</th>
-                <th>Motorista</th>
-                <th>Tipo</th>
-                <th>Valor</th>
-                <th>Descrição</th>
+   <!-- No cabeçalho da tabela (mantém igual) -->
+<table class="table table-bordered table-striped" id="transferTable">
+    <thead class="table-dark">
+        <tr>
+            <th>Data</th>
+            <th>Frete</th>
+            <th>Motorista</th>
+            <th>Tipo</th>
+            <th>Valor</th>
+            <th>Descrição</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach ($transfers as $transfer)
+            <tr data-group="{{ $transfer->freight_id ?? 'no-group' }}">
+                <td>{{ \Carbon\Carbon::parse($transfer->created_at)->format('d/m/Y H:i') }}</td>
+                <td>
+                    @isset($transfer->freight_id)
+                        #{{ $transfer->freight_id }}
+                    @else
+                        -
+                    @endisset
+                </td>
+                <td>{{ $transfer->driver->name ?? '-' }}</td>
+                <td>
+                    @php
+                        $label = match($transfer->type) {
+                            'available_balance' => 'Liberação de Saldo',
+                            'blocked_balance' => 'Saldo Bloqueado',
+                            'debited_balance' => 'Pix Cliente',
+                            'entrada' => 'Entrada',
+                            'saída' => 'Saída',
+                            default => ucfirst($transfer->type),
+                        };
+
+                        $color = match($transfer->type) {
+                            'available_balance', 'entrada' => 'success',
+                            'blocked_balance' => 'warning',
+                            'debited_balance', 'saída' => 'danger',
+                            default => 'secondary',
+                        };
+                    @endphp
+
+                    <span class="badge bg-{{ $color }}">
+                        {{ $label }}
+                    </span>
+                </td>
+                <td>R$ {{ number_format($transfer->amount, 2, ',', '.') }}</td>
+                <td>{{ $transfer->description }}</td>
             </tr>
-        </thead>
-        <tbody>
-            @foreach ($transfers as $transfer)
-                <tr data-group="{{ $transfer->freight_id }}">
-                    <td>{{ \Carbon\Carbon::parse($transfer->created_at)->format('d/m/Y H:i') }}</td>
-                    <td>#{{ $transfer->freight_id }}</td>
-                    <td>{{ $transfer->driver->name ?? '-' }}</td>
-                    <td>
-                        @php
-                            $label = match($transfer->type) {
-                                'available_balance' => 'Liberação de Saldo',
-                                'blocked_balance' => 'Saldo Bloqueado',
-                                'debited_balance' => 'Pix Cliente',
-                                'entrada' => 'Entrada',
-                                'saída' => 'Saída',
-                                default => ucfirst($transfer->type),
-                            };
-
-                            $color = match($transfer->type) {
-                                'available_balance', 'entrada' => 'success',
-                                'blocked_balance' => 'warning',
-                                'debited_balance', 'saída' => 'danger',
-                                default => 'secondary',
-                            };
-                        @endphp
-
-                        <span class="badge bg-{{ $color }}">
-                            {{ $label }}
-                        </span>
-                    </td>
-                    <td>R$ {{ number_format($transfer->amount, 2, ',', '.') }}</td>
-                    <td>{{ $transfer->description }}</td>
-                </tr>
-            @endforeach
-        </tbody>
-    </table>
+        @endforeach
+    </tbody>
+</table>
 
     <div class="d-flex justify-content-end mt-4">
         {{ $transfers->appends(request()->query())->links() }}
@@ -118,7 +125,10 @@ $(document).ready(function () {
             url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/pt-BR.json'
         },
         rowGroup: {
-            dataSrc: 'group'
+            dataSrc: function(row) {
+                // Só agrupa se tiver freight_id
+                return row.dataset.group !== 'no-group' ? row.dataset.group : null;
+            }
         }
     });
 
