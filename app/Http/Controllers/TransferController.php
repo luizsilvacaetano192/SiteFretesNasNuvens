@@ -141,13 +141,13 @@ class TransferController extends Controller
     protected function handleApiResponse($response, Driver $driver, array $validated)
     {
 
-        dd($response->status());
+     
         if ($response->status() == 200) {
             try {
                 $responseData = $response->json();
                 
                 // Check for successful transfer response structure
-                if (isset($responseData['transferDetails']) ) {
+                
                     
                     $transfer = Transfer::create([
                         'driver_id' => $driver->id,
@@ -175,7 +175,7 @@ class TransferController extends Controller
                             'new_balance' => $responseData['operationsStatus']['balanceUpdate']['currentBalance'] ?? null
                         ]
                     ]);
-                }
+                
                 
                 // Check for explicit error in response
                 if (isset($responseData['error']) && $responseData['error'] === true) {
