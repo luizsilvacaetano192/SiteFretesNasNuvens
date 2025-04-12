@@ -87,7 +87,6 @@ class TransferController extends Controller
 
     protected function prepareApiPayload(array $validated, Driver $driver)
     {
-   
         $payload = [
             'driver_id' => $driver->id,
             'type' => $validated['type'],
@@ -95,16 +94,12 @@ class TransferController extends Controller
             'description' => $validated['description'] ?? 'Transferência realizada pelo sistema',
             'transfer_date' => Carbon::now()->toISOString()
         ];
-        die('terminou o pay');
-
-
 
         return $payload;
     }
 
     protected function callExternalApi(array $payload)
     {
-        die('chegou na requisicao ');
         return Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json',
