@@ -497,68 +497,82 @@ function openWhatsApp(phone) {
 function showFreightsModal(driverId) {
     const modal = new bootstrap.Modal('#freightsModal');
     
+    // Limpa a tabela antes de recarregar
     if ($.fn.DataTable.isDataTable('#freightsTable')) {
         $('#freightsTable').DataTable().destroy();
+        $('#freightsTable tbody').empty();
     }
     
-    $('#freightsModal .modal-body').html(`
-        <div class="text-center py-5">
-            <div class="spinner-border text-primary" role="status"></div>
-            <p class="mt-2">Carregando lista de fretes...</p>
-        </div>
-    `);
+    // Mostra o modal imediatamente
     modal.show();
     
-    $.get(`/drivers/${driverId}/freights`, function(data) {
-        const freightsTable = $('#freightsTable').DataTable({
-            data: data.freights,
-            pageLength: 5,
-            lengthMenu: [5, 10, 25, 50],
-            columns: [
-                { 
-                    data: null,
-                    orderable: false,
-                    render: function() {
-                        return '<input type="checkbox" class="freightCheckbox">';
-                    }
-                },
-                { data: 'id' },
-                { data: 'company.name' },
-                { data: 'cargo_type' },
-                { 
-                    data: 'freight_date',
-                    render: function(data) {
-                        return new Date(data).toLocaleDateString('pt-BR');
-                    }
-                },
-                { 
-                    data: 'status',
-                    render: function(data) {
-                        const statusClasses = {
-                            'pending': 'warning',
-                            'in_progress': 'primary',
-                            'completed': 'success',
-                            'canceled': 'danger'
-                        };
-                        return `<span class="badge bg-${statusClasses[data] || 'secondary'}">${data}</span>`;
-                    }
+    // Inicializa a tabela com dados vazios primeiro
+    const freightsTable = $('#freightsTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json',
+            zeroRecords: "Nenhum frete disponível para este motorista"
+        },
+        pageLength: 5,
+        lengthMenu: [5, 10, 25, 50],
+        columns: [
+            { 
+                data: null,
+                orderable: false,
+                render: function() {
+                    return '<input type="checkbox" class="freightCheckbox">';
                 }
-            ],
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
+            },
+            { data: 'id' },
+            { data: 'company.name' },
+            { data: 'cargo_type' },
+            { 
+                data: 'freight_date',
+                render: function(data) {
+                    return data ? new Date(data).toLocaleDateString('pt-BR') : '';
+                }
+            },
+            { 
+                data: 'status',
+                render: function(data) {
+                    const statusClasses = {
+                        'pending': 'warning',
+                        'in_progress': 'primary',
+                        'completed': 'success',
+                        'canceled': 'danger'
+                    };
+                    return `<span class="badge bg-${statusClasses[data] || 'secondary'}">${data}</span>`;
+                }
             }
-        });
+        ],
+        // Força a exibição da mensagem de "Nenhum dado disponível" quando a tabela estiver vazia
+        drawCallback: function(settings) {
+            if (this.api().data().length === 0) {
+                $(this.api().table().body()).html(
+                    '<tr class="odd">' +
+                    '<td valign="top" colspan="6" class="dataTables_empty">' + 
+                    settings.oLanguage.sZeroRecords + 
+                    '</td>' +
+                    '</tr>'
+                );
+            }
+        }
+    });
 
-        $('#selectAllFreights').click(function() {
-            $('.freightCheckbox').prop('checked', this.checked);
-        });
+    // Configura o checkbox "Selecionar todos"
+    $('#selectAllFreights').click(function() {
+        $('.freightCheckbox').prop('checked', this.checked);
+    });
 
+    // Carrega os dados via AJAX
+    $.get(`/drivers/${driverId}/freights`, function(data) {
+        if (data.freights && data.freights.length > 0) {
+            freightsTable.clear().rows.add(data.freights).draw();
+        } else {
+            freightsTable.clear().draw(); // Isso mostrará a mensagem de zeroRecords
+        }
     }).fail(function() {
-        $('#freightsModal .modal-body').html(`
-            <div class="alert alert-danger">
-                Erro ao carregar lista de fretes. Tente novamente mais tarde.
-            </div>
-        `);
+        freightsTable.clear().draw();
+        toastr.error('Erro ao carregar lista de fretes');
     });
 }
 
