@@ -93,8 +93,7 @@ class TransferController extends Controller
             'type' => $validated['type'],
             'amount' => $validated['amount'],
             'description' => $validated['description'] ?? 'Transferência realizada pelo sistema',
-            'transfer_date' => Carbon::now()->toISOString(),
-            'freight_value' => $validated['freight_value']
+            'transfer_date' => Carbon::now()->toISOString()
         ];
         die('terminou o pay');
 
