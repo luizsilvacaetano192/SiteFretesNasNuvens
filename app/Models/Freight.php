@@ -29,7 +29,8 @@ class Freight extends Model
         'status_id',
         'distance',
         'duration' ,
-        'directions'
+        'directions',
+        'freight_value'
     ];
 
     public function shipment()

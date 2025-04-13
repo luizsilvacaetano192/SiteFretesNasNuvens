@@ -5,11 +5,11 @@ use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
 
-class AddPaymentFieldsToFreightsDriverTable extends Migration
+class AddPaymentFieldsToFreightsTable extends Migration
 {
     public function up()
     {
-        Schema::table('freights_driver', function (Blueprint $table) {
+        Schema::table('freights', function (Blueprint $table) {
             $table->decimal('freight_value', 10, 2)->nullable();
             $table->decimal('driver_freight_value', 10, 2)->nullable();
             $table->string('payment_method')->nullable();
@@ -23,7 +23,7 @@ class AddPaymentFieldsToFreightsDriverTable extends Migration
 
     public function down()
     {
-        Schema::table('freights_driver', function (Blueprint $table) {
+        Schema::table('freights', function (Blueprint $table) {
             $table->dropColumn([
                 'freight_value',
                 'driver_freight_value',

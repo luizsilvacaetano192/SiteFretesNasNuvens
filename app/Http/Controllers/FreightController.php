@@ -37,7 +37,9 @@ class FreightController extends Controller
             'distance' =>  $freight->distance,
             'duration' =>  $freight->duration,
             'freight_id' => $freight->id,
-            'directions' => $freight->directions
+            'directions' => $freight->directions,
+            'freight_value' => $freight->freight_value
+         
         ]);
     }
 
@@ -74,6 +76,9 @@ class FreightController extends Controller
             })
             ->addColumn('status.name', function ($freight) {
                 return $freight->status->name ?? 'Sem status';
+            })
+            ->addColumn('freight_value', function ($freight) {
+                return $freight->freight_value ?? 'Sem valor';
             })
             ->addColumn('actions', function ($freight) {
                 return '
@@ -142,7 +147,8 @@ class FreightController extends Controller
             'destination_lat' => 'required|numeric',
             'destination_lng' => 'required|numeric',
             'truck_type' => 'required|string|in:pequeno,medio,grande',
-            'status_id' => 'required|exists:freight_statuses,id', // Verifique se o status_id existe na tabela statuses
+            'status_id' => 'required|exists:freight_statuses,id'
+
         ]);
 
         // Criar um novo frete
@@ -163,6 +169,7 @@ class FreightController extends Controller
             'distance'  => $request->distance,
             'duration' => $request->duration,
             'directions' => $request->directions,
+            'freight_value' =>  $request->freight_value,
         ]);
 
         $startAddress = Address::firstOrCreate(

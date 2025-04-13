@@ -18,6 +18,7 @@
                     <th>Posição Atual</th>
                     <th>Duração</th>
                     <th>Distância</th>
+                    <th>Valor</th>
                     <th>Status</th>
                     <th>Ações</th>
                 </tr>
@@ -98,7 +99,9 @@
                     { data: 'current_position', name: 'current_position' },
                     { data: 'duration', name: 'duration' },
                     { data: 'distance', name: 'distance' },
+                    { data: 'freight_value', name: 'freight_value' },
                     { data: 'status.name', name: 'status.name' },
+            
                     {
                         data: 'id',
                         name: 'actions',
