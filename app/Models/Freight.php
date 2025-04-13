@@ -30,7 +30,10 @@ class Freight extends Model
         'distance',
         'duration' ,
         'directions',
-        'freight_value'
+        'freight_value',
+        'asaas_payment_id',
+        'paymentLink',
+        'is_payment_confirmed'
     ];
 
     public function shipment()

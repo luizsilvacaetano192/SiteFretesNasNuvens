@@ -82,7 +82,7 @@
             </div>
         </div>
 
-        <!-- Campos ocultos para coordenadas -->
+        <!-- Campos ocultos para coordenadas e informações da rota -->
         <input type="hidden" id="current_position" name="current_position">
         <input type="hidden" id="current_lat" name="current_lat">
         <input type="hidden" id="current_lng" name="current_lng">
@@ -90,6 +90,10 @@
         <input type="hidden" id="start_lng" name="start_lng">
         <input type="hidden" id="destination_lat" name="destination_lat">
         <input type="hidden" id="destination_lng" name="destination_lng">
+        <input type="hidden" id="distance_value" name="distance">
+        <input type="hidden" id="duration_value" name="duration">
+        <input type="hidden" id="distance_km" name="distance_km">
+        <input type="hidden" id="duration_min" name="duration_min">
 
         <!-- Rota e Detalhes -->
         <div class="card mb-4 shadow-sm">
@@ -148,7 +152,7 @@
                 Cancelar
             </button>
             <button type="submit" class="btn btn-primary" id="submitBtn">
-                Confirmar Frete
+                <i class="fas fa-external-link-alt me-2"></i> Confirmar e Pagar
             </button>
         </div>
     </form>
@@ -158,6 +162,8 @@
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initMap" async defer></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
     let map, directionsService, directionsRenderer, autocompleteStart, autocompleteDestination;
@@ -202,7 +208,6 @@
             componentRestrictions: { country: 'br' }
         });
 
-        // Cálculo automático quando os endereços mudam
         autocompleteStart.addListener('place_changed', calculateRoute);
         autocompleteDestination.addListener('place_changed', calculateRoute);
     }
@@ -227,6 +232,17 @@
         });
     }
 
+    function parseDuration(durationText) {
+        let minutes = 0;
+        const hoursMatch = durationText.match(/(\d+)\s*h/);
+        const minsMatch = durationText.match(/(\d+)\s*m/);
+        
+        if (hoursMatch) minutes += parseInt(hoursMatch[1]) * 60;
+        if (minsMatch) minutes += parseInt(minsMatch[1]);
+        
+        return minutes;
+    }
+
     function calculateRoute() {
         const startPlace = autocompleteStart.getPlace();
         const destinationPlace = autocompleteDestination.getPlace();
@@ -236,21 +252,9 @@
             return;
         }
 
-        const startLatLng = startPlace.geometry.location;
-        const destinationLatLng = destinationPlace.geometry.location;
-
-        // Atualizar campos ocultos
-        $('#current_position').val($('#start_address').val());
-        $('#current_lat').val(startLatLng.lat());
-        $('#current_lng').val(startLatLng.lng());
-        $('#start_lat').val(startLatLng.lat());
-        $('#start_lng').val(startLatLng.lng());
-        $('#destination_lat').val(destinationLatLng.lat());
-        $('#destination_lng').val(destinationLatLng.lng());
-
         const request = {
-            origin: startLatLng,
-            destination: destinationLatLng,
+            origin: startPlace.geometry.location,
+            destination: destinationPlace.geometry.location,
             travelMode: google.maps.TravelMode.DRIVING,
             unitSystem: google.maps.UnitSystem.METRIC
         };
@@ -260,14 +264,29 @@
                 directionsRenderer.setDirections(response);
                 const route = response.routes[0].legs[0];
 
-                // Atualizar informações de distância e tempo
+                // Atualiza a exibição
                 $('#distance').text(route.distance.text);
                 $('#duration').text(route.duration.text);
+                
+                // Calcula valores numéricos
+                const distanceKm = parseFloat(route.distance.text.replace(' km', '').replace(',', '.'));
+                const durationMin = parseDuration(route.duration.text);
+                
+                // Preenche os campos ocultos
+                document.getElementById('distance_value').value = route.distance.text;
+                document.getElementById('duration_value').value = route.duration.text;
+                document.getElementById('distance_km').value = distanceKm;
+                document.getElementById('duration_min').value = durationMin;
+                document.getElementById('current_position').value = $('#start_address').val();
+                document.getElementById('current_lat').value = startPlace.geometry.location.lat();
+                document.getElementById('current_lng').value = startPlace.geometry.location.lng();
+                document.getElementById('start_lat').value = startPlace.geometry.location.lat();
+                document.getElementById('start_lng').value = startPlace.geometry.location.lng();
+                document.getElementById('destination_lat').value = destinationPlace.geometry.location.lat();
+                document.getElementById('destination_lng').value = destinationPlace.geometry.location.lng();
 
                 // Calcular valor do frete
-                const distanceText = route.distance.text.replace(' km', '').replace(',', '.');
-                const distanceInKm = parseFloat(distanceText);
-                calculatedFreightValue = calculateFreightValue(distanceInKm, truckType);
+                calculatedFreightValue = calculateFreightValue(distanceKm, truckType);
 
                 // Atualizar campos de valor
                 $('#suggested_value').text(formatCurrency(calculatedFreightValue));
@@ -279,14 +298,12 @@
     }
 
     $(document).ready(function() {
-        // Atualizar cálculo quando o tipo de caminhão mudar
         $('#truck_type').change(function() {
-            if (autocompleteStart.getPlace() && autocompleteDestination.getPlace()) {
+            if (autocompleteStart?.getPlace() && autocompleteDestination?.getPlace()) {
                 calculateRoute();
             }
         });
 
-        // Quando o valor for alterado manualmente
         $('#freight_value').on('change', function() {
             const manualValue = parseFloat($(this).val());
             if (!isNaN(manualValue)) {
@@ -294,21 +311,70 @@
             }
         });
 
-        // Validação antes do envio
         $('#freightRequestForm').on('submit', function(e) {
             e.preventDefault();
-
-            const freightValue = parseFloat($('#freight_value').val());
-            if (isNaN(freightValue) || freightValue <= 0) {
-                alert('Por favor, insira um valor válido para o frete.');
+            
+            if (!$('#distance_value').val() || !$('#duration_value').val()) {
+                Swal.fire({
+                    icon: 'warning',
+                    title: 'Atenção',
+                    text: 'Por favor, calcule a rota antes de enviar o formulário.',
+                });
                 return;
             }
 
-            // Desativar botão para evitar múltiplos envios
-            $('#submitBtn').prop('disabled', true).text('Enviando...');
+            $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...');
 
-            // Enviar formulário
-            this.submit();
+            const formData = new FormData(this);
+
+            fetch(this.action, {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json',
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success && data.data.payment_link) {
+                    // Abre o pagamento em nova aba
+                    const paymentWindow = window.open(data.data.payment_link, '_blank');
+                    
+                    // Verifica se o popup foi bloqueado
+                    if (!paymentWindow || paymentWindow.closed || typeof paymentWindow.closed == 'undefined') {
+                        Swal.fire({
+                            icon: 'warning',
+                            title: 'Popup bloqueado',
+                            text: 'Por favor, permita popups para este site para completar o pagamento.',
+                        });
+                        $('#submitBtn').prop('disabled', false).html('<i class="fas fa-external-link-alt me-2"></i> Confirmar e Pagar');
+                        return;
+                    }
+                    
+                    // Redireciona após o pagamento
+                    setTimeout(() => {
+                        window.location.href = '{{ route("freights.index") }}';
+                    }, 3000);
+                } else {
+                    $('#submitBtn').prop('disabled', false).html('<i class="fas fa-external-link-alt me-2"></i> Confirmar e Pagar');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Erro',
+                        text: data.message || 'Erro ao processar o pagamento',
+                    });
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                $('#submitBtn').prop('disabled', false).html('<i class="fas fa-external-link-alt me-2"></i> Confirmar e Pagar');
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Ocorreu um erro ao enviar o formulário',
+                });
+            });
         });
     });
 </script>
@@ -355,6 +421,9 @@
     }
     .form-select {
         cursor: pointer;
+    }
+    .swal2-popup.swal2-toast {
+        padding: 1em 1.5em;
     }
 </style>
 @endsection

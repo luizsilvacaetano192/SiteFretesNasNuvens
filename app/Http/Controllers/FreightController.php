@@ -9,6 +9,9 @@ use App\Models\FreightStatus;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use App\Models\Address;
+use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class FreightController extends Controller
 {
@@ -38,7 +41,10 @@ class FreightController extends Controller
             'duration' =>  $freight->duration,
             'freight_id' => $freight->id,
             'directions' => $freight->directions,
-            'freight_value' => $freight->freight_value
+            'freight_value' => $freight->freight_value,
+            'paymentLink' => $freight->paymentLink,
+            'asaas_payment_id'=> $freight->asaas_payment_id,
+            'is_payment_confirmed' => $freight->is_payment_confirmed
          
         ]);
     }
@@ -131,71 +137,108 @@ class FreightController extends Controller
         return redirect()->route('freights.index')->with('success', 'Freight updated successfully.');
     }
 
-     public function store(Request $request)
-    {
-        // Validação dos dados
-        $request->validate([
-            'shipment_id' => 'required|exists:shipments,id',
-            'company_id' => 'required|exists:companies,id',
-            'start_address' => 'required|string',
-            'destination_address' => 'required|string',
-            'current_position' => 'required|string',
-            'current_lat' => 'required|numeric',
-            'current_lng' => 'required|numeric',
-            'start_lat' => 'required|numeric',
-            'start_lng' => 'required|numeric',
-            'destination_lat' => 'required|numeric',
-            'destination_lng' => 'required|numeric',
-            'truck_type' => 'required|string|in:pequeno,medio,grande',
-            'status_id' => 'required|exists:freight_statuses,id'
+    public function store(Request $request)
+{
+    // Validação dos dados
+    $validated = $request->validate([
+        'shipment_id' => 'required|exists:shipments,id',
+        'company_id' => 'required|exists:companies,id',
+        'start_address' => 'required|string',
+        'destination_address' => 'required|string',
+        'current_position' => 'required|string',
+        'current_lat' => 'required|numeric',
+        'current_lng' => 'required|numeric',
+        'start_lat' => 'required|numeric',
+        'start_lng' => 'required|numeric',
+        'destination_lat' => 'required|numeric',
+        'destination_lng' => 'required|numeric',
+        'truck_type' => 'required|string|in:pequeno,medio,grande',
+        'status_id' => 'required|exists:freight_statuses,id',
+        'freight_value' => 'required|numeric|min:0',
+        'distance' => 'required|string',
+        'duration' => 'required|string',
+    ]);
 
-        ]);
+    try {
+        DB::beginTransaction();
 
-        // Criar um novo frete
-        Freight::create([
-            'shipment_id' => $request->shipment_id,
-            'company_id' => $request->company_id,
-            'start_address' => $request->start_address,
-            'destination_address' => $request->destination_address,
-            'current_position' => $request->current_position,
-            'current_lat' => $request->current_lat,
-            'current_lng' => $request->current_lng,
-            'start_lat' => $request->start_lat,
-            'start_lng' => $request->start_lng,
-            'destination_lat' => $request->destination_lat,
-            'destination_lng' => $request->destination_lng,
-            'truck_type' => $request->truck_type,
-            'status_id' => $request->status_id,
-            'distance'  => $request->distance,
-            'duration' => $request->duration,
-            'directions' => $request->directions,
-            'freight_value' =>  $request->freight_value,
-        ]);
+        // Criar novo frete
+        $freight = Freight::create($validated);
 
-        $startAddress = Address::firstOrCreate(
-            [
-                'address' => $request->start_address,
-            ],
-            [
-                'latitude' => $request->start_lat,
-                'longitude' => $request->start_lng,
-            ]
+        // Criar ou buscar endereços
+        Address::firstOrCreate(
+            ['address' => $validated['start_address']],
+            ['latitude' => $validated['start_lat'], 'longitude' => $validated['start_lng']]
         );
-    
-        // Verificar se o endereço de destino já existe, senão criar um novo
-        $destinationAddress = Address::firstOrCreate(
-            [
-                'address' => $request->destination_address,
-            ],
-            [
-                'latitude' => $request->destination_lat,
-                'longitude' => $request->destination_lng,
-            ]
+
+        Address::firstOrCreate(
+            ['address' => $validated['destination_address']],
+            ['latitude' => $validated['destination_lat'], 'longitude' => $validated['destination_lng']]
         );
-    
-        // Retornar uma resposta de sucesso
-        return response()->json(['message' => 'Frete criado com sucesso!'], 201);
+
+        $paymentResponse = $this->createAsaasPayment($freight);
+        
+        DB::commit();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Frete criado com sucesso!',
+            'data' => [
+                'freight_id' => $freight->id,
+                'payment_link' => $paymentResponse['payment_link'] ?? null,
+                'asaas_payment_id' => $paymentResponse['asaas_payment_id'] ?? null,
+            
+            ]
+        ], 201);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        Log::error('Freight creation failed: '.$e->getMessage());
+
+        return response()->json([
+            'success' => false,
+            'message' => 'Erro ao criar frete',
+            'error' => $e->getMessage()
+        ], 500);
     }
+}
+
+protected function createAsaasPayment(Freight $freight)
+{
+    try {
+        $response = Http::post('https://0xjej23ew7.execute-api.us-east-1.amazonaws.com/teste', [
+            'name' => 'Frete #'.$freight->id,
+            'billingType' => 'UNDEFINED',
+            'value' => $freight->freight_value,
+            'freight_id' => $freight->id,
+            'successUrl' => 'https://52.91.243.105/freights'
+        ]);
+
+        if ($response->successful()) {
+            $data = $response->json();
+            $paymentData = [
+                'payment_link' => $data['paymentLink'] ?? null,
+                'asaas_payment_id' => $data['paymentId'] ?? null
+            ];
+
+            $freight->update([
+                'payment_link' => $paymentData['payment_link'],
+                'asaas_payment_id' => $paymentData['asaas_payment_id']
+            ]);
+
+            return $paymentData;
+        }
+
+        throw new \Exception('Asaas API error: '.$response->body());
+
+    } catch (\Exception $e) {
+        Log::error('Asaas payment failed: '.$e->getMessage());
+        return [
+            'payment_link' => null,
+            'asaas_payment_id' => null
+        ];
+    }
+}
 
     public function deleteAll()
     {
