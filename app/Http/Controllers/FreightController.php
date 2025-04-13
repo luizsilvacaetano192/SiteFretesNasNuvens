@@ -180,8 +180,6 @@ class FreightController extends Controller
         
         DB::commit();
 
-        
-
         return response()->json([
             'success' => true,
             'message' => 'Frete criado com sucesso!',
@@ -227,6 +225,7 @@ protected function createAsaasPayment(Freight $freight)
                 'payment_link' => $paymentData['payment_link'],
                 'asaas_payment_id' => $paymentData['asaas_payment_id']
             ]);
+
 
             return $paymentData;
         }
