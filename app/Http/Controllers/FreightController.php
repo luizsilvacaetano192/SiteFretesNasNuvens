@@ -317,8 +317,8 @@ class FreightController extends Controller
                 ];
 
          
-
-                return $paymentData;
+                $jsonObject = json_encode($paymentData);
+                return $jsonObject;
             }
 
             throw new \Exception('Asaas API error: '.$response->body());
