@@ -309,17 +309,13 @@ class FreightController extends Controller
                 'successUrl' => route('freights')
             ]);
 
-     
-            if ($response->successful()) {
-                die('entrou');
-                $data = $response->json();
-                dd($data);
+            $data = $response->json();
+            if ($data->success) {
+               
                 $paymentData = [
                     'payment_link' => $data->asaasResponse['url'] ?? null,
                     'asaas_payment_id' => $data->asaasResponse['id'] ?? null
                 ];
-
-              
 
                 return $paymentData;
             }
