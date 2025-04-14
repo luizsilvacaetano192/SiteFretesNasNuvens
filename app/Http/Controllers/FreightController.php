@@ -317,7 +317,7 @@ class FreightController extends Controller
                 ];
 
          
-                $jsonObject = json_encode($paymentData);
+                $jsonObject = json_encode($paymentData, JSON_FORCE_OBJECT);
                 return $jsonObject;
             }
 
