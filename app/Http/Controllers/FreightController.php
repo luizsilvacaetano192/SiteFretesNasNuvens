@@ -316,6 +316,8 @@ class FreightController extends Controller
                     'asaas_payment_id' => $data->asaasResponse['id'] ?? null
                 ];
 
+                dd($paymentData);
+
                 return $paymentData;
             }
 
