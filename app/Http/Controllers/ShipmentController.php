@@ -165,8 +165,10 @@ class ShipmentController extends Controller
         return response()->json(['success' => 'Carga excluída com sucesso!']);
     }
 
-    public function requestFreight(Shipment $shipment)
+    public function requestFreight($id)
     {
-        return view('shipments.requestFreight', compact('shipment'));
+        $shipment = Shipment::findOrFail($id);
+        $companies = Company::findOrFail($shipment->company_id);
+        return view('shipments.requestFreight', compact('shipment', 'companies'));
     }
 }

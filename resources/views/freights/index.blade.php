@@ -17,12 +17,11 @@
             </nav>
         </div>
         <div>
+           
             <button id="refresh-table" class="btn btn-outline-primary me-2">
                 <i class="fas fa-sync-alt me-1"></i>Atualizar
             </button>
-            <button id="export-excel" class="btn btn-success me-2">
-                <i class="fas fa-file-excel me-1"></i>Exportar
-            </button>
+          
             <button id="delete-all-freights" class="btn btn-danger">
                 <i class="fas fa-trash-alt me-1"></i>Limpar Tudo
             </button>
@@ -318,7 +317,9 @@ body {
 <script src="https://cdn.datatables.net/buttons/2.3.2/js/dataTables.buttons.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.3.2/js/buttons.html5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&callback=initMap&libraries=places,directions"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initMap" async defer></script>
 
 <script>
 // Variáveis globais
@@ -326,17 +327,26 @@ let map, directionsService, directionsRenderer, truckMarker, trackingInterval;
 let freightTable;
 
 $(document).ready(function() {
+    // Configuração do Toastr
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "timeOut": "5000"
+    };
+
     // Inicializa a tabela
     freightTable = $('#freights-table').DataTable({
         processing: true,
         serverSide: true,
         ajax: {
             url: '{{ route('freights.data') }}',
-            data: function(d) {
-                // Adicione parâmetros adicionais se necessário
+            type: 'GET',
+            error: function(xhr, error, thrown) {
+                console.error('Erro ao carregar dados:', xhr.responseText);
+                toastr.error('Erro ao carregar dados da tabela');
             }
         },
-        dom: '<"top"f>rt<"bottom"lip><"clear">',
         columns: [
             { 
                 data: 'id', 
@@ -344,7 +354,7 @@ $(document).ready(function() {
                 className: 'fw-semibold'
             },
             { 
-                data: 'company.name', 
+                data: 'company_name', 
                 name: 'company.name',
                 render: function(data, type, row) {
                     return data ? `<span class="fw-semibold">${data}</span>` : 'N/A';
@@ -365,50 +375,27 @@ $(document).ready(function() {
                 }
             },
             { 
-                data: 'driver.name', 
+                data: 'driver_name', 
                 name: 'driver.name',
                 render: function(data) {
-                    return data ? data : 'N/A';
+                    return data ? data : 'Não atribuído';
                 }
             },
             { 
-                data: 'status', 
-                name: 'status',
-                render: function(data) {
-                    let badgeClass = 'bg-secondary';
-                    if (data === 'active') badgeClass = 'bg-primary';
-                    if (data === 'pending') badgeClass = 'bg-warning';
-                    if (data === 'completed') badgeClass = 'bg-success';
-                    if (data === 'cancelled') badgeClass = 'bg-danger';
-                    
-                    return `<span class="badge ${badgeClass}">${data ? data.charAt(0).toUpperCase() + data.slice(1) : 'N/A'}</span>`;
-                }
+                data: 'status_badge', 
+                name: 'status.name',
+                orderable: false,
+                searchable: false
             },
             { 
-                data: 'freight_value', 
+                data: 'formatted_value', 
                 name: 'freight_value',
-                render: function(data) {
-                    return data ? `R$ ${parseFloat(data).toFixed(2)}` : 'N/A';
-                }
+                orderable: true,
+                searchable: false
             },
             { 
-                data: 'id', 
+                data: 'actions', 
                 name: 'actions',
-                render: function(data, type, row) {
-                    return `
-                        <div class="d-flex gap-2">
-                            <button class="btn btn-sm btn-primary view-freight" data-id="${data}" title="Visualizar">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                            <button class="btn btn-sm btn-warning edit-freight" data-id="${data}" title="Editar">
-                                <i class="fas fa-edit"></i>
-                            </button>
-                            <button class="btn btn-sm btn-danger delete-freight" data-id="${data}" title="Excluir">
-                                <i class="fas fa-trash"></i>
-                            </button>
-                        </div>
-                    `;
-                },
                 orderable: false,
                 searchable: false
             }
@@ -416,6 +403,15 @@ $(document).ready(function() {
         language: {
             url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
         },
+        dom: '<"top"f>rt<"bottom"lip><"clear">',
+        buttons: [
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel me-1"></i>Exportar',
+                className: 'btn btn-success',
+                title: 'Fretes'
+            }
+        ],
         drawCallback: function(settings) {
             updateTableInfo();
             updateStats();
@@ -440,16 +436,86 @@ $(document).ready(function() {
 
     // Botão de deletar todos
     $('#delete-all-freights').click(function() {
-        if(confirm('Tem certeza que deseja excluir TODOS os fretes? Esta ação não pode ser desfeita.')) {
-            // Implemente a lógica de exclusão em massa aqui
-            toastr.warning('Funcionalidade em desenvolvimento');
-        }
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Todos os fretes serão excluídos permanentemente!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir tudo!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: '{{ route('freights.deleteAll') }}',
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if(response.success) {
+                            toastr.success(response.message);
+                            freightTable.ajax.reload();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        toastr.error('Erro ao excluir fretes: ' + xhr.responseText);
+                    }
+                });
+            }
+        });
     });
 
     // Visualizar frete
     $(document).on('click', '.view-freight', function() {
         const freightId = $(this).data('id');
         loadFreightDetails(freightId);
+    });
+
+    // Editar frete
+    $(document).on('click', '', function() {
+        const freightId = $(this).data('id');
+       // window.location.href = `/freights/${freightId}/edit`;
+    });
+
+    // Excluir frete
+    $(document).on('click', '.delete-freight', function() {
+        const freightId = $(this).data('id');
+        
+        Swal.fire({
+            title: 'Tem certeza?',
+            text: "Você não poderá reverter isso!",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#d33',
+            cancelButtonColor: '#3085d6',
+            confirmButtonText: 'Sim, excluir!',
+            cancelButtonText: 'Cancelar'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                $.ajax({
+                    url: `/freights/${freightId}`,
+                    type: 'DELETE',
+                    data: {
+                        _token: '{{ csrf_token() }}'
+                    },
+                    success: function(response) {
+                        if(response.success) {
+                            toastr.success(response.message);
+                            freightTable.ajax.reload();
+                        } else {
+                            toastr.error(response.message);
+                        }
+                    },
+                    error: function(xhr) {
+                        toastr.error('Erro ao excluir frete: ' + xhr.responseText);
+                    }
+                });
+            }
+        });
     });
 });
 
@@ -480,8 +546,8 @@ function loadFreightDetails(freightId) {
         $('#modal-title').text(`Frete #${response.id} - ${response.company.name}`);
         $('#company-info').text(response.company.name);
         $('#driver-info').text(response.driver ? response.driver.name : 'Não atribuído');
-        $('#cargo-type').text(response.cargo_type);
-        $('#cargo-weight').text(`${response.weight} kg`);
+        $('#cargo-type').text(response.shipment.cargo_type);
+        $('#cargo-weight').text(`${response.shipment.weight} kg`);
         $('#start-address').text(response.start_address);
         $('#destination-address').text(response.destination_address);
         $('#current-position').text(response.current_position || 'Não disponível');
@@ -619,15 +685,8 @@ function updateTableInfo() {
 
 // Atualiza as estatísticas
 function updateStats() {
-    // Esta função precisaria de endpoints específicos no backend
-    // para contar os fretes por status. Exemplo:
-    /*
-    $.get('/freights/stats', function(response) {
-        $('#active-count').text(response.active);
-        $('#pending-count').text(response.pending);
-        $('#completed-count').text(response.completed);
-    });
-    */
+    
+    
 }
 
 // Inicializa o mapa quando a API do Google é carregada

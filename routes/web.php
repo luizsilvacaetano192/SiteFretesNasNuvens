@@ -92,7 +92,7 @@ Route::post('/freight/store', [FreightController::class, 'store'])->name('freigh
 Route::post('/freights/store', [FreightController::class, 'store'])->name('freights.store');
 
 Route::get('/freight/create', [FreightController::class, 'create'])->name('freight.create');
-Route::get('/freights/data', [FreightController::class, 'getData'])->name('freights.data');
+Route::get('/freights/data', [FreightController::class, 'getDataTable'])->name('freights.data');
 
 
 Route::get('/freights/{freight}', [FreightController::class, 'show'])->name('freights.show');

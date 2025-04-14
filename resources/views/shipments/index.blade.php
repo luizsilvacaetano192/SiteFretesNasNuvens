@@ -6,8 +6,8 @@
 <div class="container-fluid px-4 py-5">
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
-            <h1 class="display-5 fw-bold mb-0">
-                <i class="fas fa-shipping-fast me-2"></i>Gerenciamento de Cargas
+            <h1 class="h3 mb-0 text-gray-800">
+            <i class="fas fa-shipping-fast me-2"></i>Gerenciamento de Cargas
             </h1>
         </div>
         <div class="col-md-6 text-end">
@@ -44,8 +44,9 @@
                         <span class="input-group-text bg-white border-end-0">
                             <i class="fas fa-search text-muted"></i>
                         </span>
-                        <input type="text" id="customSearch" class="form-control border-start-0" 
-                               placeholder="Pesquisar...">
+                        <input type="text" id="customSearch" class="form-control" placeholder="Pesquisar...">
+
+                      
                     </div>
                 </div>
             </div>
