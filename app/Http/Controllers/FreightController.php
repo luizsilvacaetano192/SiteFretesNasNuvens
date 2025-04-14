@@ -127,6 +127,8 @@ class FreightController extends Controller
             $freight = Freight::create($validated);
             $paymentData = $this->createAsaasPayment($freight);
 
+            dd($paymentData);
+
             DB::commit();
 
             return redirect()->route('freights.index')
@@ -307,6 +309,7 @@ class FreightController extends Controller
                 'successUrl' => route('freights.index')
             ]);
 
+            dd($response);
             if ($response->successful()) {
                 $data = $response->json();
                 $paymentData = [
