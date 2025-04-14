@@ -312,7 +312,7 @@ class FreightController extends Controller
             if ($data['success']) {
                
                 $paymentData = [
-                    'payment_link' => $data->asaasResponse['url'] ?? null,
+                    'payment_link' => $data->asaasResponse->url ?? null,
                     'asaas_payment_id' => $data->asaasResponse['id'] ?? null
                 ];
 
