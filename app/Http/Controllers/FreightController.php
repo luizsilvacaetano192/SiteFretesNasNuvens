@@ -127,6 +127,8 @@ class FreightController extends Controller
             $freight = Freight::create($validated);
 
             DB::commit();
+
+            dd( $freight);
             
             $paymentData = $this->createAsaasPayment($freight);
 
