@@ -10,21 +10,17 @@ use Yajra\DataTables\DataTables;
 
 class ShipmentController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $shipments = Shipment::with(['Company'])->get();
-     
-        return view('shipments.index', compact('shipments'));
+        if ($request->ajax()) {
+            return $this->getShipments($request);
+        }
+        
+        return view('shipments.index');
     }
 
- 
     public function show(Shipment $shipment)
     {
-        // Obtenha a distância e o tempo, se necessário, através do Google Maps API ou um método de cálculo
-        $distance = 'Calculando...';
-        $duration = 'Calculando...';
-    
-        // Retornar os dados com a distância e o tempo
         return response()->json([
             'company' => $shipment->company,
             'driver' => $shipment->driver,
@@ -32,121 +28,145 @@ class ShipmentController extends Controller
             'cargo_type' => $shipment->cargo_type,
             'start_address' => $shipment->start_address,
             'destination_address' => $shipment->destination_address,
-            'expected_start_date' => $shipment->expected_start_date,
-            'expected_delivery_date' => $shipment->expected_delivery_date,
-            'distance' => $distance,
-            'duration' => $duration,
+            'expected_start_date' => $shipment->expected_start_date?->format('d/m/Y H:i'),
+            'expected_delivery_date' => $shipment->expected_delivery_date?->format('d/m/Y H:i'),
+            'distance' => $shipment->distance ?? 'Não calculado',
+            'duration' => $shipment->duration ?? 'Não calculado',
+            'status' => $shipment->status,
         ]);
     }
-
-    public function getAllShipments()
-    {
-        $shipments = Shipment::with(['freight', 'company', 'driver'])->select('*')->get();
-        return response()->json($shipments);
-    }
-    
-
 
     public function getShipments(Request $request)
     {
-        if ($request->ajax()) {
-        
-            $shipments = Shipment::with(['freight', 'company'])->select('*')->get();
-         
-            return DataTables::of($shipments)
-                ->addColumn('action', function ($shipment) {
-                    return '
-                        <a href="' . route("shipments.edit", $shipment->id) . '" class="btn btn-warning btn-sm">Editar</a>
-                        <form action="' . route("shipments.destroy", $shipment->id) . '" method="POST" style="display:inline;">
-                            ' . csrf_field() . '
-                            ' . method_field("DELETE") . '
-                            <button type="submit" class="btn btn-danger btn-sm">Excluir</button>
-                        </form>
-                    ';
-                })
-                ->rawColumns(['action'])
-                ->make(true);
-        }
-    }
+        $shipments = Shipment::with(['company', 'freight'])
+            ->select('shipments.*');
 
+        return DataTables::of($shipments)
+            ->addColumn('company_name', function($shipment) {
+                return $shipment->company->name;
+            })
+            ->addColumn('freight_status', function($shipment) {
+                return $shipment->freight ? $shipment->freight->status : 'Sem frete';
+            })
+            ->addColumn('action', function($shipment) {
+                $btnView = '<a href="'.route('shipments.show', $shipment->id).'" 
+                           class="btn btn-info btn-sm me-1" 
+                           data-bs-toggle="tooltip" title="Visualizar">
+                           <i class="fas fa-eye"></i></a>';
+
+                $btnEdit = '<a href="'.route('shipments.edit', $shipment->id).'" 
+                            class="btn btn-warning btn-sm me-1" 
+                            data-bs-toggle="tooltip" title="Editar">
+                            <i class="fas fa-edit"></i></a>';
+
+                $btnFreight = '<a href="'.route('shipments.requestFreight', $shipment->id).'" 
+                               class="btn btn-success btn-sm me-1" 
+                               data-bs-toggle="tooltip" title="Solicitar Frete">
+                               <i class="fas fa-truck"></i></a>';
+
+                $btnDelete = '<form action="'.route('shipments.destroy', $shipment->id).'" method="POST" style="display:inline;">
+                             '.csrf_field().'
+                             '.method_field('DELETE').'
+                             <button type="submit" class="btn btn-danger btn-sm" 
+                                     data-bs-toggle="tooltip" title="Excluir"
+                                     onclick="return confirm(\'Tem certeza que deseja excluir?\')">
+                                     <i class="fas fa-trash"></i></button>
+                             </form>';
+
+                return '<div class="d-flex">'.$btnView.$btnEdit.$btnFreight.$btnDelete.'</div>';
+            })
+            ->addColumn('status_badge', function($shipment) {
+                $status = $shipment->status ?? 'pending';
+                $badgeClass = [
+                    'pending' => 'bg-warning',
+                    'approved' => 'bg-success',
+                    'rejected' => 'bg-danger',
+                    'completed' => 'bg-primary',
+                ][$status] ?? 'bg-secondary';
+
+                return '<span class="badge '.$badgeClass.'">'.
+                    ucfirst($status).
+                    '</span>';
+            })
+            ->rawColumns(['action', 'status_badge'])
+            ->filter(function($query) use ($request) {
+                if ($request->has('search') && !empty($request->search['value'])) {
+                    $search = $request->search['value'];
+                    $query->where(function($q) use ($search) {
+                        $q->where('weight', 'like', "%$search%")
+                          ->orWhere('cargo_type', 'like', "%$search%")
+                          ->orWhere('dimensions', 'like', "%$search%")
+                          ->orWhereHas('company', function($q) use ($search) {
+                              $q->where('name', 'like', "%$search%");
+                          });
+                    });
+                }
+            })
+            ->make(true);
+    }
 
     public function create()
     {
-        $companies = Company::all(); // Recuperando todas as empresas
-        $drivers = Driver::all(); // Recuperando todos os motoristas (se necessário)
+        $companies = Company::all();
+        $drivers = Driver::all();
         return view('shipments.create', compact('companies', 'drivers'));
     }
 
-  
-
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'company_id' => 'required|exists:companies,id',
-            'weight' => 'required|numeric',
+            'weight' => 'required|numeric|min:0',
             'cargo_type' => 'required|string|max:255',
             'dimensions' => 'required|string|max:255',
-        ]);
-    
-        // Criar a carga com os dados informados
-        $shipment = new Shipment([
-            'company_id' => $request->input('company_id'),
-            'weight' => $request->input('weight'),
-            'cargo_type' => $request->input('cargo_type'),
-            'dimensions' => $request->input('dimensions'),
-        ]);
-        
-        $shipment->save();
-    
-        return redirect()->route('/shipments/index')->with('success', 'Carga cadastrada com sucesso!');
-       
-    }
-
-    public function edit($id)
-    {
-        $shipment = Shipment::findOrFail($id);
-        return view('shipments.edit', compact('shipment'));
-    }
-
-    public function update(Request $request, $id)
-    {
-        $request->validate([
-            'company_id' => 'required',
-            'driver_id' => 'required',
-            'weight' => 'required|numeric',
-            'cargo_type' => 'required|string',
-            'start_address' => 'required|string',
-            'destination_address' => 'required|string',
+            'start_address' => 'required|string|max:500',
+            'destination_address' => 'required|string|max:500',
             'expected_start_date' => 'required|date',
-            'expected_delivery_date' => 'required|date',
-            'deadline' => 'required|integer',
-            'start_time' => 'required|date_format:H:i',
+            'expected_delivery_date' => 'required|date|after:expected_start_date',
         ]);
 
-        $shipment = Shipment::findOrFail($id);
-        $shipment->update($request->all());
+        $shipment = Shipment::create($validated);
 
-        return redirect()->route('shipments.index')->with('success', 'Carga atualizada com sucesso!');
+        return redirect()->route('shipments.index')
+            ->with('success', 'Carga cadastrada com sucesso!');
     }
 
-    public function destroy($id)
+    public function edit(Shipment $shipment)
     {
-        $shipment = Shipment::findOrFail($id);
-        $shipment->delete();
+        $companies = Company::all();
+        $drivers = Driver::all();
+        return view('shipments.edit', compact('shipment', 'companies', 'drivers'));
+    }
 
+    public function update(Request $request, Shipment $shipment)
+    {
+        $validated = $request->validate([
+            'company_id' => 'required|exists:companies,id',
+            'driver_id' => 'nullable|exists:drivers,id',
+            'weight' => 'required|numeric|min:0',
+            'cargo_type' => 'required|string|max:255',
+            'dimensions' => 'required|string|max:255',
+            'start_address' => 'required|string|max:500',
+            'destination_address' => 'required|string|max:500',
+            'expected_start_date' => 'required|date',
+            'expected_delivery_date' => 'required|date|after:expected_start_date',
+            'status' => 'sometimes|in:pending,approved,rejected,completed',
+        ]);
+
+        $shipment->update($validated);
+
+        return redirect()->route('shipments.index')
+            ->with('success', 'Carga atualizada com sucesso!');
+    }
+
+    public function destroy(Shipment $shipment)
+    {
+        $shipment->delete();
         return response()->json(['success' => 'Carga excluída com sucesso!']);
     }
 
-    public function requestFreight($id)
+    public function requestFreight(Shipment $shipment)
     {
-        // Buscar o shipment pelo ID
-        $shipment = Shipment::findOrFail($id);
-
-        // Retornar a view de solicitação de frete
         return view('shipments.requestFreight', compact('shipment'));
     }
-
-    
-
-    
 }
