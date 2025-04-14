@@ -312,6 +312,7 @@ class FreightController extends Controller
      
             if ($response->successful()) {
                 $data = $response->json();
+                dd($data);
                 $paymentData = [
                     'payment_link' => $data->asaasResponse['url'] ?? null,
                     'asaas_payment_id' => $data->asaasResponse['id'] ?? null
