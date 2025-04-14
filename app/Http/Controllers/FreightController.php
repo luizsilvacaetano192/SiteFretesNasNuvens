@@ -127,7 +127,7 @@ class FreightController extends Controller
             $freight = Freight::create($validated);
 
             DB::commit();
-
+            
             $paymentData = $this->createAsaasPayment($freight);
 
        
@@ -310,7 +310,7 @@ class FreightController extends Controller
             ]);
 
             $data = $response->json();
-            
+            dd($data);
             if ($data->success) {
                
                 $paymentData = [
