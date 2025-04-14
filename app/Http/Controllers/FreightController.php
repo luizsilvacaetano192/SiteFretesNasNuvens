@@ -320,10 +320,12 @@ class FreightController extends Controller
             throw new \Exception('Asaas API error: '.$response->body());
 
         } catch (\Exception $e) {
+            
             Log::error('Asaas payment failed: '.$e->getMessage());
             return [
                 'payment_link' => null,
-                'asaas_payment_id' => null
+                'asaas_payment_id' => null,
+                'erro' => $e->getMessage()
             ];
         }
     }
