@@ -311,6 +311,7 @@ class FreightController extends Controller
 
      
             if ($response->successful()) {
+                die('entrou');
                 $data = $response->json();
                 dd($data);
                 $paymentData = [
