@@ -309,18 +309,15 @@ class FreightController extends Controller
                 'successUrl' => route('freights.index')
             ]);
 
-            dd($response);
+     
             if ($response->successful()) {
                 $data = $response->json();
                 $paymentData = [
-                    'payment_link' => $data['paymentLink'] ?? null,
-                    'asaas_payment_id' => $data['paymentId'] ?? null
+                    'payment_link' => $data->asaasResponse['url'] ?? null,
+                    'asaas_payment_id' => $data->asaasResponse['id'] ?? null
                 ];
 
-                $freight->update([
-                    'payment_link' => $paymentData['payment_link'],
-                    'asaas_payment_id' => $paymentData['asaas_payment_id']
-                ]);
+              
 
                 return $paymentData;
             }
