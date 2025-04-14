@@ -307,6 +307,7 @@ class FreightController extends Controller
             ]);
 
             $data = $response->json();
+            dd($data);
             if ($data->success) {
                
                 $paymentData = [
