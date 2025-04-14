@@ -338,7 +338,7 @@
             })
             .then(response => response.json())
             .then(data => {
-                if (data.success && data.data.payment_link) {
+                if (data.payment_link) {
                     // Abre o pagamento em nova aba
                     const paymentWindow = window.open(data.data.payment_link, '_blank');
                     
