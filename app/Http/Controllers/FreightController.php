@@ -127,12 +127,9 @@ class FreightController extends Controller
             $freight = Freight::create($validated);
             $paymentData = $this->createAsaasPayment($freight);
 
-            dd($paymentData);
-
             DB::commit();
 
-            return redirect()->route('freights.index')
-                ->with('success', 'Frete criado com sucesso!');
+            return  $paymentData ;
 
         } catch (\Exception $e) {
             DB::rollBack();
