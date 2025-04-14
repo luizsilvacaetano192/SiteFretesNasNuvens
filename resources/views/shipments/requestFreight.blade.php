@@ -338,10 +338,10 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('resposta data', data)
+                console.log('resposta data', data);
                 if (data.payment_link) {
                     // Abre o pagamento em nova aba
-                    const paymentWindow = window.open(data.data.payment_link, '_blank');
+                    const paymentWindow = window.open(data.payment_link, '_blank');
                     
                     // Verifica se o popup foi bloqueado
                     if (!paymentWindow || paymentWindow.closed || typeof paymentWindow.closed == 'undefined') {
