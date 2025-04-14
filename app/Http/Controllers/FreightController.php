@@ -298,18 +298,17 @@ class FreightController extends Controller
 
     protected function createAsaasPayment(Freight $freight)
     {
-        dd($freight->freight_value);
         try {
             $response = Http::post('https://0xjej23ew7.execute-api.us-east-1.amazonaws.com/teste', [
-                'name' => 'Frete #'.$freight->id,
-                'billingType' => 'PIX',
-                'value' => $freight->freight_value,
-                'freight_id' => $freight->id,
-                'successUrl' => route('freights')
+                "name" => "Pagamento Frete #789",
+                "billingType"  => "PIX",
+                "value" => 350.75,
+                "freight_id" => 1,
+                "successUrl" => "https://52.91.243.105/freights"
             ]);
 
             $data = $response->json();
-            dd($data);
+         
             if ($data->success) {
                
                 $paymentData = [
