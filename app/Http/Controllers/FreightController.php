@@ -127,12 +127,8 @@ class FreightController extends Controller
             $freight = Freight::create($validated);
 
             DB::commit();
-
-            dd( $freight);
             
             $paymentData = $this->createAsaasPayment($freight);
-
-       
 
             return  $paymentData ;
 
@@ -302,6 +298,7 @@ class FreightController extends Controller
 
     protected function createAsaasPayment(Freight $freight)
     {
+        dd($freight->id);
         try {
             $response = Http::post('https://0xjej23ew7.execute-api.us-east-1.amazonaws.com/teste', [
                 'name' => 'Frete #'.$freight->id,
