@@ -338,6 +338,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log('resposta data', data)
                 if (data.payment_link) {
                     // Abre o pagamento em nova aba
                     const paymentWindow = window.open(data.data.payment_link, '_blank');
@@ -355,7 +356,7 @@
                     
                     // Redireciona após o pagamento
                     setTimeout(() => {
-                        window.location.href = '{{ route("freights.index") }}';
+                        window.location.href = '{{ route("freights") }}';
                     }, 3000);
                 } else {
                     $('#submitBtn').prop('disabled', false).html('<i class="fas fa-external-link-alt me-2"></i> Confirmar e Pagar');
