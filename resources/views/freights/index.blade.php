@@ -342,221 +342,32 @@ $(document).ready(function() {
 
     updateStats()
     // Atualiza as estatísticas
-    function updateStats() {
-        $.get('{{ route('freights.stats') }}', function(response) {
-            if(response.success) {
-                $('#active-count').text(response.data.active);
-                $('#pending-count').text(response.data.pending);
-                $('#completed-count').text(response.data.completed);
-                $('#paid-count').text(response.data.paid);
-                
-                // Atualiza também o texto de informações da tabela
-                const info = freightTable.page.info();
-                $('#table-info').html(
-                    `Mostrando ${info.start + 1} a ${info.end} de ${info.recordsDisplay} registros (Total: ${response.data.total})`
-                );
-            }
-            }).fail(function() {
-                console.error('Erro ao carregar estatísticas');
-                toastr.error('Erro ao carregar estatísticas dos fretes');
-            });
-        }
-
-        // Configuração do Toastr
-        toastr.options = {
-            "closeButton": true,
-            "progressBar": true,
-            "positionClass": "toast-top-right",
-            "timeOut": "5000"
-        };
-
-        // Inicializa a tabela
-        freightTable = $('#freights-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: '{{ route('freights.data') }}',
-                type: 'GET',
-                error: function(xhr, error, thrown) {
-                    console.error('Erro ao carregar dados:', xhr.responseText);
-                    toastr.error('Erro ao carregar dados da tabela');
-                }
-            },
-            order: [[0, 'desc']],
-            columns: [
-                { 
-                    data: 'id', 
-                    name: 'id',
-                    className: 'fw-semibold'
-                },
-                { 
-                    data: 'company_name', 
-                    name: 'company.name',
-                    render: function(data, type, row) {
-                        return data ? `<span class="fw-semibold">${data}</span>` : 'N/A';
-                    }
-                },
-                { 
-                    data: 'start_address', 
-                    name: 'start_address',
-                    render: function(data) {
-                        return data ? `<span class="text-truncate d-inline-block" style="max-width: 200px;" title="${data}">${data}</span>` : 'N/A';
-                    }
-                },
-                { 
-                    data: 'destination_address', 
-                    name: 'destination_address',
-                    render: function(data) {
-                        return data ? `<span class="text-truncate d-inline-block" style="max-width: 200px;" title="${data}">${data}</span>` : 'N/A';
-                    }
-                },
-                { 
-                    data: 'driver_name', 
-                    name: 'driver.name',
-                    render: function(data) {
-                        return data ? data : 'Não atribuído';
-                    }
-                },
-                { 
-                    data: 'status_badge', 
-                    name: 'status.name',
-                    orderable: false,
-                    searchable: false
-                },
-                { 
-                    data: 'formatted_value', 
-                    name: 'freight_value',
-                    orderable: true,
-                    searchable: false
-                },
-                { 
-                    data: 'payment_button', 
-                    name: 'payment_button',
-                    orderable: false,
-                    searchable: false,
-                    className: 'text-center'
-                },
-                { 
-                    data: 'actions', 
-                    name: 'actions',
-                    orderable: false,
-                    searchable: false,
-                    className: 'text-center'
-                }
-            ],
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
-            },
-            dom: '<"top"f>rt<"bottom"lip><"clear">',
-            buttons: [
-                {
-                    extend: 'excel',
-                    text: '<i class="fas fa-file-excel me-1"></i>Exportar',
-                    className: 'btn btn-success',
-                    title: 'Fretes'
-                }
-            ],
-            drawCallback: function(settings) {
-                updateTableInfo();
-                updateStats();
-            }
-        });
-
-        // Pesquisa personalizada
-        $('#freight-search').keyup(function() {
-            freightTable.search($(this).val()).draw();
-        });
-
-        // Botão de atualizar
-        $('#refresh-table').click(function() {
-            freightTable.ajax.reload(null, false);
-            toastr.success('Tabela atualizada com sucesso!');
-        });
-
-        // Botão de exportar
-        $('#export-excel').click(function() {
-            freightTable.button('.buttons-excel').trigger();
-        });
-
-        // Botão de deletar todos
-        $('#delete-all-freights').click(function() {
-            Swal.fire({
-                title: 'Tem certeza?',
-                text: "Todos os fretes serão excluídos permanentemente!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sim, excluir tudo!',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: '{{ route('freights.deleteAll') }}',
-                        type: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            if(response.success) {
-                                toastr.success(response.message);
-                                freightTable.ajax.reload();
-                            } else {
-                                toastr.error(response.message);
-                            }
-                        },
-                        error: function(xhr) {
-                            toastr.error('Erro ao excluir fretes: ' + xhr.responseText);
-                        }
-                    });
-                }
-            });
-        });
-
-        // Visualizar frete
-        $(document).on('click', '.view-freight', function() {
-            const freightId = $(this).data('id');
-            loadFreightDetails(freightId);
-        });
-
-        // Excluir frete
-        $(document).on('click', '.delete-freight', function() {
-            const freightId = $(this).data('id');
-            
-            Swal.fire({
-                title: 'Tem certeza?',
-                text: "Você não poderá reverter isso!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#d33',
-                cancelButtonColor: '#3085d6',
-                confirmButtonText: 'Sim, excluir!',
-                cancelButtonText: 'Cancelar'
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    $.ajax({
-                        url: `/freights/${freightId}`,
-                        type: 'DELETE',
-                        data: {
-                            _token: '{{ csrf_token() }}'
-                        },
-                        success: function(response) {
-                            if(response.success) {
-                                toastr.success(response.message);
-                                freightTable.ajax.reload();
-                            } else {
-                                toastr.error(response.message);
-                            }
-                        },
-                        error: function(xhr) {
-                            toastr.error('Erro ao excluir frete: ' + xhr.responseText);
-                        }
-                    });
-                }
-            });
-        });
+    // Atualiza as estatísticas
+function updateStats() {
+    $.get('{{ route('freights.stats') }}', function(response) {
+        $('#active-count').text(response['Em processo de entrega'] || 0);
+        $('#pending-count').text(
+            (response['Aguardando pagamento'] || 0) + 
+            (response['Aguardando motorista'] || 0) + 
+            (response['Aguardando retirada'] || 0) +
+            (response['Indo retirar carga'] || 0)
+        );
+        $('#completed-count').text(response['Carga entregue'] || 0);
+        $('#paid-count').text(
+            (response['Frete Solicitado'] || 0) + 
+            (response['Aguardando pagamento'] || 0)
+        );
+        
+        // Atualiza também o texto de informações da tabela
+        const info = freightTable.page.info();
+        $('#table-info').html(
+            `Mostrando ${info.start + 1} a ${info.end} de ${info.recordsDisplay} registros (Total: ${response.total || 0})`
+        );
+    }).fail(function() {
+        console.error('Erro ao carregar estatísticas');
+        toastr.error('Erro ao carregar estatísticas dos fretes');
     });
-
+}
 // Inicializa o mapa
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
