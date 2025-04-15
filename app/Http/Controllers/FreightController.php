@@ -50,8 +50,10 @@ class FreightController extends Controller
                     '7' => 'bg-primary',
                     '8' => 'bg-success',
                 ][strtolower($status)] ?? 'bg-secondary';
+
+                $class = $badgeClass[$status->id] ?? 'bg-secondary';
                 
-                return '<span class="badge '.$badgeClass[$status->id].'">'.$status->name.'</span>';
+                return '<span class="badge '.$class.'">'.$status->name.'</span>';
             })
             ->addColumn('formatted_value', function($freight) {
                 return 'R$ '.number_format($freight->freight_value, 2, ',', '.');
