@@ -186,10 +186,23 @@ body {
 .toast-status-change {
     line-height: 1.5;
     font-size: 14px;
+    padding: 5px;
 }
 
 .toast-status-change strong {
     color: #4e73df;
+}
+
+.toast-success .toast-status-change strong {
+    color: #1cc88a;
+}
+
+.toast-warning .toast-status-change strong {
+    color: #f6c23e;
+}
+
+.toast-info .toast-status-change strong {
+    color: #36b9cc;
 }
 
 @media (max-width: 992px) {
@@ -235,7 +248,9 @@ toastr.options = {
     "progressBar": true,
     "positionClass": "toast-top-right",
     "timeOut": "10000",
-    "extendedTimeOut": "5000"
+    "extendedTimeOut": "5000",
+    "newestOnTop": true,
+    "preventDuplicates": true
 };
 
 $(document).ready(function() {
@@ -344,7 +359,10 @@ function initializeDataTable() {
             
             // Armazena os dados atuais para comparação
             if (settings.json && settings.json.data) {
-                lastData = settings.json.data;
+                // Primeira carga - não notificar
+                if (lastData.length === 0) {
+                    lastData = settings.json.data;
+                }
             }
         }
     });
@@ -422,23 +440,62 @@ function compareDataAndNotify(oldData, newData) {
     oldData.forEach(item => {
         oldDataMap[item.id] = {
             status_id: item.status_id,
-            status_name: item.status_name || getStatusNameById(item.status_id)
+            status_name: item.status_name || getStatusNameById(item.status_id),
+            company_name: item.company_name
         };
     });
 
+    // Cria um mapa dos novos IDs para verificar remoções
+    const newIds = newData.map(item => item.id);
+    
     // Verifica cada item novo
     newData.forEach(item => {
         const oldItem = oldDataMap[item.id];
-        if (oldItem && oldItem.status_id !== item.status_id) {
-            // Encontrou uma mudança de status - notifica
+        
+        // Se não existia nos dados antigos, é um novo registro
+        if (!oldItem) {
+            toastr.success(`
+                <div class="toast-status-change">
+                    <strong>Novo Frete #${item.id}</strong><br>
+                    ${item.company_name ? `Empresa: <strong>${item.company_name}</strong>` : ''}<br>
+                    Status: <strong>${item.status_name || getStatusNameById(item.status_id)}</strong>
+                </div>
+            `, 'Novo frete cadastrado', {
+                timeOut: 10000,
+                extendedTimeOut: 5000,
+                closeButton: true,
+                progressBar: true
+            });
+        } 
+        // Se existia mas o status mudou
+        else if (oldItem.status_id !== item.status_id) {
             const newStatusName = item.status_name || getStatusNameById(item.status_id);
             
             toastr.info(`
                 <div class="toast-status-change">
                     <strong>Frete #${item.id}</strong><br>
+                    ${oldItem.company_name ? `Empresa: <strong>${oldItem.company_name}</strong><br>` : ''}
                     Status alterado de <strong>${oldItem.status_name}</strong> para <strong>${newStatusName}</strong>
                 </div>
-            `, '', {
+            `, 'Status atualizado', {
+                timeOut: 10000,
+                extendedTimeOut: 5000,
+                closeButton: true,
+                progressBar: true
+            });
+        }
+    });
+
+    // Verifica se algum registro foi removido
+    oldData.forEach(item => {
+        if (!newIds.includes(item.id)) {
+            toastr.warning(`
+                <div class="toast-status-change">
+                    <strong>Frete #${item.id}</strong><br>
+                    ${item.company_name ? `Empresa: <strong>${item.company_name}</strong><br>` : ''}
+                    foi removido do sistema
+                </div>
+            `, 'Frete removido', {
                 timeOut: 10000,
                 extendedTimeOut: 5000,
                 closeButton: true,
