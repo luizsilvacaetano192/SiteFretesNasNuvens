@@ -14,7 +14,7 @@
         @csrf
         <input type="hidden" name="shipment_id" value="{{ $shipment->id }}">
         <input type="hidden" name="company_id" value="{{ $shipment->company->id }}">
-        <input type="hidden" name="status_id" value="2">
+        <input type="hidden" name="status_id" value="3">
 
         <!-- Informações da Carga -->
         <div class="card mb-4 shadow-sm">
