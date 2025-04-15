@@ -323,14 +323,18 @@ class FreightController extends Controller
         $stats = FreightStatus::withCount(['freights as count'])
             ->get()
             ->mapWithKeys(function($status) {
-                return [strtolower($status->slug) => $status->count];
+                return [$status->id => $status->count];
             });
             
         return response()->json([
-            'active' => $stats['active'] ?? 0,
-            'pending' => $stats['pending'] ?? 0,
-            'completed' => $stats['completed'] ?? 0,
-            'cancelled' => $stats['cancelled'] ?? 0,
+            'Carga cadastrada' => $stats['1'] ?? 0,
+            'Frete Solicitado' => $stats['2'] ?? 0,
+            'Aguardando pagamento' => $stats['3'] ?? 0,
+            'Aguardando motorista' => $stats['4'] ?? 0,
+            'Aguardando retirada' => $stats['5'] ?? 0,
+            'Indo retirar carga	' => $stats['6'] ?? 0,
+            'Em processo de entrega' => $stats['7'] ?? 0,
+            'Carga entregue	' => $stats['8'] ?? 0,
             'total' => array_sum($stats->toArray())
         ]);
     }

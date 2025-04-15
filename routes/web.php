@@ -83,6 +83,8 @@ Route::post('/drivers/{id}/update-status', [DriverController::class, 'updateStat
 //Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 
+Route::get('freights/stats', [FreightController::class, 'getStats'])->name('freights.stats');
+
 Route::get('/shipments/{id}/request-freight', [ShipmentController::class, 'requestFreight'])->name('shipments.requestFreight');
 
 // Defina a rota 'freights' que chama o método 'index' no seu controlador
