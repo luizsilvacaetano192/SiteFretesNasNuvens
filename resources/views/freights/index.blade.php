@@ -95,7 +95,130 @@
 
 <!-- Modal de Detalhes -->
 <div class="modal fade" id="freightModal" tabindex="-1" aria-hidden="true">
-    <!-- Conteúdo do modal permanece o mesmo -->
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <span id="modal-title">Detalhes do Frete</span>
+                </h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <div class="card mb-4">
+                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-map-marked-alt me-2"></i>Rota e Localização
+                                </h6>
+                                <div class="badge bg-primary bg-opacity-10 text-primary" id="real-time-badge">
+                                    <i class="fas fa-circle text-success me-1"></i>Tempo real
+                                </div>
+                            </div>
+                            <div class="card-body p-0">
+                                <div id="map-container" style="position: relative;">
+                                    <div id="location-info" class="p-3 bg-light border-bottom">
+                                        <div class="d-flex justify-content-between">
+                                            <div>
+                                                <strong>📍 Posição atual:</strong> 
+                                                <span id="current-position">Carregando...</span>
+                                            </div>
+                                            <div>
+                                                <strong>🔄 Atualizado em:</strong> 
+                                                <span id="last-update">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div id="map" style="height: 400px;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-4">
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-info-circle me-2"></i>Informações
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Empresa</h6>
+                                    <p class="mb-1" id="company-info">-</p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Motorista</h6>
+                                    <p class="mb-1" id="driver-info">-</p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Detalhes da Carga</h6>
+                                    <p class="mb-1"><strong>Tipo:</strong> <span id="cargo-type">-</span></p>
+                                    <p class="mb-1"><strong>Peso:</strong> <span id="cargo-weight">-</span></p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Pagamento</h6>
+                                    <p class="mb-1"><strong>Status:</strong> <span id="payment-status">-</span></p>
+                                    <p class="mb-1"><strong>Valor:</strong> <span id="payment-value">-</span></p>
+                                    <div id="payment-buttons"></div>
+                                </div>
+                                <hr>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Endereços</h6>
+                                    <p class="mb-1"><strong>Origem:</strong> <span id="start-address">-</span></p>
+                                    <p class="mb-1"><strong>Destino:</strong> <span id="destination-address">-</span></p>
+                                </div>
+                                <hr>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Distância</h6>
+                                        <p class="h5" id="distance">-</p>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <h6 class="text-muted mb-2">Tempo Estimado</h6>
+                                        <p class="h5" id="duration">-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="card">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-history me-2"></i>Histórico de Localização
+                        </h6>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0" id="history-table">
+                                <thead>
+                                    <tr>
+                                        <th width="120">Data/Hora</th>
+                                        <th>Localização</th>
+                                        <th width="100">Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="location-history">
+                                    <!-- Histórico será preenchido via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="fas fa-times me-1"></i>Fechar
+                </button>
+                <button type="button" class="btn btn-primary" id="print-freight">
+                    <i class="fas fa-print me-1"></i>Imprimir
+                </button>
+            </div>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -184,25 +307,40 @@ body {
 }
 
 .toast-status-change {
-    line-height: 1.5;
+    line-height: 1.6;
     font-size: 14px;
-    padding: 5px;
+    padding: 10px;
+}
+
+.toast-status-change i {
+    font-size: 16px;
 }
 
 .toast-status-change strong {
-    color: #4e73df;
+    font-size: 15px;
 }
 
-.toast-success .toast-status-change strong {
-    color: #1cc88a;
+.toast-status-change .mt-2 {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.2);
 }
 
-.toast-warning .toast-status-change strong {
-    color: #f6c23e;
+.toast-success .toast-status-change {
+    background-color: rgba(28, 200, 138, 0.1);
 }
 
-.toast-info .toast-status-change strong {
-    color: #36b9cc;
+.toast-info .toast-status-change {
+    background-color: rgba(54, 185, 204, 0.1);
+}
+
+.toast-warning .toast-status-change {
+    background-color: rgba(246, 194, 62, 0.1);
+}
+
+.toast-icon {
+    margin-right: 10px;
+    font-size: 18px;
 }
 
 @media (max-width: 992px) {
@@ -240,17 +378,18 @@ let freightTable;
 let refreshInterval = 10000; // 10 segundos
 let nextRefreshCountdown = refreshInterval / 1000;
 let countdownInterval;
-let lastData = [];
+let lastData = null; // Alterado para null inicialmente
 
 // Configuração do Toastr
 toastr.options = {
     "closeButton": true,
     "progressBar": true,
     "positionClass": "toast-top-right",
-    "timeOut": "10000",
-    "extendedTimeOut": "5000",
+    "timeOut": 15000,
+    "extendedTimeOut": 5000,
     "newestOnTop": true,
-    "preventDuplicates": true
+    "preventDuplicates": false,
+    "tapToDismiss": false
 };
 
 $(document).ready(function() {
@@ -359,9 +498,10 @@ function initializeDataTable() {
             
             // Armazena os dados atuais para comparação
             if (settings.json && settings.json.data) {
-                // Primeira carga - não notificar
-                if (lastData.length === 0) {
+                // Se for a primeira carga, apenas armazena os dados
+                if (lastData === null) {
                     lastData = settings.json.data;
+                    console.log('Primeira carga - dados armazenados', lastData);
                 }
             }
         }
@@ -416,7 +556,7 @@ function startAutoRefresh() {
 function updateTableWithNotifications() {
     $.get(freightTable.ajax.url(), function(newData) {
         // Compara os dados novos com os antigos para detectar mudanças
-        if (lastData.length > 0 && newData.data) {
+        if (lastData !== null && newData.data) {
             compareDataAndNotify(lastData, newData.data);
         }
         
@@ -435,74 +575,118 @@ function updateTableWithNotifications() {
 }
 
 function compareDataAndNotify(oldData, newData) {
-    // Cria um mapa dos dados antigos para fácil acesso
-    const oldDataMap = {};
+    if (!oldData || oldData.length === 0) {
+        console.log('Sem dados antigos para comparação');
+        return;
+    }
+
+    console.log('Comparando dados:', {oldData, newData});
+
+    // Cria mapa de IDs antigos
+    const oldIds = oldData.map(item => item.id);
+    
+    // Verifica novos registros
+    newData.forEach(item => {
+        if (!oldIds.includes(item.id)) {
+            showNewFreightNotification(item);
+        }
+    });
+
+    // Verifica mudanças de status
+    const oldDataMap = createOldDataMap(oldData);
+    newData.forEach(item => {
+        const oldItem = oldDataMap[item.id];
+        if (oldItem && oldItem.status_id !== item.status_id) {
+            showStatusChangeNotification(oldItem, item);
+        }
+    });
+
+    // Verifica remoções
+    const newIds = newData.map(item => item.id);
     oldData.forEach(item => {
-        oldDataMap[item.id] = {
+        if (!newIds.includes(item.id)) {
+            showFreightRemovedNotification(item);
+        }
+    });
+}
+
+function createOldDataMap(oldData) {
+    const map = {};
+    oldData.forEach(item => {
+        map[item.id] = {
+            id: item.id,
             status_id: item.status_id,
             status_name: item.status_name || getStatusNameById(item.status_id),
             company_name: item.company_name
         };
     });
+    return map;
+}
 
-    // Cria um mapa dos novos IDs para verificar remoções
-    const newIds = newData.map(item => item.id);
+function showNewFreightNotification(item) {
+    const statusName = item.status_name || getStatusNameById(item.status_id);
     
-    // Verifica cada item novo
-    newData.forEach(item => {
-        const oldItem = oldDataMap[item.id];
-        
-        // Se não existia nos dados antigos, é um novo registro
-        if (!oldItem) {
-            toastr.success(`
-                <div class="toast-status-change">
-                    <strong>Novo Frete #${item.id}</strong><br>
-                    ${item.company_name ? `Empresa: <strong>${item.company_name}</strong>` : ''}<br>
-                    Status: <strong>${item.status_name || getStatusNameById(item.status_id)}</strong>
+    toastr.success(`
+        <div class="toast-status-change">
+            <i class="fas fa-truck-moving toast-icon"></i>
+            <div>
+                <strong>NOVO FRETE CADASTRADO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${item.id}</span>
+                    ${item.company_name ? `<span class="me-3"><i class="fas fa-building me-1"></i>${item.company_name}</span>` : ''}
+                    <span><i class="fas fa-info-circle me-1"></i>${statusName}</span>
                 </div>
-            `, 'Novo frete cadastrado', {
-                timeOut: 10000,
-                extendedTimeOut: 5000,
-                closeButton: true,
-                progressBar: true
-            });
-        } 
-        // Se existia mas o status mudou
-        else if (oldItem.status_id !== item.status_id) {
-            const newStatusName = item.status_name || getStatusNameById(item.status_id);
-            
-            toastr.info(`
-                <div class="toast-status-change">
-                    <strong>Frete #${item.id}</strong><br>
-                    ${oldItem.company_name ? `Empresa: <strong>${oldItem.company_name}</strong><br>` : ''}
-                    Status alterado de <strong>${oldItem.status_name}</strong> para <strong>${newStatusName}</strong>
-                </div>
-            `, 'Status atualizado', {
-                timeOut: 10000,
-                extendedTimeOut: 5000,
-                closeButton: true,
-                progressBar: true
-            });
-        }
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
     });
+    
+    console.log('Novo frete detectado:', item);
+}
 
-    // Verifica se algum registro foi removido
-    oldData.forEach(item => {
-        if (!newIds.includes(item.id)) {
-            toastr.warning(`
-                <div class="toast-status-change">
-                    <strong>Frete #${item.id}</strong><br>
-                    ${item.company_name ? `Empresa: <strong>${item.company_name}</strong><br>` : ''}
-                    foi removido do sistema
+function showStatusChangeNotification(oldItem, newItem) {
+    const newStatusName = newItem.status_name || getStatusNameById(newItem.status_id);
+    
+    toastr.info(`
+        <div class="toast-status-change">
+            <i class="fas fa-sync-alt toast-icon"></i>
+            <div>
+                <strong>STATUS ATUALIZADO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${newItem.id}</span>
+                    ${newItem.company_name ? `<span class="me-3"><i class="fas fa-building me-1"></i>${newItem.company_name}</span>` : ''}
+                    <span><i class="fas fa-exchange-alt me-1"></i> ${oldItem.status_name} → ${newStatusName}</span>
                 </div>
-            `, 'Frete removido', {
-                timeOut: 10000,
-                extendedTimeOut: 5000,
-                closeButton: true,
-                progressBar: true
-            });
-        }
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
     });
+    
+    console.log('Mudança de status detectada:', {oldItem, newItem});
+}
+
+function showFreightRemovedNotification(item) {
+    toastr.warning(`
+        <div class="toast-status-change">
+            <i class="fas fa-trash-alt toast-icon"></i>
+            <div>
+                <strong>FRETE REMOVIDO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${item.id}</span>
+                    ${item.company_name ? `<span><i class="fas fa-building me-1"></i>${item.company_name}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
+    });
+    
+    console.log('Frete removido detectado:', item);
 }
 
 function getStatusNameById(statusId) {
@@ -615,7 +799,7 @@ function deleteFreight(freightId) {
     });
 }
 
-// Funções relacionadas ao mapa e modal (mantidas do código original)
+// Funções do Mapa
 function initMap() {
     map = new google.maps.Map(document.getElementById("map"), {
         zoom: 7,
