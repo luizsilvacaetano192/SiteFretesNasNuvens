@@ -175,6 +175,7 @@
 @endsection
 
 @push('styles')
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 <style>
 .divider {
     display: flex;
@@ -283,6 +284,7 @@
 
 @push('scripts')
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script>
 $(document).ready(function() {
     // Configuração global do Toastr
@@ -290,8 +292,8 @@ $(document).ready(function() {
         "closeButton": true,
         "progressBar": true,
         "positionClass": "toast-top-right",
-        "timeOut": 5000,        // Tempo para o toast desaparecer (5 segundos)
-        "extendedTimeOut": 2000, // Tempo adicional se o usuário passar o mouse
+        "timeOut": 5000,
+        "extendedTimeOut": 2000,
         "showEasing": "swing",
         "hideEasing": "linear",
         "showMethod": "fadeIn",
@@ -346,13 +348,26 @@ $(document).ready(function() {
             url: $(this).attr('action'),
             method: 'POST',
             data: $(this).serialize(),
+            dataType: 'json',
+            headers: {
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content'),
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json'
+            },
             success: function(response) {
-                toastr.success('Configurações salvas com sucesso!');
+                toastr.success(response.message || 'Configurações salvas com sucesso!');
                 btn.html('<i class="fas fa-save me-1"></i> Salvar Configurações');
                 btn.prop('disabled', false);
             },
             error: function(xhr) {
-                toastr.error('Erro ao salvar configurações: ' + xhr.responseText);
+                let errorMessage = 'Erro ao salvar configurações';
+                if (xhr.responseJSON && xhr.responseJSON.message) {
+                    errorMessage = xhr.responseJSON.message;
+                } else if (xhr.statusText) {
+                    errorMessage += ': ' + xhr.statusText;
+                }
+                
+                toastr.error(errorMessage);
                 btn.html('<i class="fas fa-save me-1"></i> Salvar Configurações');
                 btn.prop('disabled', false);
             }
