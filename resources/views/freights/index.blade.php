@@ -497,22 +497,25 @@ function updateTableInfo() {
 
 // Inicializa o mapa
 function initMap() {
-    map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 7,
+    const mapDiv = document.getElementById('map');
+    if (!mapDiv) return;
+
+    map = new google.maps.Map(mapDiv, {
         center: { lat: -15.7801, lng: -47.9292 },
-        mapTypeId: google.maps.MapTypeId.ROADMAP
+        zoom: 5
     });
 
     directionsService = new google.maps.DirectionsService();
     directionsRenderer = new google.maps.DirectionsRenderer({
-        suppressMarkers: true,
-        map: map,
+        suppressMarkers: false,
         polylineOptions: {
-            strokeColor: '#4e73df',
-            strokeOpacity: 0.8,
-            strokeWeight: 4
+            strokeColor: '#4285F4',
+            strokeOpacity: 1.0,
+            strokeWeight: 5
         }
     });
+    directionsRenderer.setMap(map);
+
 }
 
 // Carrega os detalhes do frete no modal
