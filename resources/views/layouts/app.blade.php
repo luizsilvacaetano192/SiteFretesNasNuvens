@@ -223,11 +223,11 @@
                 <i class="fas fa-tasks"></i>
                 <span>Status</span>
             </a>
-            <a href="/settings" class="sidebar-link">
+            <a href="/transfers" class="sidebar-link">
                 <i class="fas fa-exchange-alt"></i>
                 <span>Transferências</span>
             </a>
-            <a href="#" class="sidebar-link">
+            <a href="/settings" class="sidebar-link">
                 <i class="fas fa-cog"></i>
                 <span>Configurações</span>
             </a>
