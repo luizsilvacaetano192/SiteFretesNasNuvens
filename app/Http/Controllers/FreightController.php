@@ -43,7 +43,7 @@ class FreightController extends Controller
                 if (!$status) return '<span class="badge bg-secondary">N/A</span>';
                 
                 $badgeClass = [
-                    '3' => 'bg-warning',
+                    'Aguardando pagamento' => 'bg-warning',
                     '4' => 'bg-secundary',
                     '5' => 'bg-secondary',
                     '6' => 'bg-primary',
