@@ -27,9 +27,9 @@ class FreightController extends Controller
 
     public function getDataTable(Request $request)
     {
-        $query = Freight::with(['driver', 'status', 'company', 'shipment'])
-            ->select('freights.*');
-
+        $query = Freight::with(['driver', 'status', 'company', 'shipment', 'charge'])
+                ->select('freights.*');
+    
         return DataTables::of($query)
             ->addColumn('company_name', function($freight) {
                 return $freight->company->name ?? 'N/A';
@@ -46,6 +46,7 @@ class FreightController extends Controller
                     'active' => 'bg-primary',
                     'completed' => 'bg-success',
                     'cancelled' => 'bg-danger',
+                    'paid' => 'bg-success',
                 ][strtolower($status->slug)] ?? 'bg-secondary';
                 
                 return '<span class="badge '.$badgeClass.'">'.$status->name.'</span>';
@@ -53,16 +54,54 @@ class FreightController extends Controller
             ->addColumn('formatted_value', function($freight) {
                 return 'R$ '.number_format($freight->freight_value, 2, ',', '.');
             })
+            ->addColumn('payment_button', function($freight) {
+                $status = $freight->status;
+                $isPaid = $status && strtolower($status->slug) === 'paid';
+                
+                if ($isPaid) {
+                    // Status PAID - Mostrar botão de recibo se existir
+                    if ($freight->charge && $freight->charge->receipt_url) {
+                        return '
+                            <a href="'.$freight->charge->receipt_url.'" class="btn btn-sm btn-info" target="_blank" title="Visualizar Recibo">
+                                <i class="fas fa-file-invoice-dollar"></i> Recibo
+                            </a>
+                        ';
+                    }
+                    return '<span class="text-muted">N/A</span>';
+                } else {
+                    // Status NÃO PAID - Mostrar botão de pagar se existir
+                    if ($freight->charge && $freight->charge->charge_url) {
+                        return '
+                            <a href="'.$freight->charge->charge_url.'" class="btn btn-sm btn-success" target="_blank" title="Realizar Pagamento">
+                                <i class="fas fa-credit-card"></i> Pagar
+                            </a>
+                        ';
+                    }
+                    return '<span class="text-muted">N/A</span>';
+                }
+            })
             ->addColumn('actions', function($freight) {
-                return '
+                $buttons = '
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-primary view-freight" data-id="'.$freight->id.'" title="Visualizar">
                             <i class="fas fa-eye"></i>
                         </button>
-                    </div>
                 ';
+    
+                // Adicionar botão de edição se necessário
+                /*
+                $buttons .= '
+                        <button class="btn btn-sm btn-warning edit-freight" data-id="'.$freight->id.'" title="Editar">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                ';
+                */
+    
+                $buttons .= '</div>';
+    
+                return $buttons;
             })
-            ->rawColumns(['status_badge', 'actions'])
+            ->rawColumns(['status_badge', 'actions', 'payment_button'])
             ->filter(function ($query) use ($request) {
                 if ($request->has('status') && $request->status != '') {
                     $query->where('status_id', $request->status);
@@ -77,8 +116,12 @@ class FreightController extends Controller
                         ->orWhereHas('driver', function($q) use ($search) {
                             $q->where('name', 'like', "%$search%");
                         })
+                        ->orWhereHas('charge', function($q) use ($search) {
+                            $q->where('payment_id', 'like', "%$search%");
+                        })
                         ->orWhere('start_address', 'like', "%$search%")
-                        ->orWhere('destination_address', 'like', "%$search%");
+                        ->orWhere('destination_address', 'like', "%$search%")
+                        ->orWhere('id', 'like', "%$search%");
                     });
                 }
             })

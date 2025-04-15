@@ -17,11 +17,12 @@
             </nav>
         </div>
         <div>
-           
             <button id="refresh-table" class="btn btn-outline-primary me-2">
                 <i class="fas fa-sync-alt me-1"></i>Atualizar
             </button>
-          
+            <button id="export-excel" class="btn btn-success me-2">
+                <i class="fas fa-file-excel me-1"></i>Exportar
+            </button>
             <button id="delete-all-freights" class="btn btn-danger">
                 <i class="fas fa-trash-alt me-1"></i>Limpar Tudo
             </button>
@@ -53,6 +54,7 @@
                             <th>Motorista</th>
                             <th>Status</th>
                             <th>Valor</th>
+                            <th width="120">Pagamento</th>
                             <th width="120">Ações</th>
                         </tr>
                     </thead>
@@ -80,6 +82,10 @@
                     <div class="text-center">
                         <div class="text-xs font-weight-bold text-success">Concluídos</div>
                         <div class="h6 mb-0 text-success" id="completed-count">0</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-xs font-weight-bold text-success">Pagamentos</div>
+                        <div class="h6 mb-0 text-success" id="paid-count">0</div>
                     </div>
                 </div>
             </div>
@@ -150,6 +156,12 @@
                                     <h6 class="text-muted mb-2">Detalhes da Carga</h6>
                                     <p class="mb-1"><strong>Tipo:</strong> <span id="cargo-type">-</span></p>
                                     <p class="mb-1"><strong>Peso:</strong> <span id="cargo-weight">-</span></p>
+                                </div>
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Pagamento</h6>
+                                    <p class="mb-1"><strong>Status:</strong> <span id="payment-status">-</span></p>
+                                    <p class="mb-1"><strong>Valor:</strong> <span id="payment-value">-</span></p>
+                                    <div id="payment-buttons"></div>
                                 </div>
                                 <hr>
                                 <div class="mb-3">
@@ -319,7 +331,7 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&libraries=places&callback=initMap" async defer></script>
 
 <script>
 // Variáveis globais
@@ -394,10 +406,18 @@ $(document).ready(function() {
                 searchable: false
             },
             { 
+                data: 'payment_button', 
+                name: 'payment_button',
+                orderable: false,
+                searchable: false,
+                className: 'text-center'
+            },
+            { 
                 data: 'actions', 
                 name: 'actions',
                 orderable: false,
-                searchable: false
+                searchable: false,
+                className: 'text-center'
             }
         ],
         language: {
@@ -475,12 +495,6 @@ $(document).ready(function() {
         loadFreightDetails(freightId);
     });
 
-    // Editar frete
-    $(document).on('click', '', function() {
-        const freightId = $(this).data('id');
-       // window.location.href = `/freights/${freightId}/edit`;
-    });
-
     // Excluir frete
     $(document).on('click', '.delete-freight', function() {
         const freightId = $(this).data('id');
@@ -553,6 +567,33 @@ function loadFreightDetails(freightId) {
         $('#current-position').text(response.current_position || 'Não disponível');
         $('#last-update').text(new Date().toLocaleString());
 
+        // Preenche informações de pagamento
+        if(response.charge) {
+            $('#payment-status').html(response.status ? `<span class="badge ${getStatusBadgeClass(response.status.slug)}">${response.status.name}</span>` : 'N/A');
+            $('#payment-value').text(response.freight_value ? 'R$ ' + parseFloat(response.freight_value).toFixed(2).replace('.', ',') : 'N/A');
+            
+            // Configura os botões de pagamento
+            let paymentButtons = '';
+            if(response.status && response.status.slug === 'paid' && response.charge.receipt_url) {
+                paymentButtons = `
+                    <a href="${response.charge.receipt_url}" class="btn btn-sm btn-info mt-2" target="_blank">
+                        <i class="fas fa-file-invoice-dollar me-1"></i>Visualizar Recibo
+                    </a>
+                `;
+            } else if(response.charge.charge_url) {
+                paymentButtons = `
+                    <a href="${response.charge.charge_url}" class="btn btn-sm btn-success mt-2" target="_blank">
+                        <i class="fas fa-credit-card me-1"></i>Realizar Pagamento
+                    </a>
+                `;
+            }
+            $('#payment-buttons').html(paymentButtons);
+        } else {
+            $('#payment-status').text('N/A');
+            $('#payment-value').text('N/A');
+            $('#payment-buttons').html('');
+        }
+
         // Configura o mapa
         if (response.start_lat && response.start_lng && 
             response.destination_lat && response.destination_lng) {
@@ -581,6 +622,16 @@ function loadFreightDetails(freightId) {
     }).fail(function() {
         toastr.error('Erro ao carregar detalhes do frete');
     });
+}
+
+// Retorna a classe do badge baseado no status
+function getStatusBadgeClass(statusSlug) {
+    const slug = statusSlug.toLowerCase();
+    if(slug === 'pending') return 'bg-warning';
+    if(slug === 'active') return 'bg-primary';
+    if(slug === 'completed' || slug === 'paid') return 'bg-success';
+    if(slug === 'cancelled') return 'bg-danger';
+    return 'bg-secondary';
 }
 
 // Calcula e exibe a rota no mapa
@@ -666,7 +717,7 @@ function loadFreightHistory(freightId) {
                 <tr>
                     <td>${date.toLocaleString()}</td>
                     <td>${entry.address || 'N/A'}</td>
-                    <td><span class="badge bg-secondary">${entry.status || 'N/A'}</span></td>
+                    <td><span class="badge ${getStatusBadgeClass(entry.status || '')}">${entry.status || 'N/A'}</span></td>
                 </tr>
             `);
         });
@@ -685,7 +736,6 @@ function updateTableInfo() {
 
 // Atualiza as estatísticas
 function updateStats() {
-    
     
 }
 

@@ -61,4 +61,9 @@ class Freight extends Model
     {
         return $this->hasMany(Transfer::class);
     }
+
+    public function charge()
+    {
+        return $this->hasOne(charge::class);
+    }
 }
