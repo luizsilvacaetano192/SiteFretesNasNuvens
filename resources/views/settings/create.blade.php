@@ -158,7 +158,7 @@
                         <hr>
                         <ul class="mb-0 ps-3">
                             <li>Os valores configurados aqui serão usados para cálculos automáticos no sistema</li>
-                            <li>As sugestões de valores por KM servem como referência inicial para novos fretes</li>
+                            <li>As sugestões de valores por KM serven como referência inicial para novos fretes</li>
                             <li>Os percentuais afetam diretamente os valores repassados aos motoristas</li>
                         </ul>
                     </div>
@@ -238,7 +238,6 @@
     min-width: 180px;
 }
 
-/* Toastr Styles */
 .toast {
     opacity: 1 !important;
     box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
@@ -337,7 +336,7 @@ $(document).ready(function() {
     });
 
     // Envio do formulário
-    $('#settings-form').submit(function(e) {
+    $('#settings-form').on('submit', function(e) {
         e.preventDefault();
         
         const btn = $('#save-btn');
@@ -346,7 +345,7 @@ $(document).ready(function() {
 
         $.ajax({
             url: $(this).attr('action'),
-            method: 'POST',
+            type: 'POST',
             data: $(this).serialize(),
             dataType: 'json',
             headers: {
@@ -355,19 +354,26 @@ $(document).ready(function() {
                 'Accept': 'application/json'
             },
             success: function(response) {
-                toastr.success(response.message || 'Configurações salvas com sucesso!');
-                btn.html('<i class="fas fa-save me-1"></i> Salvar Configurações');
-                btn.prop('disabled', false);
+                if(response.success) {
+                    toastr.success(response.message);
+                } else {
+                    toastr.error(response.message);
+                }
             },
             error: function(xhr) {
                 let errorMessage = 'Erro ao salvar configurações';
                 if (xhr.responseJSON && xhr.responseJSON.message) {
                     errorMessage = xhr.responseJSON.message;
+                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
+                    // Tratamento para erros de validação
+                    const errors = xhr.responseJSON.errors;
+                    errorMessage = Object.values(errors).flat().join('<br>');
                 } else if (xhr.statusText) {
                     errorMessage += ': ' + xhr.statusText;
                 }
-                
                 toastr.error(errorMessage);
+            },
+            complete: function() {
                 btn.html('<i class="fas fa-save me-1"></i> Salvar Configurações');
                 btn.prop('disabled', false);
             }
