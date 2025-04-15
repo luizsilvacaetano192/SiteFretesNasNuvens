@@ -40,7 +40,7 @@ class FreightController extends Controller
             })
             ->addColumn('status_badge', function($freight) {
                 $status = $freight->status;
-                if (!$status) return '<span class="badge bg-secondary">N/A</span>';
+                if (!$status->name) return '<span class="badge bg-secondary">N/A</span>';
                 
                 $badgeClass = [
                     'Aguardando pagamento' => 'bg-warning',
