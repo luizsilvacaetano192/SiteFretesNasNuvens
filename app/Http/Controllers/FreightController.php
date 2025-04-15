@@ -377,7 +377,8 @@ class FreightController extends Controller
             return [
                 'payment_link' => null,
                 'asaas_payment_id' => null,
-                'erro' => $e->getMessage()
+                'erro' => $e->getMessage(),
+                'retorno api' =>  $data
             ];
         }
     }
