@@ -351,6 +351,8 @@ class FreightController extends Controller
                 'successUrl' => route('freights')
             ]);
 
+            dd($response);
+
             $data = $response->json();
          
             if ($data['success']) {
