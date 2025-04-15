@@ -158,7 +158,7 @@
                         <hr>
                         <ul class="mb-0 ps-3">
                             <li>Os valores configurados aqui serão usados para cálculos automáticos no sistema</li>
-                            <li>As sugestões de valores por KM serven como referência inicial para novos fretes</li>
+                            <li>As sugestões de valores por KM servem como referência inicial para novos fretes</li>
                             <li>Os percentuais afetam diretamente os valores repassados aos motoristas</li>
                         </ul>
                     </div>
@@ -175,8 +175,7 @@
 @endsection
 
 @push('styles')
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/css/toastr.min.css" rel="stylesheet">
 <style>
 .divider {
     display: flex;
@@ -283,24 +282,59 @@
 @endpush
 
 @push('scripts')
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script>
-$(document).ready(function() {
-    // Configuração global do Toastr
-    toastr.options = {
-        "closeButton": true,
-        "progressBar": true,
-        "positionClass": "toast-top-right",
-        "timeOut": 5000,
-        "extendedTimeOut": 2000,
-        "showEasing": "swing",
-        "hideEasing": "linear",
-        "showMethod": "fadeIn",
-        "hideMethod": "fadeOut",
-        "tapToDismiss": false
-    };
+// Versão robusta que verifica todas as dependências
+document.addEventListener('DOMContentLoaded', function() {
+    // Verifica se jQuery está carregado
+    if (typeof jQuery === 'undefined') {
+        console.error('jQuery não está carregado');
+        return;
+    }
+
+    // Verifica se toastr está carregado
+    if (typeof toastr === 'undefined') {
+        console.error('toastr não está carregado');
+        // Fallback para alertas básicos
+        window.showToast = function(type, message) {
+            alert(type.toUpperCase() + ': ' + message);
+        };
+    } else {
+        // Configuração do toastr
+        toastr.options = {
+            closeButton: true,
+            progressBar: true,
+            positionClass: "toast-top-right",
+            timeOut: 5000,
+            extendedTimeOut: 2000,
+            showEasing: "swing",
+            hideEasing: "linear",
+            showMethod: "fadeIn",
+            hideMethod: "fadeOut",
+            tapToDismiss: false
+        };
+
+        window.showToast = function(type, message) {
+            if (toastr[type]) {
+                toastr[type](message);
+            } else {
+                toastr.info(message);
+            }
+        };
+    }
+
+    // Verifica se SweetAlert2 está carregado
+    if (typeof Swal === 'undefined') {
+        console.warn('SweetAlert2 não está carregado');
+        window.showConfirm = function(options, callback) {
+            if (confirm(options.text || 'Confirmar ação?')) {
+                callback({isConfirmed: true});
+            } else {
+                callback({isConfirmed: false});
+            }
+        };
+    } else {
+        window.showConfirm = Swal.fire;
+    }
 
     // Formata os valores percentuais
     $('input[type="number"]').on('blur', function() {
@@ -308,14 +342,14 @@ $(document).ready(function() {
             let value = parseFloat($(this).val());
             if (value > 100) {
                 $(this).val(100);
-                toastr.warning('O percentual máximo é 100%');
+                showToast('warning', 'O percentual máximo é 100%');
             }
         }
     });
 
     // Botão de redefinir
     $('#reset-btn').click(function() {
-        Swal.fire({
+        showConfirm({
             title: 'Redefinir configurações?',
             text: "Isso restaurará os valores padrão do sistema",
             icon: 'warning',
@@ -332,7 +366,7 @@ $(document).ready(function() {
                 $('#medium_truck_price').val(3.20);
                 $('#large_truck_price').val(4.50);
                 
-                toastr.success('Valores redefinidos para os padrões do sistema');
+                showToast('success', 'Valores redefinidos para os padrões do sistema');
             }
         });
     });
@@ -342,6 +376,7 @@ $(document).ready(function() {
         e.preventDefault();
         
         const btn = $('#save-btn');
+        const originalText = btn.html();
         btn.prop('disabled', true);
         btn.html('<i class="fas fa-spinner fa-spin me-1"></i> Salvando...');
 
@@ -356,27 +391,28 @@ $(document).ready(function() {
                 'Accept': 'application/json'
             },
             success: function(response) {
-                if(response.success) {
-                    toastr.success(response.message);
+                if (response && typeof response.success !== 'undefined') {
+                    showToast(response.success ? 'success' : 'error', 
+                             response.message || (response.success ? 'Operação realizada com sucesso' : 'Erro na operação'));
                 } else {
-                    toastr.error(response.message);
+                    showToast('error', 'Resposta inválida do servidor');
                 }
             },
             error: function(xhr) {
                 let errorMessage = 'Erro ao salvar configurações';
-                if (xhr.responseJSON && xhr.responseJSON.message) {
-                    errorMessage = xhr.responseJSON.message;
-                } else if (xhr.responseJSON && xhr.responseJSON.errors) {
-                    // Tratamento para erros de validação
-                    const errors = xhr.responseJSON.errors;
-                    errorMessage = Object.values(errors).flat().join('<br>');
+                if (xhr.responseJSON) {
+                    if (xhr.responseJSON.message) {
+                        errorMessage = xhr.responseJSON.message;
+                    } else if (xhr.responseJSON.errors) {
+                        errorMessage = Object.values(xhr.responseJSON.errors).join('\n');
+                    }
                 } else if (xhr.statusText) {
                     errorMessage += ': ' + xhr.statusText;
                 }
-                toastr.error(errorMessage);
+                showToast('error', errorMessage);
             },
             complete: function() {
-                btn.html('<i class="fas fa-save me-1"></i> Salvar Configurações');
+                btn.html(originalText);
                 btn.prop('disabled', false);
             }
         });
