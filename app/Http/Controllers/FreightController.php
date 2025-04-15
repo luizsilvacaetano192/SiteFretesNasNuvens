@@ -30,6 +30,7 @@ class FreightController extends Controller
         $query = Freight::with(['driver', 'status', 'company', 'shipment', 'charge'])
                 ->select('freights.*');
     
+    
         return DataTables::of($query)
             ->addColumn('company_name', function($freight) {
                 return $freight->company->name ?? 'N/A';
@@ -343,11 +344,11 @@ class FreightController extends Controller
     {
         try {
             $response = Http::post('https://0xjej23ew7.execute-api.us-east-1.amazonaws.com/teste', [
-                "name" => "Pagamento Frete #789",
-                "billingType"  => "PIX",
-                "value" => 350.75,
-                "freight_id" => 1,
-                "successUrl" => "https://52.91.243.105/freights"
+                'name' => 'Frete #'.$freight->id,
+                'billingType' => 'PIX',
+                'value' => $freight->freight_value,
+                'freight_id' => $freight->id,
+                'successUrl' => route('freights')
             ]);
 
             $data = $response->json();
