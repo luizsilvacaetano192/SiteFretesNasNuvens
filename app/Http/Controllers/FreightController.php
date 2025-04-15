@@ -348,12 +348,10 @@ class FreightController extends Controller
                 'billingType' => 'PIX',
                 'value' => $freight->freight_value,
                 'freight_id' => $freight->id,
-                'successUrl' => route('freights') 
+                'successUrl' => 'https://52.91.243.105/freights'
             ]);
 
             $data = $response->json();
-
-            dd($data);
          
             if ($data['success']) {
                
