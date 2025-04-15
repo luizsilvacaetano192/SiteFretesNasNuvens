@@ -237,6 +237,34 @@
     min-width: 180px;
 }
 
+/* Toastr Styles */
+.toast {
+    opacity: 1 !important;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    border-radius: 0.375rem !important;
+}
+
+.toast-success {
+    background-color: #28a745 !important;
+}
+
+.toast-error {
+    background-color: #dc3545 !important;
+}
+
+.toast-info {
+    background-color: #17a2b8 !important;
+}
+
+.toast-warning {
+    background-color: #ffc107 !important;
+    color: #212529 !important;
+}
+
+.toast-progress {
+    height: 3px !important;
+}
+
 @media (max-width: 768px) {
     .divider {
         margin: 0.5rem 0;
@@ -254,8 +282,23 @@
 @endpush
 
 @push('scripts')
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script>
 $(document).ready(function() {
+    // Configuração global do Toastr
+    toastr.options = {
+        "closeButton": true,
+        "progressBar": true,
+        "positionClass": "toast-top-right",
+        "timeOut": 5000,        // Tempo para o toast desaparecer (5 segundos)
+        "extendedTimeOut": 2000, // Tempo adicional se o usuário passar o mouse
+        "showEasing": "swing",
+        "hideEasing": "linear",
+        "showMethod": "fadeIn",
+        "hideMethod": "fadeOut",
+        "tapToDismiss": false
+    };
+
     // Formata os valores percentuais
     $('input[type="number"]').on('blur', function() {
         if ($(this).attr('id').includes('percentage')) {
@@ -280,8 +323,6 @@ $(document).ready(function() {
             cancelButtonText: 'Cancelar'
         }).then((result) => {
             if (result.isConfirmed) {
-                // Aqui você pode implementar a lógica para resetar os valores
-                // Por enquanto apenas um exemplo:
                 $('#cloud_percentage').val(10);
                 $('#advance_percentage').val(30);
                 $('#small_truck_price').val(2.50);
@@ -301,7 +342,6 @@ $(document).ready(function() {
         btn.prop('disabled', true);
         btn.html('<i class="fas fa-spinner fa-spin me-1"></i> Salvando...');
 
-        // Simulação de envio AJAX
         $.ajax({
             url: $(this).attr('action'),
             method: 'POST',
