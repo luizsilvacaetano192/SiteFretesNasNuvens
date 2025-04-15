@@ -14,7 +14,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\MessagePushController;
 use App\Http\Controllers\TransferController;
-
+use App\Http\Controllers\SettingController;
 
 
 
@@ -79,6 +79,10 @@ Route::post('/drivers/{driver}/activate', [DriverController::class, 'activate'])
 Route::post('/drivers/{driver}/block', [DriverController::class, 'block']);
 Route::post('/drivers/{id}/update-status', [DriverController::class, 'updateStatus'])->name('drivers.updateStatus');
 
+Route::prefix('settings')->group(function() {
+    Route::get('/', [SettingController::class, 'index'])->name('settings.index');
+    Route::post('/save', [SettingController::class, 'save'])->name('settings.save');
+});
 
 //Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
