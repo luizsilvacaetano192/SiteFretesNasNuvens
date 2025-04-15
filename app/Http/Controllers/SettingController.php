@@ -10,7 +10,7 @@ class SettingController extends Controller
     public function index()
     {
         $settings = Setting::first();
-        return view('settings.index', compact('settings'));
+        return view('settings.create', compact('settings'));
     }
 
     public function save(Request $request)
