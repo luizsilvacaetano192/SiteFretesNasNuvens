@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\belongsTo;
 
 class Charge extends Model
 {
@@ -36,7 +37,7 @@ class Charge extends Model
     }
 
     // Relationships
-    public function freight()
+    public function freight():belongsTo
     {
         return $this->belongsTo(Freight::class);
     }
