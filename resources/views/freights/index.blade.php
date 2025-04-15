@@ -241,6 +241,28 @@ const statusTranslations = {
     'total': 'Total'
 };
 
+function initMap() {
+    const mapDiv = document.getElementById('map');
+    if (!mapDiv) return;
+
+    map = new google.maps.Map(mapDiv, {
+        center: { lat: -15.7801, lng: -47.9292 },
+        zoom: 5
+    });
+
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer({
+        suppressMarkers: false,
+        polylineOptions: {
+            strokeColor: '#4285F4',
+            strokeOpacity: 1.0,
+            strokeWeight: 5
+        }
+    });
+    directionsRenderer.setMap(map);
+
+}
+
 $(document).ready(function() {
     // Configuração do Toastr
     toastr.options = {
@@ -496,27 +518,7 @@ function updateTableInfo() {
 }
 
 // Inicializa o mapa
-function initMap() {
-    const mapDiv = document.getElementById('map');
-    if (!mapDiv) return;
 
-    map = new google.maps.Map(mapDiv, {
-        center: { lat: -15.7801, lng: -47.9292 },
-        zoom: 5
-    });
-
-    directionsService = new google.maps.DirectionsService();
-    directionsRenderer = new google.maps.DirectionsRenderer({
-        suppressMarkers: false,
-        polylineOptions: {
-            strokeColor: '#4285F4',
-            strokeOpacity: 1.0,
-            strokeWeight: 5
-        }
-    });
-    directionsRenderer.setMap(map);
-
-}
 
 // Carrega os detalhes do frete no modal
 function loadFreightDetails(freightId) {
