@@ -48,7 +48,7 @@ class FreightController extends Controller
                     'completed' => 'bg-success',
                     'cancelled' => 'bg-danger',
                     'paid' => 'bg-success',
-                ][strtolower($status->slug)] ?? 'bg-secondary';
+                ][strtolower($status)] ?? 'bg-secondary';
                 
                 return '<span class="badge '.$badgeClass.'">'.$status->name.'</span>';
             })
@@ -56,7 +56,7 @@ class FreightController extends Controller
                 return 'R$ '.number_format($freight->freight_value, 2, ',', '.');
             })
             ->addColumn('payment_button', function($freight) {
-                $status = $freight->charge->status;
+                $status = $freight->charge?->status ?? '' ;
                 $isPaid = $status && strtolower($status) === 'paid';
                 
                 if ($isPaid) {
