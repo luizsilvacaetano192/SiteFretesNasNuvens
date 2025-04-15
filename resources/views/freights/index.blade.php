@@ -338,11 +338,13 @@ body {
 let map, directionsService, directionsRenderer, truckMarker, trackingInterval;
 let freightTable;
 
+updateStats()
+
 $(document).ready(function() {
 
-    updateStats()
-    // Atualiza as estatísticas
-    // Atualiza as estatísticas
+   
+// Atualiza as estatísticas
+  
 function updateStats() {
     $.get('{{ route('freights.stats') }}', function(response) {
         $('#active-count').text(response['Em processo de entrega'] || 0);
