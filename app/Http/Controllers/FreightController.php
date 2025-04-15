@@ -56,8 +56,8 @@ class FreightController extends Controller
                 return 'R$ '.number_format($freight->freight_value, 2, ',', '.');
             })
             ->addColumn('payment_button', function($freight) {
-                $status = $freight->status;
-                $isPaid = $status && strtolower($status->slug) === 'paid';
+                $status = $freight->charge->status;
+                $isPaid = $status && strtolower($status) === 'paid';
                 
                 if ($isPaid) {
                     // Status PAID - Mostrar botão de recibo se existir
