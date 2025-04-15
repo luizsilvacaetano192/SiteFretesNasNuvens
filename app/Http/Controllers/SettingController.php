@@ -9,8 +9,8 @@ class SettingController extends Controller
 {
     public function index()
     {
-        $settings = Setting::first();
-        return view('settings.create', compact('settings'));
+        $settings = Setting::firstOrNew();
+        return view('settings.index', compact('settings'));
     }
 
     public function save(Request $request)
@@ -23,10 +23,21 @@ class SettingController extends Controller
             'large_truck_price' => 'required|numeric|min:0',
         ]);
 
-        $settings = Setting::firstOrNew();
-        $settings->fill($validated);
-        $settings->save();
+        try {
+            $settings = Setting::firstOrNew();
+            $settings->fill($validated);
+            $settings->save();
 
-        return response()->json(['success' => true, 'message' => 'Configurações salvas com sucesso!']);
+            return response()->json([
+                'success' => true,
+                'message' => 'Configurações salvas com sucesso!'
+            ]);
+
+        } catch (\Exception $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Erro ao salvar configurações: ' . $e->getMessage()
+            ], 500);
+        }
     }
 }
