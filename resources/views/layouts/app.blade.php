@@ -223,7 +223,7 @@
                 <i class="fas fa-tasks"></i>
                 <span>Status</span>
             </a>
-            <a href="/transfers" class="sidebar-link">
+            <a href="/settings" class="sidebar-link">
                 <i class="fas fa-exchange-alt"></i>
                 <span>Transferências</span>
             </a>
