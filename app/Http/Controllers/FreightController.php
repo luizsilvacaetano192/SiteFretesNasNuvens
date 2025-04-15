@@ -43,7 +43,7 @@ class FreightController extends Controller
                 if (!$status->name) return '<span class="badge bg-secondary">N/A</span>';
                 
                 $badgeClass = [
-                    'Aguardando pagamento' => 'bg-warning',
+                    '3' => 'bg-warning',
                     '4' => 'bg-secundary',
                     '5' => 'bg-secondary',
                     '6' => 'bg-primary',
@@ -51,7 +51,7 @@ class FreightController extends Controller
                     '8' => 'bg-success',
                 ][strtolower($status)] ?? 'bg-secondary';
                 
-                return '<span class="badge '.$badgeClass.'">'.$status->name.'</span>';
+                return '<span class="badge '.$badgeClass[$status->id].'">'.$status->name.'</span>';
             })
             ->addColumn('formatted_value', function($freight) {
                 return 'R$ '.number_format($freight->freight_value, 2, ',', '.');
