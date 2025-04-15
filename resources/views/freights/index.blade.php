@@ -378,7 +378,7 @@ let freightTable;
 let refreshInterval = 10000; // 10 segundos
 let nextRefreshCountdown = refreshInterval / 1000;
 let countdownInterval;
-let lastData = null; // Alterado para null inicialmente
+let lastData = null;
 
 // Configuração do Toastr
 toastr.options = {
@@ -449,8 +449,14 @@ function initializeDataTable() {
             { 
                 data: 'driver_name', 
                 name: 'driver.name',
-                render: function(data) {
-                    return data ? data : 'Não atribuído';
+                render: function(data, type, row) {
+                    if (!data) return '<span class="text-muted">Não atribuído</span>';
+                    
+                    let badgeClass = 'bg-primary';
+                    if (row.driver_status === 'inactive') badgeClass = 'bg-secondary';
+                    if (row.driver_status === 'on_delivery') badgeClass = 'bg-warning';
+                    
+                    return `<span class="badge ${badgeClass}">${data}</span>`;
                 }
             },
             { 
@@ -495,15 +501,6 @@ function initializeDataTable() {
         drawCallback: function(settings) {
             updateTableInfo();
             updateStats();
-            
-            // Armazena os dados atuais para comparação
-            if (settings.json && settings.json.data) {
-                // Se for a primeira carga, apenas armazena os dados
-                if (lastData === null) {
-                    lastData = settings.json.data;
-                    console.log('Primeira carga - dados armazenados', lastData);
-                }
-            }
         }
     });
 }
@@ -555,16 +552,26 @@ function startAutoRefresh() {
 
 function updateTableWithNotifications() {
     $.get(freightTable.ajax.url(), function(newData) {
-        // Compara os dados novos com os antigos para detectar mudanças
-        if (lastData !== null && newData.data) {
-            compareDataAndNotify(lastData, newData.data);
+        // Se for a primeira carga, apenas armazena os dados
+        if (lastData === null) {
+            lastData = newData.data || [];
+            freightTable.ajax.reload(null, false);
+            nextRefreshCountdown = refreshInterval / 1000;
+            updateCountdown();
+            return;
         }
+
+        // Compara os dados novos com os antigos para detectar mudanças
+        const hasChanges = compareDataAndNotify(lastData, newData.data || []);
         
-        // Atualiza os dados locais
-        lastData = newData.data || [];
-        
-        // Recarrega a tabela sem resetar a paginação
-        freightTable.ajax.reload(null, false);
+        // Se houver mudanças, atualiza a tabela
+        if (hasChanges) {
+            // Atualiza os dados locais
+            lastData = newData.data || [];
+            
+            // Recarrega a tabela sem resetar a paginação
+            freightTable.ajax.reload(null, false);
+        }
         
         // Reinicia o contador
         nextRefreshCountdown = refreshInterval / 1000;
@@ -577,50 +584,67 @@ function updateTableWithNotifications() {
 function compareDataAndNotify(oldData, newData) {
     if (!oldData || oldData.length === 0) {
         console.log('Sem dados antigos para comparação');
-        return;
+        return false;
     }
 
     console.log('Comparando dados:', {oldData, newData});
+    let hasChanges = false;
 
-    // Cria mapa de IDs antigos
-    const oldIds = oldData.map(item => item.id);
-    
-    // Verifica novos registros
-    newData.forEach(item => {
-        if (!oldIds.includes(item.id)) {
-            showNewFreightNotification(item);
-        }
+    // Cria mapa de IDs antigos com mais detalhes
+    const oldDataMap = {};
+    oldData.forEach(item => {
+        oldDataMap[item.id] = {
+            id: item.id,
+            status_id: item.status_id,
+            status_name: item.status_name || getStatusNameById(item.status_id),
+            company_name: item.company_name,
+            driver_id: item.driver_id,
+            driver_name: item.driver_name,
+            driver_status: item.driver_status
+        };
     });
 
-    // Verifica mudanças de status
-    const oldDataMap = createOldDataMap(oldData);
-    newData.forEach(item => {
-        const oldItem = oldDataMap[item.id];
-        if (oldItem && oldItem.status_id !== item.status_id) {
-            showStatusChangeNotification(oldItem, item);
-        }
-    });
-
-    // Verifica remoções
+    // Verifica novos registros e remoções
     const newIds = newData.map(item => item.id);
     oldData.forEach(item => {
         if (!newIds.includes(item.id)) {
             showFreightRemovedNotification(item);
+            hasChanges = true;
         }
     });
-}
 
-function createOldDataMap(oldData) {
-    const map = {};
-    oldData.forEach(item => {
-        map[item.id] = {
-            id: item.id,
-            status_id: item.status_id,
-            status_name: item.status_name || getStatusNameById(item.status_id),
-            company_name: item.company_name
-        };
+    // Verifica cada novo item
+    newData.forEach(newItem => {
+        const oldItem = oldDataMap[newItem.id];
+        
+        // Se é um novo registro
+        if (!oldItem) {
+            showNewFreightNotification(newItem);
+            hasChanges = true;
+            return;
+        }
+
+        // Verifica mudanças de status
+        if (oldItem.status_id !== newItem.status_id) {
+            showStatusChangeNotification(oldItem, newItem);
+            hasChanges = true;
+        }
+
+        // Verifica mudanças no motorista (de null para preenchido ou alteração)
+        if ((!oldItem.driver_id && newItem.driver_id) || 
+            (oldItem.driver_id && newItem.driver_id && oldItem.driver_id !== newItem.driver_id)) {
+            showDriverAssignedNotification(oldItem, newItem);
+            hasChanges = true;
+        }
+
+        // Verifica mudanças no status do motorista
+        if (oldItem.driver_status !== newItem.driver_status && newItem.driver_id) {
+            showDriverStatusChangeNotification(oldItem, newItem);
+            hasChanges = true;
+        }
     });
-    return map;
+
+    return hasChanges;
 }
 
 function showNewFreightNotification(item) {
@@ -642,8 +666,6 @@ function showNewFreightNotification(item) {
         timeOut: 15000,
         extendedTimeOut: 5000
     });
-    
-    console.log('Novo frete detectado:', item);
 }
 
 function showStatusChangeNotification(oldItem, newItem) {
@@ -665,8 +687,57 @@ function showStatusChangeNotification(oldItem, newItem) {
         timeOut: 15000,
         extendedTimeOut: 5000
     });
+}
+
+function showDriverAssignedNotification(oldItem, newItem) {
+    const oldDriverText = oldItem.driver_name ? oldItem.driver_name : 'Não atribuído';
+    const newDriverText = newItem.driver_name ? newItem.driver_name : 'Não atribuído';
     
-    console.log('Mudança de status detectada:', {oldItem, newItem});
+    toastr.info(`
+        <div class="toast-status-change">
+            <i class="fas fa-user-edit toast-icon"></i>
+            <div>
+                <strong>MOTORISTA ATUALIZADO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${newItem.id}</span>
+                    ${newItem.company_name ? `<span class="me-3"><i class="fas fa-building me-1"></i>${newItem.company_name}</span>` : ''}
+                    <span><i class="fas fa-exchange-alt me-1"></i> ${oldDriverText} → ${newDriverText}</span>
+                </div>
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
+    });
+}
+
+function showDriverStatusChangeNotification(oldItem, newItem) {
+    const statusMap = {
+        'active': 'Disponível',
+        'inactive': 'Inativo',
+        'on_delivery': 'Em entrega',
+        'on_vacation': 'De férias'
+    };
+    
+    const oldStatus = statusMap[oldItem.driver_status] || oldItem.driver_status;
+    const newStatus = statusMap[newItem.driver_status] || newItem.driver_status;
+    
+    toastr.info(`
+        <div class="toast-status-change">
+            <i class="fas fa-user-cog toast-icon"></i>
+            <div>
+                <strong>STATUS DO MOTORISTA ATUALIZADO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${newItem.id}</span>
+                    <span class="me-3"><i class="fas fa-user me-1"></i>${newItem.driver_name}</span>
+                    <span><i class="fas fa-exchange-alt me-1"></i> ${oldStatus} → ${newStatus}</span>
+                </div>
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
+    });
 }
 
 function showFreightRemovedNotification(item) {
@@ -685,18 +756,14 @@ function showFreightRemovedNotification(item) {
         timeOut: 15000,
         extendedTimeOut: 5000
     });
-    
-    console.log('Frete removido detectado:', item);
 }
 
 function getStatusNameById(statusId) {
-    // Esta é uma implementação simplificada - adapte conforme sua aplicação
     const statusMap = {
         1: 'Aguardando Pagamento',
         2: 'Em Processo',
         3: 'Concluído',
         4: 'Cancelado'
-        // Adicione outros status conforme necessário
     };
     return statusMap[statusId] || 'Desconhecido';
 }
@@ -751,6 +818,7 @@ function deleteAllFreights() {
             if(response.success) {
                 toastr.success(response.message);
                 freightTable.ajax.reload();
+                lastData = []; // Reseta os dados locais
             } else {
                 toastr.error(response.message);
             }
@@ -789,6 +857,11 @@ function deleteFreight(freightId) {
             if(response.success) {
                 toastr.success(response.message);
                 freightTable.ajax.reload();
+                
+                // Remove o frete dos dados locais
+                if (lastData) {
+                    lastData = lastData.filter(item => item.id !== freightId);
+                }
             } else {
                 toastr.error(response.message);
             }
