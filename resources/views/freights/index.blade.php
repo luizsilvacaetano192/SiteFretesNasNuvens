@@ -359,6 +359,7 @@ $(document).ready(function() {
                 toastr.error('Erro ao carregar dados da tabela');
             }
         },
+        order: [[0, 'desc']],
         columns: [
             { 
                 data: 'id', 

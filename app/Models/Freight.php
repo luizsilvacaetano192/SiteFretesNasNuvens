@@ -64,6 +64,6 @@ class Freight extends Model
 
     public function charge()
     {
-        return $this->hasOne(charge::class);
+        return $this->belongsTo(charge::class);
     }
 }
