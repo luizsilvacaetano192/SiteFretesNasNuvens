@@ -354,12 +354,15 @@ $(document).ready(function() {
         ajax: {
             url: '{{ route('freights.data') }}',
             type: 'GET',
+            data: function(d) {
+                d.order = [{ column: 0, dir: 'desc' }];  // Força ordenação no servidor
+            },
             error: function(xhr, error, thrown) {
                 console.error('Erro ao carregar dados:', xhr.responseText);
                 toastr.error('Erro ao carregar dados da tabela');
             }
         },
-        
+        order: [[0, 'desc']],
         columns: [
             { 
                 data: 'id', 
