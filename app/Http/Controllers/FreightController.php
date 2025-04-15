@@ -39,8 +39,8 @@ class FreightController extends Controller
                 return $freight->driver ? $freight->driver->name : 'Não atribuído';
             })
             ->addColumn('status_badge', function($freight) {
-                $status = $freight->status;
-                if (!$status->name) return '<span class="bg bg-secondary">N/A</span>';
+                $status = $freight->status_id;
+                if (!$status) return '<span class="badge bg-secondary">N/A</span>';
                 
                 $badgeClass = [
                     '3' => 'bg-warning',
@@ -50,10 +50,8 @@ class FreightController extends Controller
                     '7' => 'bg-primary',
                     '8' => 'bg-success',
                 ][strtolower($status)] ?? 'bg-secondary';
-
-                $class = $badgeClass[$status->id] ?? 'bg-secondary';
                 
-                return '<span class="bg '.$class.'">'.$status->name.'</span>';
+                return '<span class="badge '.$badgeClass.'">'.$status->name.'</span>';
             })
             ->addColumn('formatted_value', function($freight) {
                 return 'R$ '.number_format($freight->freight_value, 2, ',', '.');
