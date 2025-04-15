@@ -29,12 +29,15 @@
     </div>
 </div>
 
-<!-- Modais (mantidos os mesmos, apenas com classes atualizadas) -->
+<!-- Modal de Imagem Ampliada -->
 <div class="modal fade" id="imageModal" tabindex="-1">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content">
       <div class="modal-body text-center p-0">
         <img id="modalImage" src="" class="img-fluid w-100" style="max-height:90vh; object-fit:contain;">
+      </div>
+      <div class="modal-footer justify-content-center">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
       </div>
     </div>
   </div>
@@ -49,6 +52,9 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
       </div>
       <div class="modal-body" id="analysisContent"></div>
+      <div class="modal-footer">
+        <button class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
     </div>
   </div>
 </div>
@@ -250,13 +256,27 @@
           </table>
         </div>
       </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
     </div>
   </div>
 </div>
 
 <!-- CSS -->
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
 <style>
-/* Estilos globais */
 .card {
     border-radius: 0.5rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
@@ -284,7 +304,6 @@
     font-size: 0.75em;
 }
 
-/* Estilos específicos para a tabela principal */
 #drivers-table {
     border-collapse: separate;
     border-spacing: 0;
@@ -299,7 +318,6 @@
     background-color: #f8f9fa;
 }
 
-/* Estilos para os controles de expansão */
 td.dt-control {
     position: relative;
 }
@@ -321,7 +339,6 @@ tr.shown td.dt-control::before {
     color: #dc3545;
 }
 
-/* Estilos para os modais */
 .modal-header {
     padding: 1rem 1.5rem;
 }
@@ -330,13 +347,11 @@ tr.shown td.dt-control::before {
     font-weight: 600;
 }
 
-/* Estilos para os botões de ação */
 .btn-group-sm .btn {
     padding: 0.25rem 0.5rem;
     font-size: 0.75rem;
 }
 
-/* Estilos para as imagens nos detalhes */
 .driver-details-img {
     max-height: 150px;
     object-fit: contain;
@@ -344,7 +359,6 @@ tr.shown td.dt-control::before {
     border-radius: 0.25rem;
 }
 
-/* Estilos para a tabela de fretes na transferência */
 #transferFreightsTable {
     font-size: 0.8rem;
 }
@@ -356,7 +370,6 @@ tr.shown td.dt-control::before {
     z-index: 10;
 }
 
-/* Responsividade */
 @media (max-width: 768px) {
     #transferModal .row {
         flex-direction: column;
@@ -378,19 +391,569 @@ tr.shown td.dt-control::before {
 }
 </style>
 
-<!-- JavaScript (mantido o mesmo) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-<link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-
 <script>
-// ... (todo o JavaScript existente permanece exatamente o mesmo)
-// Apenas atualizei a renderização da tabela principal para refletir as novas colunas
+// Funções utilitárias
+function maskPhone(value) {
+    if (!value) return '';
+    return value.replace(/\D/g, '').replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+}
+
+function maskRG(value) {
+    if (!value) return '';
+    return value.replace(/^(\d{1,2})(\d{3})(\d{3})([\dxX])?$/, (_, p1, p2, p3, p4) => `${p1}.${p2}.${p3}${p4 ? '-' + p4 : ''}`);
+}
+
+function maskCPF(cpf) {
+    return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+}
+
+function formatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR');
+}
+
+function formatCurrency(value) {
+    return new Intl.NumberFormat('pt-BR', {
+        style: 'currency',
+        currency: 'BRL'
+    }).format(value || 0);
+}
+
+function openImageModal(src) {
+    $('#modalImage').attr('src', src);
+    new bootstrap.Modal('#imageModal').show();
+}
+
+function renderImageColumn(title, src) {
+    if (!src) return `<div class="col-md-3 text-center mb-3"><p><strong>${title}</strong></p><div class="text-danger">Imagem não disponível</div></div>`;
+    
+    return `
+        <div class="col-md-3 text-center mb-3">
+            <p><strong>${title}</strong></p>
+            <img src="${src}" class="img-fluid rounded driver-details-img" onerror="this.onerror=null;this.outerHTML='<div class=\'text-danger\'>Imagem não disponível</div>';"/>
+            <br>
+            <a href="${src}" download class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-download me-1"></i>Baixar</a>
+            <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${src}')"><i class="fas fa-search me-1"></i>Ampliar</button>
+        </div>
+    `;
+}
+
+function getStatusLabel(status) {
+    const labels = {
+        'create': ['Aguardando Ativação', 'warning'],
+        'active': ['Ativo', 'success'],
+        'block': ['Bloqueado', 'danger'],
+        'transfer_block': ['Transferências Bloqueadas', 'danger'],
+    };
+    return labels[status] || ['Desconhecido', 'secondary'];
+}
+
+let selectedDriverId = null;
+
+function updateDriverStatus(id, status) {
+    const reason = $('#blockReason').val().trim();
+
+    if ((status === 'block' || status === 'transfer_block') && !reason) {
+        toastr.warning('Por favor, informe o motivo do bloqueio.');
+        return;
+    }
+
+    $.post(`/drivers/${id}/update-status`, {
+        status,
+        reason,
+        _token: '{{ csrf_token() }}'
+    }, () => {
+        $('#drivers-table').DataTable().ajax.reload(null, false);
+        bootstrap.Modal.getInstance(document.getElementById('blockModal'))?.hide();
+        toastr.success(`Status atualizado para ${status}`);
+        $('#blockReason').val('');
+    }).fail(() => toastr.error("Erro ao atualizar status."));
+}
+
+function activateDriver(id, status) {
+    if (status === 'active') {
+        selectedDriverId = id;
+        new bootstrap.Modal('#blockModal').show();
+    } else if (status === 'create') {
+        $.get(`/drivers/${id}`, function(driverData) {
+            const apiData = {
+                driver_id: id,
+                name: driverData.name,
+                cpfCnpj: driverData.cpf.replace(/\D/g, '')
+            };
+
+            toastr.info('Criando conta Asaas para o motorista...', 'Aguarde', {timeOut: 0});
+
+            $.ajax({
+                url: '/api/create-asaas-account',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(apiData),
+                success: function(response) {
+                    toastr.clear();
+                    if (response.success) {
+                        toastr.success('Conta Asaas criada com sucesso! Ativando motorista...');
+                        updateDriverStatus(id, 'active');
+                    } else {
+                        toastr.error('Não foi possível criar a conta Asaas: ' + (response.message || 'Erro desconhecido'));
+                    }
+                },
+                error: function(xhr) {
+                    toastr.clear();
+                    let errorMsg = 'Erro ao conectar com o serviço de pagamentos';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMsg = response.message || errorMsg;
+                    } catch (e) {}
+                    toastr.error(errorMsg);
+                }
+            });
+        }).fail(function() {
+            toastr.error('Não foi possível obter os dados do motorista');
+        });
+    } else {
+        updateDriverStatus(id, 'active');
+    }
+}
+
+function analyzeDriver(driverId) {
+    const modal = new bootstrap.Modal('#analyzeModal');
+    $('#analysisContent').html(`
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Aguarde enquanto a inteligência artificial realiza a análise...</p>
+        </div>
+    `);
+    modal.show();
+
+    $.get(`/drivers/${driverId}/analyze`, result => {
+        $('#analysisContent').html(`
+            <div class="alert alert-info">
+                <h5><i class="fas fa-robot me-2"></i>Resultado da Análise via IA:</h5>
+                <p>${result.message.replace(/\n/g, "<br>")}</p>
+            </div>
+            <div class="row">
+                ${renderImageColumn('Frente CNH', result.driver_license_front)}
+                ${renderImageColumn('Comprovante de Endereço', result.address_proof)}
+                ${renderImageColumn('Foto do Rosto', result.face_photo)}
+            </div>
+        `);
+    }).fail(() => {
+        $('#analysisContent').html(`<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>Erro na análise com IA.</div>`);
+    });
+}
+
+function togglePassword(id, password) {
+    const span = document.getElementById(`password-${id}`);
+    if (span.innerText === '••••••••') {
+        span.innerText = password;
+    } else {
+        span.innerText = '••••••••';
+    }
+}
+
+function openWhatsApp(phone) {
+    if (!phone) return alert("Número de telefone não disponível.");
+    const formatted = phone.replace(/\D/g, '');
+    window.open(`https://wa.me/55${formatted}`, '_blank');
+}
+
+function showFreightsModal(driverId) {
+    const modal = new bootstrap.Modal('#freightsModal');
+    
+    if ($.fn.DataTable.isDataTable('#freightsTable')) {
+        $('#freightsTable').DataTable().destroy();
+        $('#freightsTable tbody').empty();
+    }
+    
+    modal.show();
+    
+    const freightsTable = $('#freightsTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json',
+            zeroRecords: "Nenhum frete disponível para este motorista"
+        },
+        pageLength: 5,
+        lengthMenu: [5, 10, 25, 50],
+        columns: [
+            { 
+                data: null,
+                orderable: false,
+                render: function() {
+                    return '<input type="checkbox" class="freightCheckbox">';
+                }
+            },
+            { data: 'id' },
+            { data: 'company.name' },
+            { data: 'cargo_type' },
+            { 
+                data: 'freight_date',
+                render: function(data) {
+                    return data ? new Date(data).toLocaleDateString('pt-BR') : '';
+                }
+            },
+            { 
+                data: 'status',
+                render: function(data) {
+                    const statusClasses = {
+                        'pending': 'warning',
+                        'in_progress': 'primary',
+                        'completed': 'success',
+                        'canceled': 'danger'
+                    };
+                    return `<span class="badge bg-${statusClasses[data] || 'secondary'}">${data}</span>`;
+                }
+            }
+        ],
+        drawCallback: function(settings) {
+            if (this.api().data().length === 0) {
+                $(this.api().table().body()).html(
+                    '<tr class="odd">' +
+                    '<td valign="top" colspan="6" class="dataTables_empty">' + 
+                    settings.oLanguage.sZeroRecords + 
+                    '</td>' +
+                    '</tr>'
+                );
+            }
+        }
+    });
+
+    $('#selectAllFreights').click(function() {
+        $('.freightCheckbox').prop('checked', this.checked);
+    });
+
+    $.get(`/drivers/${driverId}/freights`, function(data) {
+        if (data.freights && data.freights.length > 0) {
+            freightsTable.clear().rows.add(data.freights).draw();
+        } else {
+            freightsTable.clear().draw();
+        }
+    }).fail(function() {
+        freightsTable.clear().draw();
+        toastr.error('Erro ao carregar lista de fretes');
+    });
+}
+
+function openTransferModal(driverId) {
+    $('#transferDriverId').val(driverId);
+    $('#transferForm')[0].reset();
+    $('#selectedFreightValue').val('');
+    
+    if ($.fn.DataTable.isDataTable('#transferFreightsTable')) {
+        $('#transferFreightsTable').DataTable().destroy();
+    }
+    
+    const modal = new bootstrap.Modal('#transferModal');
+    modal.show();
+    
+    const table = $('#transferFreightsTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json',
+            zeroRecords: "Nenhum frete disponível"
+        },
+        pageLength: 5,
+        lengthMenu: [5, 10, 15],
+        columns: [
+            { 
+                data: null,
+                orderable: false,
+                width: '3%',
+                render: function() {
+                    return '<input type="radio" name="freightRadio" class="freightRadio">';
+                }
+            },
+            { 
+                data: 'id',
+                width: '8%' 
+            },
+            { 
+                data: 'company.name',
+                width: '20%' 
+            },
+            { 
+                data: 'cargo_type',
+                width: '20%' 
+            },
+            { 
+                data: 'value',
+                width: '15%',
+                render: function(data) {
+                    return data ? formatCurrency(data) : '';
+                }
+            },
+            { 
+                data: 'freight_date',
+                width: '15%',
+                render: function(data) {
+                    return data ? formatDateBR(data) : '';
+                }
+            },
+            { 
+                data: 'status',
+                width: '19%',
+                render: function(data) {
+                    const statusClasses = {
+                        'pending': 'warning',
+                        'in_progress': 'primary',
+                        'completed': 'success',
+                        'canceled': 'danger'
+                    };
+                    return `<span class="badge bg-${statusClasses[data] || 'secondary'}">${data}</span>`;
+                }
+            }
+        ],
+        scrollX: true,
+        autoWidth: false,
+        fixedColumns: true
+    });
+    
+    $.get(`/drivers/${driverId}/freights`, function(data) {
+        if (data.freights && data.freights.length > 0) {
+            table.clear().rows.add(data.freights).draw();
+        } else {
+            table.clear().draw();
+        }
+
+        $('#transferFreightsTable tbody').on('click', '.freightRadio', function() {
+            const rowData = table.row($(this).closest('tr')).data();
+            if (rowData) {
+                $('#transferAmount').val(rowData.value ? rowData.value.toFixed(2) : '');
+                $('#selectedFreightValue').val(rowData.value || '');
+                $('.freightRadio').not(this).prop('checked', false);
+            }
+        });
+        
+    }).fail(function() {
+        console.error('Erro ao carregar fretes');
+        table.clear().draw();
+    });
+}
+
+function submitTransfer() {
+    const driverId = $('#transferDriverId').val();
+    const type = $('#transferType').val();
+    const amount = parseFloat($('#transferAmount').val());
+    const description = $('#transferDescription').val();
+    const freightValue = $('#selectedFreightValue').val();
+
+    if (!type || !amount || amount <= 0) {
+        toastr.warning('Preencha todos os campos corretamente');
+        return;
+    }
+
+    $('#submitTransfer').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status"></span> Enviando...');
+
+    const requestData = {
+        type,
+        amount,
+        description,
+        _token: '{{ csrf_token() }}'
+    };
+
+    if (freightValue) {
+        requestData.freight_value = freightValue;
+    }
+
+    $.post(`/transfer/${driverId}`, requestData, function(response) {
+        toastr.success('Transferência realizada com sucesso!');
+        $('#transferModal').modal('hide');
+        showBalanceModal(driverId);
+    }).fail(function(error) {
+        toastr.error(error.responseJSON?.message || 'Erro ao realizar transferência');
+    }).always(function() {
+        $('#submitTransfer').prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Enviar');
+    });
+}
+
+function showBalanceModal(driverId) {
+    const modal = new bootstrap.Modal('#balanceModal');
+    selectedDriverId = driverId;
+    
+    if ($.fn.DataTable.isDataTable('#transfersTable')) {
+        $('#transfersTable').DataTable().destroy();
+    }
+    
+    $('#balanceModal .modal-body').html(`
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="mt-2">Carregando informações financeiras...</p>
+        </div>
+    `);
+    
+    modal.show();
+    
+    $.get(`/drivers/${driverId}/balance-data`, function(data) {
+        $('#asaasIdentifier').text(data.account.asaas_identifier || 'Não informado');
+        $('#totalBalance').text(formatCurrency(data.account.total_balance));
+        $('#blockedBalance').text(formatCurrency(data.account.blocked_balance));
+        $('#availableBalance').text(formatCurrency(data.account.available_balance));
+        
+        $('#balanceModal .modal-body').html(`
+            <div class="row mb-4">
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 border-0 bg-light">
+                        <div class="card-body text-center">
+                            <h6 class="card-title text-muted">ID Conta Asaas</h6>
+                            <p class="card-text h5" id="asaasIdentifier">${data.account.asaas_identifier || '-'}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 border-0 bg-success text-white">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Saldo Total</h6>
+                            <p class="card-text h4" id="totalBalance">${formatCurrency(data.account.total_balance)}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 border-0 bg-warning">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Saldo Bloqueado</h6>
+                            <p class="card-text h4" id="blockedBalance">${formatCurrency(data.account.blocked_balance)}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                    <div class="card h-100 border-0 bg-info text-white">
+                        <div class="card-body text-center">
+                            <h6 class="card-title">Saldo Disponível</h6>
+                            <p class="card-text h4" id="availableBalance">${formatCurrency(data.account.available_balance)}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Histórico de Transferências</h5>
+                <button type="button" class="btn btn-success" id="newTransferBtn">
+                    <i class="fas fa-plus me-2"></i>Nova Transferência
+                </button>
+            </div>
+            
+            <div class="table-responsive">
+                <table id="transfersTable" class="table table-striped table-hover" style="width:100%">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Valor</th>
+                            <th>Descrição</th>
+                            <th>Data</th>
+                            <th>ID Asaas</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        `);
+        
+        $('#transfersTable').DataTable({
+            data: data.transfers,
+            columns: [
+                { 
+                    data: 'type', 
+                    render: type => {
+                        const types = {
+                            'PIX': '<span class="badge bg-success">PIX</span>',
+                            'TED': '<span class="badge bg-primary">TED</span>',
+                            'DOC': '<span class="badge bg-info">DOC</span>',
+                            'INTERNAL': '<span class="badge bg-secondary">Interna</span>',
+                            'available_balance': '<span class="badge bg-success">Liberação de Saldo</span>',
+                            'blocked_balance': '<span class="badge bg-warning">Bloqueio de Saldo</span>',
+                            'debited_balance': '<span class="badge bg-danger">Transferência PIX</span>'
+                        };
+                        return types[type] || type;
+                    }
+                },
+                { 
+                    data: 'amount', 
+                    render: amount => formatCurrency(amount) 
+                },
+                { 
+                    data: 'description',
+                    render: (description, type, row) => {
+                        if (description) return description;
+                        
+                        const descriptions = {
+                            'available_balance': 'Transferência de liberação de saldo',
+                            'blocked_balance': 'Transferência de saldo bloqueado',
+                            'debited_balance': 'Transferência PIX feita pelo motorista'
+                        };
+                        
+                        return descriptions[row.type] || 'Transferência bancária';
+                    }
+                },
+                { 
+                    data: 'transfer_date', 
+                    render: date => new Date(date).toLocaleString('pt-BR') 
+                },
+                { 
+                    data: 'asaas_identifier' 
+                }
+            ],
+            order: [[3, 'desc']],
+            language: {
+                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
+            }
+        });
+        
+        $('#newTransferBtn').off('click').on('click', function() {
+            openTransferModal(driverId);
+        });
+    }).fail(function() {
+        $('#balanceModal .modal-body').html(`
+            <div class="alert alert-danger">
+                <i class="fas fa-exclamation-triangle me-2"></i>Erro ao carregar informações financeiras. Tente novamente mais tarde.
+            </div>
+        `);
+    });
+}
+
+function format(d) {
+    let reason = '';
+    if (d.status === 'block' || d.status === 'transfer_block') {
+        reason = `<p><strong>Motivo:</strong> ${d.reason || 'Não informado'}</p>`;
+    }
+
+    return `
+        <div class="p-3 bg-light rounded">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
+                    <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
+                    <p><strong>CPF:</strong> ${maskCPF(d.cpf)}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>CNH:</strong> ${d.driver_license_number}</p>
+                    <p><strong>Categoria CNH:</strong> ${d.driver_license_category}</p>
+                    <p><strong>Validade CNH:</strong> ${formatDateBR(d.driver_license_expiration)}</p>
+                </div>
+            </div>
+            <div class="row mt-2">
+                <div class="col-md-6">
+                    <p><strong>Status:</strong> ${getStatusLabel(d.status)[0]}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Senha:</strong> 
+                        <span id="password-${d.id}" class="password-hidden">••••••••</span>
+                        <button class="btn btn-sm btn-outline-secondary" onclick="togglePassword('${d.id}', '${d.password}')">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </p>
+                </div>
+            </div>
+            ${reason}
+            <div class="row mt-3">
+                ${renderImageColumn('Frente CNH', d.driver_license_front)}
+                ${renderImageColumn('Verso CNH', d.driver_license_back)}
+                ${renderImageColumn('Foto do Rosto', d.face_photo)}
+                ${renderImageColumn('Comprovante de Endereço', d.address_proof)}
+            </div>
+        </div>
+    `;
+}
+
 $(document).ready(function () {
     const table = $('#drivers-table').DataTable({
         processing: true,
@@ -414,7 +977,7 @@ $(document).ready(function () {
             },
             { 
                 data: 'cpf',
-                render: (data) => `
+                render: (data, type, row) => `
                     <div>CPF: ${maskCPF(data) || 'Não informado'}</div>
                     <div class="text-muted small">CNH: ${row.driver_license_number || 'Não informada'}</div>
                 `
@@ -456,7 +1019,6 @@ $(document).ready(function () {
             url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
         },
         drawCallback: function(settings) {
-            // Adiciona tooltips aos botões
             $('[title]').tooltip({
                 placement: 'top',
                 trigger: 'hover'
@@ -464,7 +1026,6 @@ $(document).ready(function () {
         }
     });
 
-    // Restante do JavaScript permanece exatamente igual
     $('#drivers-table tbody').on('click', 'td.dt-control', function () {
         const tr = $(this).closest('tr');
         const row = table.row(tr);
