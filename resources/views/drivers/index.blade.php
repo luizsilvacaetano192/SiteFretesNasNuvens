@@ -1098,6 +1098,9 @@ function toggleTruckStatus(truckId, isActive) {
     toastr.info(`Processando ${actionText}...`, 'Aguarde', {timeOut: 0});
 
     $.ajax({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        },
         url: '/toggle-truck-status', // Seu endpoint proxy
         type: 'POST',
         contentType: 'application/json',
