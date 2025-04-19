@@ -84,7 +84,7 @@ Route::prefix('settings')->group(function() {
     Route::post('/save', [SettingController::class, 'save'])->name('settings.save');
 });
 
-Route::get('/api/pending-tasks', function () {
+Route::get('/pending-tasks', function () {
     $task = \App\Models\PendingTask::where('seen', false)->orderBy('created_at', 'desc')->get();
     return response()->json($task);
 });
