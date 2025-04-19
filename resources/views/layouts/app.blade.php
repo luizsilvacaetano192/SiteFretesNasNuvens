@@ -179,6 +179,8 @@
             }
         }
     </style>
+    <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
 </head>
 <body>
 
@@ -243,7 +245,6 @@
             <i class="fas fa-truck"></i>
             <span>Gestão de Fretes</span>
         </a>
-        <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
 
     </nav>
