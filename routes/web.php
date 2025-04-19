@@ -89,6 +89,17 @@ Route::get('/pending-tasks', function () {
     return response()->json($task);
 });
 
+Route::post('/pending-tasks/{id}/seen', function ($id) {
+    $message = \App\Models\PendingTask::find($id);
+    if ($message) {
+        $message->seen = true;
+        $message->save();
+        return response()->json(['success' => true]);
+    }
+    return response()->json(['success' => false], 404);
+});
+
+
 //Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 

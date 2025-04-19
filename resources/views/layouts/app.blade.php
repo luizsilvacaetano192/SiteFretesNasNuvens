@@ -312,9 +312,11 @@
 
         async function checkPendingTasks() {
             fetch('/pending-tasks')
-                .then(res => res.json())
-                .then(messages => {
-                    messages.forEach(msg => {
+            .then(res => res.json())
+            .then(messages => {
+                messages.forEach((msg, i) => {
+                    setTimeout(() => {
+                        // Exibe o toast
                         toastr.options = {
                             "closeButton": true,
                             "progressBar": true,
@@ -322,8 +324,19 @@
                             "timeOut": "4000"
                         };
                         toastr.info(msg.message);
-                    });
+
+                        // Marca como visto
+                        fetch(`/pending-tasks/${msg.id}/seen`, {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                            }
+                        });
+
+                    }, i * 500); // atraso entre os toasts
                 });
+            });
 
         }
 
