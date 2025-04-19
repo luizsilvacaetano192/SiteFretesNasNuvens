@@ -107,6 +107,8 @@ Route::get('/trucks', function(Request $request) {
     return $response->body();
 });
 
+Route::post('/toggle-truck-status', 'TruckController@toggleStatus');
+
 //Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 

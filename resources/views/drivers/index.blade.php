@@ -1098,7 +1098,7 @@ function toggleTruckStatus(truckId, isActive) {
     toastr.info(`Processando ${actionText}...`, 'Aguarde', {timeOut: 0});
 
     $.ajax({
-        url: 'https://a2y405qfr6.execute-api.us-east-1.amazonaws.com/teste/',
+        url: '/toggle-truck-status', // Seu endpoint proxy
         type: 'POST',
         contentType: 'application/json',
         data: JSON.stringify({
