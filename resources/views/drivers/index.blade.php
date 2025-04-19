@@ -1077,14 +1077,9 @@ function showTrucksModal(driverId) {
             url: `/trucks?driver_id=${driverId}`,
             dataSrc: function(response) {
                 try {
-                    // Verifica se a resposta já é um objeto (pode ser string ou objeto)
-                    if (typeof response === 'object') {
-                        return response.success ? response.trucks : [];
-                    } else {
-                        // Se for string, faz o parse
-                        const parsed = JSON.parse(response.body);
-                        return parsed.success ? parsed.trucks : [];
-                    }
+                    // Parse o body que é uma string JSON
+                    const parsedBody = JSON.parse(response.body);
+                    return parsedBody.success ? parsedBody.trucks : [];
                 } catch (e) {
                     console.error('Erro ao processar resposta:', e);
                     toastr.error('Erro ao carregar dados dos caminhões');
