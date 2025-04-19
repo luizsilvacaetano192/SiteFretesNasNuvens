@@ -243,6 +243,9 @@
             <i class="fas fa-truck"></i>
             <span>Gestão de Fretes</span>
         </a>
+        <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
+
+
     </nav>
 
     <!-- Conteúdo Principal -->
@@ -283,5 +286,41 @@
     </script>
 
     @stack('scripts')
+    <script>
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'alert alert-info shadow';
+            toast.style.transition = 'opacity 0.5s';
+            toast.innerText = message;
+
+            const container = document.getElementById('toast-container');
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 500);
+            }, 10000); // 10 segundos
+        }
+
+        async function checkPendingTasks() {
+            try {
+                const response = await fetch('/api/pending-tasks');
+                const task = await response.json();
+
+                if (task && task.message) {
+                    showToast(task.message);
+                }
+            } catch (error) {
+                console.error('Erro ao verificar tarefas pendentes:', error);
+            }
+        }
+
+        // Verifica ao carregar e a cada 10 minutos
+        window.addEventListener('load', () => {
+            checkPendingTasks();
+            setInterval(checkPendingTasks, 10 * 60 * 1000); // 10 minutos
+        });
+</script>
+
 </body>
 </html>

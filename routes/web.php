@@ -84,6 +84,11 @@ Route::prefix('settings')->group(function() {
     Route::post('/save', [SettingController::class, 'save'])->name('settings.save');
 });
 
+Route::get('/api/pending-tasks', function () {
+    $task = \App\Models\PendingTask::where('status', 'pending')->orderBy('created_at', 'desc')->first();
+    return response()->json($task);
+});
+
 //Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 
