@@ -15,9 +15,7 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\MessagePushController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\SettingController;
-
-
-
+use Illuminate\Support\Facades\Http;
 
 /*
 |--------------------------------------------------------------------------
@@ -99,6 +97,12 @@ Route::post('/pending-tasks/{id}/seen', function ($id) {
     return response()->json(['success' => false], 404);
 });
 
+// No seu backend (ex: Laravel)
+Route::get('/trucks', function(Request $request) {
+    $driverId = $request->input('driver_id');
+    $response = Http::get("https://5lk2dh8nk1.execute-api.us-east-1.amazonaws.com/teste/?driver_id=$driverId");
+    return $response->body();
+});
 
 //Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');

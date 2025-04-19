@@ -1073,20 +1073,18 @@ function showTrucksModal(driverId) {
         },
         pageLength: 5,
         lengthMenu: [5, 10, 25],
+       // Alterar a URL para usar seu endpoint proxy
         ajax: {
-            url: `https://5lk2dh8nk1.execute-api.us-east-1.amazonaws.com/teste/?driver_id=${driverId}`,
-            dataSrc: function(response) {
-                try {
-                    // Verifica se a resposta é uma string JSON e faz o parse se necessário
-                    const data = typeof response.body === 'string' ? JSON.parse(response.body) : response;
-                    return data.success ? data.trucks : [];
-                } catch (e) {
-                    console.error('Erro ao processar resposta da API:', e);
-                    toastr.error('Erro ao carregar dados dos caminhões');
-                    return [];
+                url: `/trucks?driver_id=${driverId}`,
+                dataSrc: function(response) {
+                    try {
+                        return JSON.parse(response).trucks || [];
+                    } catch (e) {
+                        console.error('Erro ao processar resposta:', e);
+                        return [];
+                    }
                 }
-            }
-        },
+            },
         columns: [
             { 
                 className: 'dt-control',
