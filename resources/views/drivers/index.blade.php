@@ -1080,7 +1080,7 @@ function formatTruckDetails(d) {
 
 // Adicione estas variáveis no topo do seu arquivo JavaScript
 // Substitua com suas configurações reais do AWS S3
-const AWS_BUCKET = 'https://fretes.s3';
+const AWS_BUCKET = 'fretes';
 const AWS_REGION = ''; // Ex: 'us-east-1'
 
 function toggleTruckStatus(truckId, isActive) {
