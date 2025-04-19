@@ -946,7 +946,7 @@ function formatTruckDetails(d) {
         // Se já for uma URL completa, retorna como está
         if (path.startsWith('http')) return path;
         // Se for um path do S3, constrói a URL completa
-        return `https://${AWS_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${path}`;
+        return `https://${AWS_BUCKET}.s3.amazonaws.com/${path}`;
     }
 
     // Função auxiliar para renderizar a coluna de foto
