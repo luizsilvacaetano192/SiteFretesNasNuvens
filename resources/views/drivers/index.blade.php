@@ -940,6 +940,21 @@ function showBalanceModal(driverId) {
 }
 
 function formatTruckDetails(d) {
+    // Função auxiliar para renderizar imagens dos implementos
+    function renderImplementPhoto(title, photoUrl) {
+        if (!photoUrl) return `<div class="col-md-3 text-center mb-3"><p><strong>${title}</strong></p><div class="text-danger">Imagem não disponível</div></div>`;
+        
+        return `
+            <div class="col-md-3 text-center mb-3">
+                <p><strong>${title}</strong></p>
+                <img src="${photoUrl}" class="img-fluid rounded implement-photo" style="max-height: 150px; object-fit: contain; border: 1px solid #dee2e6;"/>
+                <br>
+                <a href="${photoUrl}" download class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-download me-1"></i>Baixar</a>
+                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${photoUrl}')"><i class="fas fa-search me-1"></i>Ampliar</button>
+            </div>
+        `;
+    }
+
     let photosHtml = '';
     if (d.photos) {
         photosHtml = `
@@ -981,6 +996,17 @@ function formatTruckDetails(d) {
                         `).join('')}
                     </tbody>
                 </table>
+            </div>
+            
+            <!-- Adicionando seção de fotos dos implementos -->
+            <div class="mt-4">
+                <h6 class="fw-bold">Fotos dos Implementos</h6>
+                <div class="row">
+                    ${d.implements.map(imp => {
+                        if (!imp.photo) return '';
+                        return renderImplementPhoto(`${imp.type} - ${imp.license_plate}`, imp.photo);
+                    }).join('')}
+                </div>
             </div>
         </div>`;
     }
