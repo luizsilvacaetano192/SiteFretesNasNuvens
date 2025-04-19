@@ -4,9 +4,7 @@
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="fw-bold mb-0">Gestão de Motoristas</h1>
-        <a href="{{ route('drivers.create') }}" class="btn btn-primary">
-            <i class="fas fa-plus me-2"></i>Novo Motorista
-        </a>
+        
     </div>
 
     <div class="card border-0 shadow-sm">
