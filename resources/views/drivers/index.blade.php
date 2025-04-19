@@ -1110,7 +1110,7 @@ function toggleTruckStatus(truckId, isActive) {
         }),
         success: function(response) {
             toastr.clear();
-            if (response.success) {
+            if (response.statusCode ===200) {
                 toastr.success(`Caminhão ${action === 'activate' ? 'ativado' : 'desativado'} com sucesso!`);
                 
                 // Recarrega os dados da tabela
