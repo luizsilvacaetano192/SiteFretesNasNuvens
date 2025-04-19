@@ -933,6 +933,7 @@ function format(d) {
             <div class="row mt-2">
                 <div class="col-md-6">
                     <p><strong>Status:</strong> ${getStatusLabel(d.status)[0]}</p>
+                    <p><strong>Seguradora de Carga:</strong> ${d.insurance_company || 'Não informada'}</p>
                 </div>
                 <div class="col-md-6">
                     <p><strong>Senha:</strong> 

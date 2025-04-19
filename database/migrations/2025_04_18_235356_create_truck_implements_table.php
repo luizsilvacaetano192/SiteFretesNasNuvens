@@ -15,7 +15,7 @@ return new class extends Migration {
             $table->string('license_plate')->nullable();
             $table->string('manufacture_year')->nullable();
             $table->string('capacity')->nullable();
-            $table->longText('photo')->nullable(); // base64 pode ser longo, por isso longText
+            $table->string('photo_url')->nullable(); // base64 pode ser longo, por isso longText
             $table->unsignedBigInteger('truck_id')->nullable();
 
             $table->foreign('truck_id')->references('id')->on('trucks')->onDelete('set null');
