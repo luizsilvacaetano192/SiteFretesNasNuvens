@@ -15,6 +15,7 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\MessagePushController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\TruckController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
@@ -107,7 +108,8 @@ Route::get('/trucks', function(Request $request) {
     return $response->body();
 });
 
-Route::post('/toggle-truck-status', 'TruckController@toggleStatus');
+Route::post('/toggle-truck-status', [TruckController::class, 'toggleStatus']);
+
 
 //Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
 Route::get('/shipments/{shipment}', [ShipmentController::class, 'show'])->name('shipments.show');
