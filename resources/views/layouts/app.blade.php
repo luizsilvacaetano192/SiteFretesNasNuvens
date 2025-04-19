@@ -177,6 +177,11 @@
             .main-content {
                 grid-column: 1;
             }
+            #toast-container > .toast {
+                background-color: rgba(0, 0, 0, 0.85); /* cor de fundo quase opaca */
+                color: #fff; /* cor do texto */
+                font-weight: bold;
+            }
         }
     </style>
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
