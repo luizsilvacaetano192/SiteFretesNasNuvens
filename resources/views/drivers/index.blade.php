@@ -940,11 +940,22 @@ function showBalanceModal(driverId) {
 }
 
 function formatTruckDetails(d) {
+    // Função para construir URL completa do S3
+    function getS3Url(path) {
+        if (!path) return null;
+        // Se já for uma URL completa, retorna como está
+        if (path.startsWith('http')) return path;
+        // Se for um path do S3, constrói a URL completa
+        return `https://${AWS_BUCKET}.s3.${AWS_REGION}.amazonaws.com/${path}`;
+    }
+
     // Função auxiliar para renderizar a coluna de foto
-    function renderPhotoColumn(photoUrl) {
-        if (!photoUrl) {
+    function renderPhotoColumn(photoUrl, title = '') {
+        const fullUrl = getS3Url(photoUrl);
+        if (!fullUrl) {
             return `
                 <div class="text-center">
+                    ${title ? `<p><strong>${title}</strong></p>` : ''}
                     <i class="fas fa-image text-muted" style="font-size: 24px;"></i>
                     <div class="text-danger small">Foto ausente</div>
                     <button class="btn btn-sm btn-outline-secondary mt-1" disabled>
@@ -959,33 +970,51 @@ function formatTruckDetails(d) {
         
         return `
             <div class="text-center">
-                <img src="${photoUrl}" class="img-fluid rounded implement-photo" 
+                ${title ? `<p><strong>${title}</strong></p>` : ''}
+                <img src="${fullUrl}" class="img-fluid rounded" 
                      style="max-height: 80px; object-fit: contain; border: 1px solid #dee2e6; cursor: pointer;" 
-                     onclick="openImageModal('${photoUrl}')">
+                     onclick="openImageModal('${fullUrl}')">
                 <br>
-                <button class="btn btn-sm btn-outline-secondary mt-1" onclick="openImageModal('${photoUrl}')">
+                <button class="btn btn-sm btn-outline-secondary mt-1" onclick="openImageModal('${fullUrl}')">
                     <i class="fas fa-search me-1"></i>Ampliar
                 </button>
-                <a href="${photoUrl}" download class="btn btn-sm btn-outline-primary mt-1">
+                <a href="${fullUrl}" download class="btn btn-sm btn-outline-primary mt-1">
                     <i class="fas fa-download me-1"></i>Baixar
                 </a>
             </div>
         `;
     }
 
-    let photosHtml = '';
+    // Fotos do caminhão
+    let truckPhotosHtml = '';
     if (d.photos) {
-        photosHtml = `
+        truckPhotosHtml = `
         <div class="row mt-3">
-            ${d.photos.front ? renderImageColumn('Foto Dianteira', d.photos.front) : ''}
-            ${d.photos.rear ? renderImageColumn('Foto Traseira', d.photos.rear) : ''}
-            ${d.photos.left_side ? renderImageColumn('Foto Lateral Esquerda', d.photos.left_side) : ''}
-            ${d.photos.right_side ? renderImageColumn('Foto Lateral Direita', d.photos.right_side) : ''}
-            ${d.photos.documents?.crv ? renderImageColumn('CRV', d.photos.documents.crv) : ''}
-            ${d.photos.documents?.crlv ? renderImageColumn('CRLV', d.photos.documents.crlv) : ''}
+            <div class="col-md-12">
+                <h6 class="fw-bold">Fotos do Caminhão</h6>
+            </div>
+            <div class="col-md-4 mb-3">
+                ${renderPhotoColumn(d.photos.front, 'Frente')}
+            </div>
+            <div class="col-md-4 mb-3">
+                ${renderPhotoColumn(d.photos.rear, 'Traseira')}
+            </div>
+            <div class="col-md-4 mb-3">
+                ${renderPhotoColumn(d.photos.left_side, 'Lateral Esquerda')}
+            </div>
+            <div class="col-md-4 mb-3">
+                ${renderPhotoColumn(d.photos.right_side, 'Lateral Direita')}
+            </div>
+            <div class="col-md-4 mb-3">
+                ${renderPhotoColumn(d.photos.documents?.crv, 'CRV')}
+            </div>
+            <div class="col-md-4 mb-3">
+                ${renderPhotoColumn(d.photos.documents?.crlv, 'CRLV')}
+            </div>
         </div>`;
     }
 
+    // Implementos
     let implementsHtml = '';
     if (d.implements && d.implements.length > 0) {
         implementsHtml = `
@@ -1043,11 +1072,16 @@ function formatTruckDetails(d) {
                     <p><strong>Status:</strong> ${d.active ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}</p>
                 </div>
             </div>
-            ${photosHtml}
+            ${truckPhotosHtml}
             ${implementsHtml}
         </div>
     `;
 }
+
+// Adicione estas variáveis no topo do seu arquivo JavaScript
+// Substitua com suas configurações reais do AWS S3
+const AWS_BUCKET = 'https://fretes.s3';
+const AWS_REGION = ''; // Ex: 'us-east-1'
 
 function toggleTruckStatus(truckId, isActive) {
     const action = isActive ? 'deactivate' : 'activate';
