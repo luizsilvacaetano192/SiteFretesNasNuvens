@@ -178,10 +178,12 @@
                 grid-column: 1;
             }
             #toast-container > .toast {
-                background-color: rgba(0, 0, 0, 0.85); /* cor de fundo quase opaca */
-                color: #fff; /* cor do texto */
-                font-weight: bold;
+                background-color: rgba(0, 0, 0, 0.9); /* Fundo quase opaco */
+                color: #fff;
+                font-weight: 600;
+                font-size: 14px;
             }
+
         }
     </style>
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
@@ -309,16 +311,20 @@
         }
 
         async function checkPendingTasks() {
-            try {
-                const response = await fetch('/api/pending-tasks');
-                const task = await response.json();
+            fetch('/pending-tasks')
+                .then(res => res.json())
+                .then(messages => {
+                    messages.forEach(msg => {
+                        toastr.options = {
+                            "closeButton": true,
+                            "progressBar": true,
+                            "positionClass": "toast-bottom-right",
+                            "timeOut": "4000"
+                        };
+                        toastr.info(msg.message);
+                    });
+                });
 
-                if (task && task.message) {
-                    showToast(task.message);
-                }
-            } catch (error) {
-                console.error('Erro ao verificar tarefas pendentes:', error);
-            }
         }
 
         // Verifica ao carregar e a cada 10 minutos
