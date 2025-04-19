@@ -1082,7 +1082,7 @@ function showTrucksModal(driverId) {
                         return response.success ? response.trucks : [];
                     } else {
                         // Se for string, faz o parse
-                        const parsed = JSON.parse(response);
+                        const parsed = JSON.parse(response.body);
                         return parsed.success ? parsed.trucks : [];
                     }
                 } catch (e) {
