@@ -101,7 +101,9 @@ Route::post('/pending-tasks/{id}/seen', function ($id) {
 // No seu backend (ex: Laravel)
 Route::get('/trucks', function(Request $request) {
     $driverId = $request->input('driver_id');
-    $response = Http::get("https://abhv6ml9r4.execute-api.us-east-1.amazonaws.com/default/ativa_desativa_caminhao/?driver_id=$driverId");
+    $response = Http::post("https://5lk2dh8nk1.execute-api.us-east-1.amazonaws.com/teste/",
+    ["driver_id" => $driverId]
+);
     return $response->body();
 });
 
