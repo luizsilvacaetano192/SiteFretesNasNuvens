@@ -940,17 +940,35 @@ function showBalanceModal(driverId) {
 }
 
 function formatTruckDetails(d) {
-    // Função auxiliar para renderizar imagens dos implementos
-    function renderImplementPhoto(title, photoUrl) {
-        if (!photoUrl) return `<div class="col-md-3 text-center mb-3"><p><strong>${title}</strong></p><div class="text-danger">Imagem não disponível</div></div>`;
+    // Função auxiliar para renderizar a coluna de foto
+    function renderPhotoColumn(photoUrl) {
+        if (!photoUrl) {
+            return `
+                <div class="text-center">
+                    <i class="fas fa-image text-muted" style="font-size: 24px;"></i>
+                    <div class="text-danger small">Foto ausente</div>
+                    <button class="btn btn-sm btn-outline-secondary mt-1" disabled>
+                        <i class="fas fa-search me-1"></i>Ampliar
+                    </button>
+                    <button class="btn btn-sm btn-outline-primary mt-1" disabled>
+                        <i class="fas fa-download me-1"></i>Baixar
+                    </button>
+                </div>
+            `;
+        }
         
         return `
-            <div class="col-md-3 text-center mb-3">
-                <p><strong>${title}</strong></p>
-                <img src="${photoUrl}" class="img-fluid rounded implement-photo" style="max-height: 150px; object-fit: contain; border: 1px solid #dee2e6;"/>
+            <div class="text-center">
+                <img src="${photoUrl}" class="img-fluid rounded implement-photo" 
+                     style="max-height: 80px; object-fit: contain; border: 1px solid #dee2e6; cursor: pointer;" 
+                     onclick="openImageModal('${photoUrl}')">
                 <br>
-                <a href="${photoUrl}" download class="btn btn-sm btn-outline-primary mt-2"><i class="fas fa-download me-1"></i>Baixar</a>
-                <button class="btn btn-sm btn-outline-secondary mt-2" onclick="openImageModal('${photoUrl}')"><i class="fas fa-search me-1"></i>Ampliar</button>
+                <button class="btn btn-sm btn-outline-secondary mt-1" onclick="openImageModal('${photoUrl}')">
+                    <i class="fas fa-search me-1"></i>Ampliar
+                </button>
+                <a href="${photoUrl}" download class="btn btn-sm btn-outline-primary mt-1">
+                    <i class="fas fa-download me-1"></i>Baixar
+                </a>
             </div>
         `;
     }
@@ -982,6 +1000,7 @@ function formatTruckDetails(d) {
                             <th>Placa</th>
                             <th>Ano</th>
                             <th>Capacidade</th>
+                            <th width="180">Foto</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -992,21 +1011,11 @@ function formatTruckDetails(d) {
                                 <td>${imp.license_plate}</td>
                                 <td>${imp.manufacture_year}</td>
                                 <td>${imp.capacity}</td>
+                                <td>${renderPhotoColumn(imp.photo)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
                 </table>
-            </div>
-            
-            <!-- Adicionando seção de fotos dos implementos -->
-            <div class="mt-4">
-                <h6 class="fw-bold">Fotos dos Implementos</h6>
-                <div class="row">
-                    ${d.implements.map(imp => {
-                        if (!imp.photo) return '';
-                        return renderImplementPhoto(`${imp.type} - ${imp.license_plate}`, imp.photo);
-                    }).join('')}
-                </div>
             </div>
         </div>`;
     }
