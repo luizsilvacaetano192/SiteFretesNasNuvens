@@ -178,7 +178,7 @@
                 grid-column: 1;
             }
             #toast-container > .toast {
-                background-color: rgba(0, 0, 0, 0.4); /* Fundo quase opaco */
+                background-color: "blue"; /* Fundo quase opaco */
                 color: #fff;
                 font-weight: 600;
                 font-size: 14px;
