@@ -16,6 +16,7 @@ use App\Http\Controllers\MessagePushController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\SettingController;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Http\Request;
 
 /*
 |--------------------------------------------------------------------------
