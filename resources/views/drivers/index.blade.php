@@ -4,7 +4,6 @@
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="fw-bold mb-0">Gestão de Motoristas</h1>
-        
     </div>
 
     <div class="card border-0 shadow-sm">
@@ -247,6 +246,38 @@
                 <th>Empresa</th>
                 <th>Tipo de Carga</th>
                 <th>Data do Frete</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal de Caminhões e Implementos -->
+<div class="modal fade" id="trucksModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fas fa-truck me-2"></i>Caminhões e Implementos</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <div class="table-responsive">
+          <table id="trucksTable" class="table table-striped table-hover" style="width:100%">
+            <thead class="table-light">
+              <tr>
+                <th width="40"></th>
+                <th>Placa</th>
+                <th>Marca/Modelo</th>
+                <th>Ano</th>
+                <th>Tipo</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -908,6 +939,215 @@ function showBalanceModal(driverId) {
     });
 }
 
+function formatTruckDetails(d) {
+    let photosHtml = '';
+    if (d.photos) {
+        photosHtml = `
+        <div class="row mt-3">
+            ${d.photos.front ? renderImageColumn('Foto Dianteira', d.photos.front) : ''}
+            ${d.photos.rear ? renderImageColumn('Foto Traseira', d.photos.rear) : ''}
+            ${d.photos.left_side ? renderImageColumn('Foto Lateral Esquerda', d.photos.left_side) : ''}
+            ${d.photos.right_side ? renderImageColumn('Foto Lateral Direita', d.photos.right_side) : ''}
+            ${d.photos.documents?.crv ? renderImageColumn('CRV', d.photos.documents.crv) : ''}
+            ${d.photos.documents?.crlv ? renderImageColumn('CRLV', d.photos.documents.crlv) : ''}
+        </div>`;
+    }
+
+    let implementsHtml = '';
+    if (d.implements && d.implements.length > 0) {
+        implementsHtml = `
+        <div class="mt-3">
+            <h6 class="fw-bold">Implementos</h6>
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Marca/Modelo</th>
+                            <th>Placa</th>
+                            <th>Ano</th>
+                            <th>Capacidade</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${d.implements.map(imp => `
+                            <tr>
+                                <td>${imp.type}</td>
+                                <td>${imp.brand} ${imp.model}</td>
+                                <td>${imp.license_plate}</td>
+                                <td>${imp.manufacture_year}</td>
+                                <td>${imp.capacity}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        </div>`;
+    }
+
+    return `
+        <div class="p-3 bg-light rounded">
+            <div class="d-flex justify-content-between align-items-center mb-3">
+                <h5 class="mb-0">Detalhes do Caminhão</h5>
+                <button onclick="toggleTruckStatus(${d.id}, ${d.active})" class="btn btn-sm ${d.active ? 'btn-outline-danger' : 'btn-outline-success'}">
+                    <i class="fas ${d.active ? 'fa-times-circle' : 'fa-check-circle'} me-1"></i>
+                    ${d.active ? 'Desativar' : 'Ativar'}
+                </button>
+            </div>
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Placa:</strong> ${d.license_plate}</p>
+                    <p><strong>Marca/Modelo:</strong> ${d.brand} ${d.model}</p>
+                    <p><strong>Ano:</strong> ${d.manufacture_year}</p>
+                    <p><strong>Chassi:</strong> ${d.chassis_number}</p>
+                </div>
+                <div class="col-md-6">
+                    <p><strong>Tipo:</strong> ${d.vehicle_type}</p>
+                    <p><strong>Capacidade:</strong> ${d.load_capacity}</p>
+                    <p><strong>Eixos:</strong> ${d.axles_number}</p>
+                    <p><strong>Status:</strong> ${d.active ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}</p>
+                </div>
+            </div>
+            ${photosHtml}
+            ${implementsHtml}
+        </div>
+    `;
+}
+
+function toggleTruckStatus(truckId, isActive) {
+    const action = isActive ? 'deactivate' : 'activate';
+    const actionText = isActive ? 'desativação' : 'ativação';
+    
+    if (!confirm(`Tem certeza que deseja ${actionText} este caminhão?`)) {
+        return;
+    }
+
+    toastr.info(`Processando ${actionText}...`, 'Aguarde', {timeOut: 0});
+
+    $.ajax({
+        url: 'https://a2y405qfr6.execute-api.us-east-1.amazonaws.com/teste/',
+        type: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            truck_id: truckId,
+            action: action
+        }),
+        success: function(response) {
+            toastr.clear();
+            if (response.success) {
+                toastr.success(`Caminhão ${action === 'activate' ? 'ativado' : 'desativado'} com sucesso!`);
+                
+                // Recarrega os dados da tabela
+                const trucksTable = $('#trucksTable').DataTable();
+                trucksTable.ajax.reload(null, false);
+            } else {
+                toastr.error(response.message || `Erro na ${actionText} do caminhão`);
+            }
+        },
+        error: function(xhr) {
+            toastr.clear();
+            let errorMsg = `Erro na ${actionText} do caminhão`;
+            try {
+                const response = JSON.parse(xhr.responseText);
+                errorMsg = response.message || errorMsg;
+            } catch (e) {}
+            toastr.error(errorMsg);
+        }
+    });
+}
+
+function showTrucksModal(driverId) {
+    const modal = new bootstrap.Modal('#trucksModal');
+    
+    if ($.fn.DataTable.isDataTable('#trucksTable')) {
+        $('#trucksTable').DataTable().destroy();
+        $('#trucksTable tbody').empty();
+    }
+    
+    modal.show();
+    
+    const trucksTable = $('#trucksTable').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json',
+            zeroRecords: "Nenhum caminhão cadastrado para este motorista"
+        },
+        pageLength: 5,
+        lengthMenu: [5, 10, 25],
+        ajax: {
+            url: `https://5lk2dh8nk1.execute-api.us-east-1.amazonaws.com/teste/?driver_id=${driverId}`,
+            dataSrc: function(response) {
+                try {
+                    // Verifica se a resposta é uma string JSON e faz o parse se necessário
+                    const data = typeof response.body === 'string' ? JSON.parse(response.body) : response;
+                    return data.success ? data.trucks : [];
+                } catch (e) {
+                    console.error('Erro ao processar resposta da API:', e);
+                    toastr.error('Erro ao carregar dados dos caminhões');
+                    return [];
+                }
+            }
+        },
+        columns: [
+            { 
+                className: 'dt-control',
+                orderable: false,
+                data: null,
+                defaultContent: ''
+            },
+            { 
+                data: 'license_plate',
+                render: (data) => data || 'Não informado'
+            },
+            { 
+                data: null,
+                render: (data) => `${data.brand || ''} ${data.model || ''}`.trim() || 'Não informado'
+            },
+            { 
+                data: 'manufacture_year',
+                render: (data) => data || 'Não informado'
+            },
+            { 
+                data: 'vehicle_type',
+                render: (data) => data || 'Não informado'
+            },
+            { 
+                data: 'active',
+                render: (data, type, row) => `
+                    ${data ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}
+                    <button onclick="toggleTruckStatus(${row.id}, ${data})" class="btn btn-sm ${data ? 'btn-outline-danger ms-2' : 'btn-outline-success ms-2'}">
+                        <i class="fas ${data ? 'fa-times' : 'fa-check'}"></i>
+                    </button>
+                `
+            }
+        ],
+        drawCallback: function(settings) {
+            if (this.api().data().length === 0) {
+                $(this.api().table().body()).html(
+                    '<tr class="odd">' +
+                    '<td valign="top" colspan="6" class="dataTables_empty">' + 
+                    settings.oLanguage.sZeroRecords + 
+                    '</td>' +
+                    '</tr>'
+                );
+            }
+        }
+    });
+
+    // Mostrar/ocultar detalhes ao clicar no ícone
+    $('#trucksTable tbody').on('click', 'td.dt-control', function () {
+        const tr = $(this).closest('tr');
+        const row = trucksTable.row(tr);
+        
+        if (row.child.isShown()) {
+            row.child.hide();
+            tr.removeClass('shown');
+        } else {
+            row.child(formatTruckDetails(row.data())).show();
+            tr.addClass('shown');
+        }
+    });
+}
+
 function format(d) {
     let reason = '';
     if (d.status === 'block' || d.status === 'transfer_block') {
@@ -1000,6 +1240,9 @@ $(document).ready(function () {
                         </button>
                         <button onclick="showFreightsModal(${row.id})" class="btn btn-outline-primary btn-sm" title="Fretes">
                             <i class="fas fa-truck"></i>
+                        </button>
+                        <button onclick="showTrucksModal(${row.id})" class="btn btn-outline-dark btn-sm" title="Caminhões">
+                            <i class="fas fa-truck-pickup"></i>
                         </button>
                         <button onclick="activateDriver(${row.id}, '${row.status}')" class="btn btn-sm ${row.status === 'active' ? 'btn-outline-danger' : 'btn-outline-warning'}" title="${row.status === 'active' ? 'Bloquear' : 'Ativar'}">
                             <i class="fas ${row.status === 'active' ? 'fa-lock' : 'fa-check'}"></i>
