@@ -945,17 +945,18 @@ function showBalanceModal(driverId) {
 
 function formatTruckDetails(d) {
     // Função para construir URL completa do S3 ou local
-    function getFullUrl(path) {
+    function getS3Url(path) {
+        console.log('path', path)
         if (!path) return null;
         // Se já for uma URL completa, retorna como está
         if (path.startsWith('http')) return path;
-        // Se for um path local, constrói a URL completa
-        return `/${path}`;
+        // Se for um path do S3, constrói a URL completa
+        return `https://${AWS_BUCKET}.s3.amazonaws.com/${path}`;
     }
 
     // Função auxiliar para renderizar a coluna de foto
     function renderPhotoColumn(photoUrl, title = '') {
-        const fullUrl = getFullUrl(photoUrl);
+        const fullUrl = getS3Url(photoUrl);
         if (!fullUrl) {
             return `
                 <div class="text-center">
