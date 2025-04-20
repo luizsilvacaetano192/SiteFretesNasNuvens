@@ -944,19 +944,18 @@ function showBalanceModal(driverId) {
 }
 
 function formatTruckDetails(d) {
-    // Função para construir URL completa do S3
-    function getS3Url(path) {
-        console.log('path', path);
+    // Função para construir URL completa do S3 ou local
+    function getFullUrl(path) {
         if (!path) return null;
         // Se já for uma URL completa, retorna como está
         if (path.startsWith('http')) return path;
-        // Se for um path do S3, constrói a URL completa
-        return `https://${AWS_BUCKET}.s3.amazonaws.com/${path}`;
+        // Se for um path local, constrói a URL completa
+        return `/${path}`;
     }
 
     // Função auxiliar para renderizar a coluna de foto
     function renderPhotoColumn(photoUrl, title = '') {
-        const fullUrl = getS3Url(photoUrl);
+        const fullUrl = getFullUrl(photoUrl);
         if (!fullUrl) {
             return `
                 <div class="text-center">
@@ -1040,11 +1039,11 @@ function formatTruckDetails(d) {
                     <tbody>
                         ${d.implements.map(imp => `
                             <tr>
-                                <td>${imp.type}</td>
-                                <td>${imp.brand} ${imp.model}</td>
-                                <td>${imp.license_plate}</td>
-                                <td>${imp.manufacture_year}</td>
-                                <td>${imp.capacity}</td>
+                                <td>${imp.type || 'Não informado'}</td>
+                                <td>${(imp.brand || '') + ' ' + (imp.model || '') || 'Não informado'}</td>
+                                <td>${imp.license_plate || 'Não informado'}</td>
+                                <td>${imp.manufacture_year || 'Não informado'}</td>
+                                <td>${imp.capacity || 'Não informado'}</td>
                                 <td>${renderPhotoColumn(imp.photo)}</td>
                             </tr>
                         `).join('')}
@@ -1052,6 +1051,14 @@ function formatTruckDetails(d) {
                 </table>
             </div>
         </div>`;
+    }
+
+    // Dimensões (convertendo de string JSON para objeto)
+    let dimensions = {};
+    try {
+        dimensions = d.dimensions ? JSON.parse(d.dimensions) : {};
+    } catch (e) {
+        console.error('Erro ao parsear dimensões:', e);
     }
 
     return `
@@ -1065,15 +1072,23 @@ function formatTruckDetails(d) {
             </div>
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Placa:</strong> ${d.license_plate}</p>
-                    <p><strong>Marca/Modelo:</strong> ${d.brand} ${d.model}</p>
-                    <p><strong>Ano:</strong> ${d.manufacture_year}</p>
-                    <p><strong>Chassi:</strong> ${d.chassis_number}</p>
+                    <p><strong>Placa:</strong> ${d.license_plate || 'Não informado'}</p>
+                    <p><strong>Marca/Modelo:</strong> ${d.brand || ''} ${d.model || ''}</p>
+                    <p><strong>Ano:</strong> ${d.manufacture_year || 'Não informado'}</p>
+                    <p><strong>Chassi:</strong> ${d.chassis_number || 'Não informado'}</p>
+                    <p><strong>Renavam:</strong> ${d.renavam || 'Não informado'}</p>
+                    <p><strong>CRV:</strong> ${d.crv_number || 'Não informado'}</p>
+                    <p><strong>CRLV:</strong> ${d.crlv_number || 'Não informado'}</p>
                 </div>
                 <div class="col-md-6">
-                    <p><strong>Tipo:</strong> ${d.vehicle_type}</p>
-                    <p><strong>Capacidade:</strong> ${d.load_capacity}</p>
-                    <p><strong>Eixos:</strong> ${d.axles_number}</p>
+                    <p><strong>Tipo:</strong> ${d.vehicle_type || 'Não informado'}</p>
+                    <p><strong>Capacidade:</strong> ${d.load_capacity || '0'} kg</p>
+                    <p><strong>Eixos:</strong> ${d.axles_number || '0'}</p>
+                    <p><strong>Tara:</strong> ${d.tare || '0'} kg</p>
+                    <p><strong>Peso Bruto:</strong> ${d.gross_weight || '0'} kg</p>
+                    <p><strong>Tipo de Carroceria:</strong> ${d.body_type || 'Não informado'}</p>
+                    <p><strong>Material da Carroceria:</strong> ${d.body_material || 'Não informado'}</p>
+                    <p><strong>Dimensões:</strong> ${dimensions ? Object.entries(dimensions).map(([key, value]) => `${key}: ${value}`).join(', ') : 'Não informado'}</p>
                     <p><strong>Status:</strong> ${d.active ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}</p>
                 </div>
             </div>
