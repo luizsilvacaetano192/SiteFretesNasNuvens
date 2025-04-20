@@ -12,7 +12,7 @@ class TruckController extends Controller
         $client = new \GuzzleHttp\Client();
         
         try {
-            $response = $client->post('https://a2y405qfr6.execute-api.us-east-1.amazonaws.com/teste/', [
+            $response = $client->post('https://8w2l4marz8.execute-api.us-east-1.amazonaws.com/teste', [
                 'json' => $request->all(),
                 'headers' => [
                     'Content-Type' => 'application/json',
