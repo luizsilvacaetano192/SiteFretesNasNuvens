@@ -342,7 +342,7 @@
 
         // Verifica ao carregar e a cada 10 minutos
         window.addEventListener('load', () => {
-           // checkPendingTasks();
+            checkPendingTasks();
             setInterval(checkPendingTasks, 10 * 60 * 1000); // 10 minutos
         });
 </script>

@@ -946,6 +946,7 @@ function showBalanceModal(driverId) {
 function formatTruckDetails(d) {
     // Função para construir URL completa do S3
     function getS3Url(path) {
+        console.log('path', path);
         if (!path) return null;
         // Se já for uma URL completa, retorna como está
         if (path.startsWith('http')) return path;
@@ -1110,7 +1111,7 @@ function toggleTruckStatus(truckId, isActive) {
         }),
         success: function(response) {
             toastr.clear();
-            if (response.statusCode ===200) {
+            if (response.statusCode === 200) {
                 toastr.success(`Caminhão ${action === 'activate' ? 'ativado' : 'desativado'} com sucesso!`);
                 
                 // Recarrega os dados da tabela
