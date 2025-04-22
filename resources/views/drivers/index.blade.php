@@ -1090,6 +1090,7 @@ function formatTruckDetails(d) {
                     <p><strong>Tipo de Carroceria:</strong> ${d.body_type || 'Não informado'}</p>
                     <p><strong>Material da Carroceria:</strong> ${d.body_material || 'Não informado'}</p>
                     <p><strong>Dimensões:</strong> ${dimensions ? Object.entries(dimensions).map(([key, value]) => `${key}: ${value}`).join(', ') : 'Não informado'}</p>
+                    <p><strong>Espessura:</strong> ${d.thickness || 'Não informado'}</p>
                     <p><strong>Status:</strong> ${d.active ? '<span class="badge bg-success">Ativo</span>' : '<span class="badge bg-secondary">Inativo</span>'}</p>
                 </div>
             </div>
