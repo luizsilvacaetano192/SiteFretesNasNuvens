@@ -49,7 +49,7 @@
         }
 
         .sidebar-logo img {
-            max-height: 35px;
+            max-height: 150px;
             width: auto;
         }
 
