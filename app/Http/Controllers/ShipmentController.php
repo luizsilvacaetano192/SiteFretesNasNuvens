@@ -35,45 +35,43 @@ class ShipmentController extends Controller
             'status' => $shipment->status,
         ]);
     }
-
     public function getShipments(Request $request)
     {
         $shipments = Shipment::with(['company', 'freight'])
             ->select('shipments.*');
-
+    
         return DataTables::of($shipments)
             ->addColumn('company_name', function($shipment) {
-                return $shipment->company->name;
+                return $shipment->company->name ?? 'N/A';
             })
             ->addColumn('freight_status', function($shipment) {
                 return $shipment->freight ? $shipment->freight->status : 'Sem frete';
             })
             ->addColumn('action', function($shipment) {
-                $btnView = '<a href="'.route('shipments.show', $shipment->id).'" 
-                           class="btn btn-info btn-sm me-1" 
-                           data-bs-toggle="tooltip" title="Visualizar">
-                           <i class="fas fa-eye"></i></a>';
-
+                // Botão Visualizar
+              
+                // Botão Editar
                 $btnEdit = '<a href="'.route('shipments.edit', $shipment->id).'" 
-                            class="btn btn-warning btn-sm me-1" 
+                            class="btn btn-outline-warning btn-action" 
                             data-bs-toggle="tooltip" title="Editar">
                             <i class="fas fa-edit"></i></a>';
-
-                $btnFreight = '<a href="'.route('shipments.requestFreight', $shipment->id).'" 
-                               class="btn btn-success btn-sm me-1" 
-                               data-bs-toggle="tooltip" title="Solicitar Frete">
-                               <i class="fas fa-truck"></i></a>';
-
-                $btnDelete = '<form action="'.route('shipments.destroy', $shipment->id).'" method="POST" style="display:inline;">
-                             '.csrf_field().'
-                             '.method_field('DELETE').'
-                             <button type="submit" class="btn btn-danger btn-sm" 
-                                     data-bs-toggle="tooltip" title="Excluir"
-                                     onclick="return confirm(\'Tem certeza que deseja excluir?\')">
-                                     <i class="fas fa-trash"></i></button>
-                             </form>';
-
-                return '<div class="d-flex">'.$btnView.$btnEdit.$btnFreight.$btnDelete.'</div>';
+    
+                // Botão Solicitar Frete (só aparece se não tiver frete associado)
+                $btnFreight = '';
+                if (!$shipment->freight) {
+                    $btnFreight = '<a href="'.route('shipments.requestFreight', $shipment->id).'" 
+                                 class="btn btn-outline-success btn-action" 
+                                 data-bs-toggle="tooltip" title="Solicitar Frete">
+                                 <i class="fas fa-truck"></i></a>';
+                }
+    
+                // Botão Excluir
+                $btnDelete = '<button type="button" class="btn btn-outline-danger btn-action delete-btn" 
+                             data-id="'.$shipment->id.'"
+                             data-bs-toggle="tooltip" title="Excluir">
+                             <i class="fas fa-trash"></i></button>';
+    
+                return '<div class="btn-action-group">'.$btnEdit.$btnFreight.$btnDelete.'</div>';
             })
             ->addColumn('status_badge', function($shipment) {
                 $status = $shipment->status ?? 'pending';
@@ -83,10 +81,15 @@ class ShipmentController extends Controller
                     'rejected' => 'bg-danger',
                     'completed' => 'bg-primary',
                 ][$status] ?? 'bg-secondary';
-
-                return '<span class="badge '.$badgeClass.'">'.
-                    ucfirst($status).
-                    '</span>';
+    
+                $statusText = [
+                    'pending' => 'Pendente',
+                    'approved' => 'Aprovado',
+                    'rejected' => 'Rejeitado',
+                    'completed' => 'Completo',
+                ][$status] ?? ucfirst($status);
+    
+                return '<span class="badge '.$badgeClass.'">'.$statusText.'</span>';
             })
             ->rawColumns(['action', 'status_badge'])
             ->filter(function($query) use ($request) {
@@ -101,10 +104,14 @@ class ShipmentController extends Controller
                           });
                     });
                 }
+    
+                // Filtro por status se existir
+                if ($request->has('status') && $request->status) {
+                    $query->where('status', $request->status);
+                }
             })
             ->make(true);
     }
-
     public function create()
     {
         $companies = Company::all();
