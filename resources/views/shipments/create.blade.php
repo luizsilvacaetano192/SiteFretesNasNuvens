@@ -88,14 +88,39 @@
                 <label class="form-check-label" for="tempCheck">Controle de temperatura necessário</label>
             </div>
 
-            <div class="row" id="temperatureFields" style="display: none;">
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Temperatura mínima (°C)</label>
-                    <input type="number" name="min_temperature" class="form-control">
+            <div class="card mb-3" id="temperatureFields" style="display: none;">
+                <div class="card-header bg-light">
+                    <h6>Especificações de Temperatura</h6>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label class="form-label">Temperatura máxima (°C)</label>
-                    <input type="number" name="max_temperature" class="form-control">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Temperatura mínima (°C)*</label>
+                            <input type="number" name="min_temperature" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Temperatura máxima (°C)*</label>
+                            <input type="number" name="max_temperature" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tipo de Controle</label>
+                            <select name="temperature_type" class="form-control">
+                                <option value="Refrigeração">Refrigeração</option>
+                                <option value="Congelamento">Congelamento</option>
+                                <option value="Climatizado">Climatizado</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tolerância (±°C)</label>
+                            <input type="number" name="temperature_tolerance" class="form-control" value="1" min="0.1" step="0.1">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Requisitos Especiais</label>
+                        <textarea name="temperature_notes" class="form-control" rows="2" placeholder="Ex: Manter temperatura constante, evitar flutuações..."></textarea>
+                    </div>
                 </div>
             </div>
         </div>
@@ -116,8 +141,16 @@
         tempCheck.addEventListener('change', function() {
             if(this.checked) {
                 temperatureFields.style.display = 'block';
+                // Marca os campos de temperatura como obrigatórios
+                document.querySelectorAll('#temperatureFields [name^="min_temperature"], #temperatureFields [name^="max_temperature"]').forEach(input => {
+                    input.required = true;
+                });
             } else {
                 temperatureFields.style.display = 'none';
+                // Remove a obrigatoriedade dos campos de temperatura
+                document.querySelectorAll('#temperatureFields [name^="min_temperature"], #temperatureFields [name^="max_temperature"]').forEach(input => {
+                    input.required = false;
+                });
             }
         });
     });
