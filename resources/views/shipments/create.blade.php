@@ -74,17 +74,20 @@
             </div>
 
             <div class="mb-3 form-check">
-                <input type="checkbox" name="is_fragile" class="form-check-input" id="fragileCheck">
+                <input type="hidden" name="is_fragile" value="0">
+                <input type="checkbox" name="is_fragile" class="form-check-input" id="fragileCheck" value="1">
                 <label class="form-check-label" for="fragileCheck">Carga frágil</label>
             </div>
 
             <div class="mb-3 form-check">
-                <input type="checkbox" name="is_hazardous" class="form-check-input" id="hazardousCheck">
+                <input type="hidden" name="is_hazardous" value="0">
+                <input type="checkbox" name="is_hazardous" class="form-check-input" id="hazardousCheck" value="1">
                 <label class="form-check-label" for="hazardousCheck">Material perigoso</label>
             </div>
 
             <div class="mb-3 form-check">
-                <input type="checkbox" name="requires_temperature_control" class="form-check-input" id="tempCheck">
+                <input type="hidden" name="requires_temperature_control" value="0">
+                <input type="checkbox" name="requires_temperature_control" class="form-check-input" id="tempCheck" value="1">
                 <label class="form-check-label" for="tempCheck">Controle de temperatura necessário</label>
             </div>
 
