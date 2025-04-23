@@ -42,8 +42,6 @@ return new class extends Migration
           
             
             $table->dropColumn([
-             
-              
                 'description',
                 'is_fragile',
                 'is_hazardous',

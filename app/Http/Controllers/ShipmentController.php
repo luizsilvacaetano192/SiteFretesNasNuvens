@@ -115,18 +115,42 @@ class ShipmentController extends Controller
     public function store(Request $request)
     {
         $validated = $request->validate([
+            // Company information
             'company_id' => 'required|exists:companies,id',
-            'weight' => 'required|numeric|min:0',
-            'cargo_type' => 'required|string|max:255',
-            'dimensions' => 'required|string|max:255',
-            'start_address' => 'required|string|max:500',
-            'destination_address' => 'required|string|max:500',
-            'expected_start_date' => 'required|date',
-            'expected_delivery_date' => 'required|date|after:expected_start_date',
+            
+            // Cargo information
+            'cargo_type' => 'required|string|max:255|in:Secos,Frios,Granel,Perigosos,Fragil,Outros',
+            'weight' => 'required|numeric|min:0.01',
+            'dimensions' => 'required|string|max:255|regex:/^\d+x\d+x\d+$/',
+            'volume' => 'nullable|numeric|min:0',
+            'description' => 'nullable|string|max:500',
+            
+            // Flags
+            'is_fragile' => 'sometimes|boolean',
+            'is_hazardous' => 'sometimes|boolean',
+            'requires_temperature_control' => 'sometimes|boolean',
+            
+            // Temperature control fields (required only if temperature control is needed)
+            'min_temperature' => 'required_if:requires_temperature_control,true|numeric|nullable',
+            'max_temperature' => 'required_if:requires_temperature_control,true|numeric|nullable',
+            'temperature_tolerance' => 'nullable|numeric|min:0.1',
+            'temperature_control_type' => 'nullable|string|in:refrigeration,freezing,climate_controlled',
+            'temperature_unit' => 'nullable|string|in:celsius,fahrenheit',
+            'temperature_notes' => 'nullable|string|max:500',
+        ], [
+            'dimensions.regex' => 'As dimensões devem estar no formato LxAxC (ex: 120x80x60)',
+            'min_temperature.required_if' => 'A temperatura mínima é obrigatória quando o controle de temperatura é necessário',
+            'max_temperature.required_if' => 'A temperatura máxima é obrigatória quando o controle de temperatura é necessário',
         ]);
-
+    
+        // Set default values for boolean fields if not provided
+        $validated['is_fragile'] = $request->has('is_fragile');
+        $validated['is_hazardous'] = $request->has('is_hazardous');
+        $validated['requires_temperature_control'] = $request->has('requires_temperature_control');
+    
+        // Create the shipment
         $shipment = Shipment::create($validated);
-
+    
         return redirect()->route('shipments.index')
             ->with('success', 'Carga cadastrada com sucesso!');
     }

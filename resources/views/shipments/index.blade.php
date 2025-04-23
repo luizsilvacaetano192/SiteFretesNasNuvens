@@ -7,7 +7,7 @@
     <div class="row align-items-center mb-4">
         <div class="col-md-6">
             <h1 class="h3 mb-0 text-gray-800">
-            <i class="fas fa-shipping-fast me-2"></i>Gerenciamento de Cargas
+                <i class="fas fa-shipping-fast me-2"></i>Gerenciamento de Cargas
             </h1>
         </div>
         <div class="col-md-6 text-end">
@@ -45,8 +45,6 @@
                             <i class="fas fa-search text-muted"></i>
                         </span>
                         <input type="text" id="customSearch" class="form-control" placeholder="Pesquisar...">
-
-                      
                     </div>
                 </div>
             </div>
@@ -57,6 +55,7 @@
                 <table id="shipments-table" class="table table-hover align-middle mb-0" style="width:100%">
                     <thead class="table-light">
                         <tr>
+                            <th width="40"></th>
                             <th class="ps-4">ID</th>
                             <th>Empresa</th>
                             <th>Peso</th>
@@ -89,119 +88,17 @@
 </div>
 @endsection
 
-@push('scripts')
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
-
-<script>
-$(document).ready(function() {
-    // Inicializa o DataTable
-    const table = $('#shipments-table').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: "{{ route('shipments.index') }}",
-            type: "GET",
-            error: function(xhr, error, thrown) {
-                console.error("Erro ao carregar dados:", error);
-            }
-        },
-        columns: [
-            { 
-                data: 'id', 
-                name: 'id',
-                className: 'ps-4 fw-semibold'
-            },
-            { 
-                data: 'company_name', 
-                name: 'company.name',
-                render: function(data) {
-                    return data || 'N/A';
-                }
-            },
-            { 
-                data: 'weight_formatted', 
-                name: 'weight',
-                render: function(data) {
-                    return data || '0 kg';
-                }
-            },
-            { 
-                data: 'cargo_type_formatted', 
-                name: 'cargo_type',
-                render: function(data) {
-                    const cargoType = data || '';
-                    return `<span class="badge bg-primary bg-opacity-10 text-primary">
-                        ${cargoType.charAt(0).toUpperCase() + cargoType.slice(1)}
-                    </span>`;
-                }
-            },
-            { 
-                data: 'dimensions', 
-                name: 'dimensions',
-                render: function(data) {
-                    return data || 'N/A';
-                }
-            },
-            { 
-                data: 'status_badge', 
-                name: 'status',
-                orderable: false,
-                searchable: false
-            },
-            { 
-                data: 'action', 
-                name: 'action', 
-                orderable: false, 
-                searchable: false,
-                className: 'text-end pe-4'
-            }
-        ],
-        language: {
-            url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json',
-            emptyTable: "Nenhum registro encontrado",
-            info: "Mostrando _START_ a _END_ de _TOTAL_ registros",
-            infoEmpty: "Mostrando 0 a 0 de 0 registros",
-            infoFiltered: "(filtrado de _MAX_ registros no total)",
-            loadingRecords: "Carregando...",
-            processing: "Processando...",
-            zeroRecords: "Nenhum registro correspondente encontrado"
-        },
-        drawCallback: function(settings) {
-            // Atualiza o contador de registros
-            const api = this.api();
-            const pageInfo = api.page.info();
-            $('#page-info').html(
-                `Mostrando ${pageInfo.start + 1} a ${pageInfo.end} de ${pageInfo.recordsDisplay} registros`
-            );
-            
-            // Inicializa tooltips
-            $('[data-bs-toggle="tooltip"]').tooltip();
-        }
-    });
-
-    // Pesquisa personalizada
-    $('#customSearch').keyup(function() {
-        table.search($(this).val()).draw();
-    });
-
-    // Botão de recarregar
-    $('#reload-table').click(function() {
-        table.ajax.reload(null, false);
-    });
-
-    // Tratamento de erros
-    $.fn.dataTable.ext.errMode = 'throw';
-});
-</script>
-@endpush
-
-@section('styles')
+@push('styles')
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" 
+      rel="stylesheet"
+      integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer" />
+      
 <link href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+
 <style>
+/* ESTILOS GERAIS */
 :root {
     --primary-color: #4361ee;
     --secondary-color: #3f37c9;
@@ -224,10 +121,6 @@ body {
     overflow: hidden;
 }
 
-.card:hover {
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-}
-
 .status-badge {
     width: 12px;
     height: 12px;
@@ -235,6 +128,7 @@ body {
     display: inline-block;
 }
 
+/* ESTILOS DA TABELA */
 .table thead th {
     border-bottom: 1px solid #e9ecef;
     font-weight: 600;
@@ -254,12 +148,63 @@ body {
     background-color: rgba(67, 97, 238, 0.05) !important;
 }
 
+.table tbody tr.shown {
+    background-color: rgba(67, 97, 238, 0.03);
+}
+
 .table tbody td {
     vertical-align: middle;
     padding: 1rem 0.75rem;
     border-top: 1px solid #e9ecef;
 }
 
+/* ÍCONE DE EXPANSÃO - SOLUÇÃO DEFINITIVA */
+td.dt-control {
+    position: relative;
+    text-align: center;
+    cursor: pointer;
+    width: 40px;
+    padding: 0.75rem !important;
+}
+
+/* Estilo para o ícone de expansão */
+td.dt-control .expand-icon {
+    display: inline-block;
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+/* Fallback padrão (funciona SEM Font Awesome) */
+td.dt-control .expand-icon::before {
+    content: "+";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 1.3rem;
+    font-weight: bold;
+    color: #28a745;
+}
+
+/* Estado expandido */
+tr.shown td.dt-control .expand-icon::before {
+    content: "-";
+    color: #dc3545;
+}
+
+/* Se Font Awesome estiver carregado */
+.fa-loaded td.dt-control .expand-icon::before {
+    content: "\f055" !important; /* Ícone plus do Font Awesome */
+    font-family: "Font Awesome 6 Free";
+    font-weight: 900;
+}
+
+.fa-loaded tr.shown td.dt-control .expand-icon::before {
+    content: "\f056" !important; /* Ícone minus do Font Awesome */
+}
+
+/* BOTÕES E COMPONENTES */
 .btn {
     font-weight: 500;
     padding: 0.5rem 1rem;
@@ -288,17 +233,7 @@ body {
     transition: all 0.2s;
 }
 
-.dataTables_wrapper .dataTables_paginate .paginate_button.current {
-    background: var(--primary-color) !important;
-    color: white !important;
-}
-
-.dataTables_wrapper .dataTables_paginate .paginate_button:hover {
-    background: #e9ecef !important;
-    color: var(--dark-color) !important;
-}
-
-/* Responsividade */
+/* RESPONSIVIDADE */
 @media (max-width: 768px) {
     .card-header {
         flex-direction: column;
@@ -326,4 +261,214 @@ body {
     }
 }
 </style>
-@endsection
+@endpush
+
+@push('scripts')
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    // Função para verificar se o Font Awesome está carregado
+    function isFontAwesomeLoaded() {
+        const test = document.createElement('div');
+        test.className = 'fa fa-font-awesome';
+        test.style.display = 'none';
+        document.body.appendChild(test);
+        
+        const style = window.getComputedStyle(test, ':before');
+        const isLoaded = style && style.fontFamily.includes('Awesome');
+        document.body.removeChild(test);
+        return isLoaded;
+    }
+
+    // Carrega o Font Awesome se não estiver disponível
+    if (!isFontAwesomeLoaded()) {
+        const fa = document.createElement('link');
+        fa.rel = 'stylesheet';
+        fa.href = 'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css';
+        fa.onload = function() {
+            $('body').addClass('fa-loaded');
+            initializeTable();
+        };
+        document.head.appendChild(fa);
+    } else {
+        $('body').addClass('fa-loaded');
+        initializeTable();
+    }
+
+    function initializeTable() {
+        // Função para formatar os detalhes expandidos
+        function formatDetails(d) {
+            return `
+                <div class="row px-4 py-3">
+                    <div class="col-md-12 mb-3">
+                        <div class="card">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Descrição Completa da Carga</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="mb-0">${d.description || 'Nenhuma descrição disponível'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Informações da Carga</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-6 mb-2">
+                                        <small class="text-muted">Volume</small>
+                                        <p class="mb-0">${d.volume || 'N/A'}</p>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <small class="text-muted">Peso</small>
+                                        <p class="mb-0">${d.weight_formatted || '0 kg'}</p>
+                                    </div>
+                                </div>
+                                <div class="row mt-2">
+                                    <div class="col-6 mb-2">
+                                        <small class="text-muted">Frágil</small>
+                                        <p class="mb-0">
+                                            ${d.is_fragile ? '<span class="badge bg-danger">Sim</span>' : '<span class="badge bg-secondary">Não</span>'}
+                                        </p>
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <small class="text-muted">Perigoso</small>
+                                        <p class="mb-0">
+                                            ${d.is_hazardous ? '<span class="badge bg-danger">Sim</span>' : '<span class="badge bg-secondary">Não</span>'}
+                                        </p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Controle de Temperatura</h6>
+                            </div>
+                            <div class="card-body">
+                                ${d.requires_temperature_control ? `
+                                    <div class="row">
+                                        <div class="col-6 mb-2">
+                                            <small class="text-muted">Temperatura Mínima</small>
+                                            <p class="mb-0">${d.min_temperature}°${d.temperature_unit === 'celsius' ? 'C' : 'F'}</p>
+                                        </div>
+                                        <div class="col-6 mb-2">
+                                            <small class="text-muted">Temperatura Máxima</small>
+                                            <p class="mb-0">${d.max_temperature}°${d.temperature_unit === 'celsius' ? 'C' : 'F'}</p>
+                                        </div>
+                                    </div>
+                                    ${d.temperature_notes ? `
+                                        <div class="mt-2">
+                                            <small class="text-muted">Observações</small>
+                                            <p class="mb-0">${d.temperature_notes}</p>
+                                        </div>
+                                    ` : ''}
+                                ` : '<p class="mb-0 text-muted">Não requer controle de temperatura</p>'}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Inicializa a DataTable
+        const table = $('#shipments-table').DataTable({
+            processing: true,
+            serverSide: true,
+            ajax: {
+                url: "{{ route('shipments.index') }}",
+                type: "GET",
+                error: function(xhr, error, thrown) {
+                    console.error("Erro ao carregar dados:", error);
+                }
+            },
+            columns: [
+                {
+                    className: 'dt-control',
+                    orderable: false,
+                    data: null,
+                    defaultContent: '',
+                    width: '40px',
+                    createdCell: function(td, cellData, rowData, row, col) {
+                        $(td).html('<span class="expand-icon"></span>');
+                    }
+                },
+                { 
+                    data: 'id',
+                    className: 'ps-4 fw-semibold'
+                },
+                { 
+                    data: 'company_name',
+                    render: data => data || 'N/A'
+                },
+                { 
+                    data: 'weight_formatted',
+                    render: data => data || '0 kg'
+                },
+                { 
+                    data: 'cargo_type_formatted',
+                    render: data => `<span class="badge bg-primary bg-opacity-10 text-primary">
+                        ${(data || '').charAt(0).toUpperCase() + (data || '').slice(1)}
+                    </span>`
+                },
+                { 
+                    data: 'dimensions_formatted',
+                    render: data => data || 'N/A'
+                },
+                { 
+                    data: 'status_badge',
+                    orderable: false,
+                    searchable: false
+                },
+                { 
+                    data: 'action',
+                    orderable: false,
+                    searchable: false,
+                    className: 'text-end pe-4'
+                }
+            ],
+            language: {
+                url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
+            },
+            drawCallback: function(settings) {
+                const api = this.api();
+                $('#page-info').html(
+                    `Mostrando ${api.page.info().start + 1} a ${api.page.info().end} de ${api.page.info().recordsDisplay} registros`
+                );
+            }
+        });
+
+        // Evento de clique para expandir/recolher
+        $('#shipments-table').on('click', 'td.dt-control', function() {
+            const tr = $(this).closest('tr');
+            const row = table.row(tr);
+            
+            if (row.child.isShown()) {
+                row.child.hide();
+                tr.removeClass('shown');
+            } else {
+                row.child(formatDetails(row.data())).show();
+                tr.addClass('shown');
+            }
+        });
+
+        // Pesquisa customizada
+        $('#customSearch').keyup(function() {
+            table.search(this.value).draw();
+        });
+
+        // Botão de recarregar
+        $('#reload-table').click(function() {
+            table.ajax.reload(null, false);
+        });
+    }
+});
+</script>
+@endpush
