@@ -38,7 +38,7 @@ class FreightController extends Controller
                 return $freight->driver ? $freight->driver->name : 'Não atribuído';
             })
             ->addColumn('status_badge', function($freight) {
-                $status = $freight->freightStatus->name;
+                $status = $freight->freightStatus;
                 if (!$status) return '<span class="badge bg-secondary">N/A</span>';
                 
                 $badgeClass = [
