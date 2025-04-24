@@ -29,6 +29,117 @@
         </div>
     </div>
 
+    <!-- Estatísticas no topo -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body py-3">
+            <div class="row">
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-clock fa-lg text-warning"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Aguardando Pagamento</div>
+                            <div class="h5 mb-0 text-warning" id="waiting-payment-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-info bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-user-clock fa-lg text-info"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Aguardando Motorista</div>
+                            <div class="h5 mb-0 text-info" id="waiting-driver-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-secondary bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-building fa-lg text-secondary"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Aguardando Aprovação</div>
+                            <div class="h5 mb-0 text-secondary" id="waiting-approval-count">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-truck-loading fa-lg text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Aguardando Retirada</div>
+                            <div class="h5 mb-0 text-primary" id="waiting-pickup-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-truck-moving fa-lg text-warning"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Indo Retirar Carga</div>
+                            <div class="h5 mb-0 text-warning" id="going-pickup-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-info bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-shipping-fast fa-lg text-info"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Em Processo</div>
+                            <div class="h5 mb-0 text-info" id="in-progress-count">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-check-circle fa-lg text-success"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Carga Entregue</div>
+                            <div class="h5 mb-0 text-success" id="delivered-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-times-circle fa-lg text-danger"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Cancelados</div>
+                            <div class="h5 mb-0 text-danger" id="cancelled-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-dark bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-file-invoice-dollar fa-lg text-dark"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Total Fretes</div>
+                            <div class="h5 mb-0 text-dark" id="total-count">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card shadow-sm border-0 rounded-lg">
         <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
             <h5 class="mb-0">
@@ -70,23 +181,8 @@
                 <div class="text-muted small">
                     <span id="table-info"></span>
                 </div>
-                <div id="freight-stats" class="d-flex gap-4">
-                    <div class="text-center">
-                        <div class="text-xs font-weight-bold text-primary">Ativos</div>
-                        <div class="h6 mb-0 text-primary" id="active-count">0</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xs font-weight-bold text-warning">Pendentes</div>
-                        <div class="h6 mb-0 text-warning" id="pending-count">0</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xs font-weight-bold text-success">Concluídos</div>
-                        <div class="h6 mb-0 text-success" id="completed-count">0</div>
-                    </div>
-                    <div class="text-center">
-                        <div class="text-xs font-weight-bold text-success">Pagamentos</div>
-                        <div class="h6 mb-0 text-success" id="paid-count">0</div>
-                    </div>
+                <div class="text-muted small">
+                    Atualizado em: <span id="last-update-time">{{ now()->format('d/m/Y H:i:s') }}</span>
                 </div>
             </div>
         </div>
@@ -298,10 +394,6 @@ body {
     border: 1px solid #e3e6f0;
 }
 
-#freight-stats > div {
-    min-width: 80px;
-}
-
 .modal-xl {
     max-width: 1200px;
 }
@@ -343,6 +435,20 @@ body {
     font-size: 18px;
 }
 
+/* Estilos para as estatísticas no topo */
+.stats-card {
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+}
+
+.stats-icon {
+    font-size: 1.5rem;
+}
+
 @media (max-width: 992px) {
     .modal-xl {
         max-width: 95%;
@@ -355,6 +461,31 @@ body {
     
     #freight-search {
         width: 100% !important;
+    }
+    
+    .stats-card .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stats-card .me-3 {
+        margin-right: 0 !important;
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .d-flex.justify-content-between.align-items-center.mb-4 > div {
+        width: 100%;
+    }
+    
+    .d-flex.justify-content-between.align-items-center.mb-4 > div:last-child {
+        justify-content: flex-start;
     }
 }
 </style>
@@ -401,6 +532,9 @@ $(document).ready(function() {
     
     // Configura os eventos
     setupEventHandlers();
+    
+    // Atualiza o horário inicial
+    updateLastUpdateTime();
 });
 
 function initializeDataTable() {
@@ -576,6 +710,9 @@ function updateTableWithNotifications() {
         // Reinicia o contador
         nextRefreshCountdown = refreshInterval / 1000;
         updateCountdown();
+        
+        // Atualiza o horário da última atualização
+        updateLastUpdateTime();
     }).fail(function() {
         toastr.error('Erro ao atualizar dados. Tentando novamente...');
     });
@@ -780,6 +917,19 @@ function updateCountdown() {
     if (nextRefreshCountdown <= 0) {
         nextRefreshCountdown = refreshInterval / 1000;
     }
+}
+
+function updateLastUpdateTime() {
+    const now = new Date();
+    const formattedTime = now.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    $('#last-update-time').text(formattedTime);
 }
 
 function manualRefreshTable() {
@@ -1069,18 +1219,16 @@ function updateTableInfo() {
 
 function updateStats() {
     $.get('{{ route('freights.stats') }}', function(response) {
-        $('#active-count').text(response['Em processo de entrega'] || 0);
-        $('#pending-count').text(
-            (response['Aguardando pagamento'] || 0) + 
-            (response['Aguardando motorista'] || 0) + 
-            (response['Aguardando retirada'] || 0) +
-            (response['Indo retirar carga'] || 0)
-        );
-        $('#completed-count').text(response['Carga entregue'] || 0);
-        $('#paid-count').text(
-            (response['Frete Solicitado'] || 0) + 
-            (response['Aguardando pagamento'] || 0)
-        );
+        // Atualiza cada contador individualmente
+        $('#waiting-payment-count').text(response['Aguardando pagamento'] || 0);
+        $('#waiting-driver-count').text(response['Aguardando motorista'] || 0);
+        $('#waiting-approval-count').text(response['Aguardando Aprovação empresa'] || 0);
+        $('#waiting-pickup-count').text(response['Aguardando retirada'] || 0);
+        $('#going-pickup-count').text(response['Indo retirar carga'] || 0);
+        $('#in-progress-count').text(response['Em processo de entrega'] || 0);
+        $('#delivered-count').text(response['Carga entregue'] || 0);
+        $('#cancelled-count').text(response['Cancelado'] || 0);
+        $('#total-count').text(response['total'] || 0);
         
         // Atualiza também o texto de informações da tabela
         const info = freightTable.page.info();
