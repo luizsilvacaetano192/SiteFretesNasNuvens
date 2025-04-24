@@ -63,7 +63,7 @@ class Freight extends Model
     // Relacionamento com Status
     public function freightStatus()
     {
-        return $this->belongsTo(FreightStatus::class);
+        return $this->belongsTo(FreightStatus::class,'status_id','id');
     }
     public function charge()
     {
