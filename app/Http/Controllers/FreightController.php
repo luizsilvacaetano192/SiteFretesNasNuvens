@@ -39,7 +39,7 @@ class FreightController extends Controller
             })
             ->addColumn('status_badge', function($freight) {
                 $status = $freight->freightStatus;
-                if (!$status) return '<span class="badge bg-secondary">N/A</span>';
+                
                 
                 $badgeClass = [
                     '3' => 'bg-warning',
