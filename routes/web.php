@@ -118,6 +118,8 @@ Route::get('freights/stats', [FreightController::class, 'getStats'])->name('frei
 
 Route::get('/shipments/{id}/request-freight', [ShipmentController::class, 'requestFreight'])->name('shipments.requestFreight');
 
+Route::get('freights/stats', [FreightController::class, 'getStats'])->name('freights.stats');
+
 // Defina a rota 'freights' que chama o método 'index' no seu controlador
 Route::get('freights', [FreightController::class, 'index'])->name('freights');
 

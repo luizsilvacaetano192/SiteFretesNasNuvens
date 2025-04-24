@@ -321,21 +321,23 @@ class FreightController extends Controller
 
     public function getStats()
     {
-        $stats = FreightStatus::withCount(['freights as count'])
+        $stats = Freight::join('freight_statuses', 'freights.status_id', '=', 'freight_statuses.id')
+            ->selectRaw('freight_statuses.name, COUNT(*) as count')
+            ->groupBy('freight_statuses.name')
             ->get()
-            ->mapWithKeys(function($status) {
-                return [$status->id => $status->count];
+            ->mapWithKeys(function($item) {
+                return [$item->name => $item->count];
             });
-            
+        
         return response()->json([
-            'Carga cadastrada' => $stats['1'] ?? 0,
-            'Frete Solicitado' => $stats['2'] ?? 0,
-            'Aguardando pagamento' => $stats['3'] ?? 0,
-            'Aguardando motorista' => $stats['4'] ?? 0,
-            'Aguardando retirada' => $stats['5'] ?? 0,
-            'Indo retirar carga	' => $stats['6'] ?? 0,
-            'Em processo de entrega' => $stats['7'] ?? 0,
-            'Carga entregue	' => $stats['8'] ?? 0,
+            'Aguardando pagamento' => $stats['Aguardando pagamento'] ?? 0,
+            'Aguardando motorista' => $stats['Aguardando motorista'] ?? 0,
+            'Aguardando Aprovação empresa' => $stats['Aguardando Aprovação empresa'] ?? 0,
+            'Aguardando retirada' => $stats['Aguardando retirada'] ?? 0,
+            'Indo retirar carga' => $stats['Indo retirar carga'] ?? 0,
+            'Em processo de entrega' => $stats['Em processo de entrega'] ?? 0,
+            'Carga entregue' => $stats['Carga entregue'] ?? 0,
+            'Cancelado' => $stats['Cancelado'] ?? 0,
             'total' => array_sum($stats->toArray())
         ]);
     }
