@@ -35,74 +35,75 @@ class FreightController extends Controller
                 return $freight->company->name ?? 'N/A';
             })
             ->addColumn('driver_name', function($freight) {
-                return $freight->driver ? $freight->driver->name : 'Não atribuído';
+                if (!$freight->driver) return '<span class="text-muted">Não atribuído</span>';
+                
+                $badgeClass = 'bg-primary';
+                if ($freight->driver->status === 'inactive') $badgeClass = 'bg-secondary';
+                if ($freight->driver->status === 'on_delivery') $badgeClass = 'bg-warning';
+                
+                return '<span class="badge '.$badgeClass.'">'.$freight->driver->name.'</span>';
             })
             ->addColumn('status_badge', function($freight) {
                 $status = $freight->freightStatus;
                 if (!$status) return '<span class="badge bg-secondary">N/A</span>';
                 
+                // Mapeamento dos status conforme solicitado
                 $badgeClass = [
-                    '3' => 'bg-warning',
-                    '4' => 'bg-secundary',
-                    '5' => 'bg-secondary',
-                    '6' => 'bg-primary',
-                    '7' => 'bg-primary',
-                    '8' => 'bg-success',
-                ][strtolower($status)] ?? 'bg-secondary';
+                    '1' => 'bg-secondary', // Carga cadastrada (removido conforme solicitado)
+                    '3' => 'bg-warning',   // Aguardando pagamento
+                    '4' => 'bg-info',      // Aguardando motorista
+                    '5' => 'bg-secondary', // Aguardando aprovação empresa
+                    '6' => 'bg-primary',   // Aguardando retirada
+                    '7' => 'bg-primary',   // Indo retirar carga
+                    '8' => 'bg-info',      // Em processo de entrega
+                    '9' => 'bg-success',   // Carga entregue
+                ][$status->id] ?? 'bg-secondary';
                 
                 return '<span class="badge '.$badgeClass.'">'.$status->name.'</span>';
             })
             ->addColumn('formatted_value', function($freight) {
-                return 'R$ '.number_format($freight->freight_value, 2, ',', '.');
+                return $freight->freight_value ? 'R$ '.number_format($freight->freight_value, 2, ',', '.') : 'N/A';
             })
             ->addColumn('payment_button', function($freight) {
-                $status = $freight->charge?->status ?? '' ;
-                $isPaid = $status && strtolower($status) === 'paid';
+                if (!$freight->charge) return '<span class="text-muted">N/A</span>';
                 
-                if ($isPaid) {
+                $status = strtolower($freight->charge->status ?? '');
+                
+                if ($status === 'paid') {
                     // Status PAID - Mostrar botão de recibo se existir
-                    if ($freight->charge && $freight->charge->receipt_url) {
+                    if ($freight->charge->receipt_url) {
                         return '
                             <a href="'.$freight->charge->receipt_url.'" class="btn btn-sm btn-info" target="_blank" title="Visualizar Recibo">
                                 <i class="fas fa-file-invoice-dollar"></i> Recibo
                             </a>
                         ';
                     }
-                    return '<span class="text-muted">N/A</span>';
+                    return '<span class="badge bg-success">Pago</span>';
                 } else {
                     // Status NÃO PAID - Mostrar botão de pagar se existir
-                    if ($freight->charge && $freight->charge->charge_url) {
+                    if ($freight->charge->charge_url) {
                         return '
                             <a href="'.$freight->charge->charge_url.'" class="btn btn-sm btn-success" target="_blank" title="Realizar Pagamento">
                                 <i class="fas fa-credit-card"></i> Pagar
                             </a>
                         ';
                     }
-                    return '<span class="text-muted">N/A</span>';
+                    return '<span class="badge bg-warning">Pendente</span>';
                 }
             })
             ->addColumn('actions', function($freight) {
-                $buttons = '
+                return '
                     <div class="d-flex gap-2">
                         <button class="btn btn-sm btn-primary view-freight" data-id="'.$freight->id.'" title="Visualizar">
                             <i class="fas fa-eye"></i>
                         </button>
-                ';
-    
-                // Adicionar botão de edição se necessário
-                /*
-                $buttons .= '
-                        <button class="btn btn-sm btn-warning edit-freight" data-id="'.$freight->id.'" title="Editar">
-                            <i class="fas fa-edit"></i>
+                        <button class="btn btn-sm btn-danger delete-freight" data-id="'.$freight->id.'" title="Excluir">
+                            <i class="fas fa-trash"></i>
                         </button>
+                    </div>
                 ';
-                */
-    
-                $buttons .= '</div>';
-    
-                return $buttons;
             })
-            ->rawColumns(['status_badge', 'actions', 'payment_button'])
+            ->rawColumns(['status_badge', 'actions', 'payment_button', 'driver_name'])
             ->filter(function ($query) use ($request) {
                 if ($request->has('status') && $request->status != '') {
                     $query->where('status_id', $request->status);
