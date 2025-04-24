@@ -10,26 +10,81 @@
         </div>
     </div>
 
-    <form id="freightRequestForm" method="POST" action="{{ route('freights.store') }}">
+    <form id="freightRequestForm" method="POST" action="{{ route('freights.store') }}" novalidate>
         @csrf
         <input type="hidden" name="shipment_id" value="{{ $shipment->id }}">
         <input type="hidden" name="company_id" value="{{ $shipment->company->id }}">
         <input type="hidden" name="status_id" value="3">
+        
+        <!-- Campos hidden para dados da rota -->
+        <input type="hidden" id="driver_freight_value" name="driver_freight_value">
+        <input type="hidden" id="distance" name="distance">
+        <input type="hidden" id="duration" name="duration">
+        <input type="hidden" id="distance_km" name="distance_km">
+        <input type="hidden" id="duration_min" name="duration_min">
+        <input type="hidden" id="current_position" name="current_position">
+        <input type="hidden" id="current_lat" name="current_lat">
+        <input type="hidden" id="current_lng" name="current_lng">
+        <input type="hidden" id="start_lat" name="start_lat">
+        <input type="hidden" id="start_lng" name="start_lng">
+        <input type="hidden" id="destination_lat" name="destination_lat">
+        <input type="hidden" id="destination_lng" name="destination_lng">
 
         <!-- Informações da Carga -->
         <div class="card mb-4 shadow-sm">
             <div class="card-header bg-primary text-white">
-                <h5 class="mb-0">Informações da Carga</h5>
+                <h5 class="mb-0">Detalhes da Carga</h5>
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Empresa Contratante</label>
                         <input type="text" class="form-control-plaintext" value="{{ $shipment->company->name }}" readonly>
                     </div>
-                    <div class="col-md-6 mb-3">
+                    <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Tipo de Carga</label>
-                        <input type="text" class="form-control-plaintext" value="{{ ucfirst($shipment->load_type) }}" readonly>
+                        <input type="text" class="form-control-plaintext" value="{{ ucfirst($shipment->cargo_type) }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Peso (kg)</label>
+                        <input type="text" class="form-control-plaintext" value="{{ $shipment->weight }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Dimensões (cm)</label>
+                        <input type="text" class="form-control-plaintext" value="{{ $shipment->dimensions }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Volume (m³)</label>
+                        <input type="text" class="form-control-plaintext" value="{{ $shipment->volume }}" readonly>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <label class="form-label fw-bold">Descrição</label>
+                        <input type="text" class="form-control-plaintext" value="{{ $shipment->description }}" readonly>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Carga Frágil</label>
+                        <input type="text" class="form-control-plaintext" value="{{ $shipment->is_fragile ? 'Sim' : 'Não' }}" readonly>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Carga Perigosa</label>
+                        <input type="text" class="form-control-plaintext" value="{{ $shipment->is_hazardous ? 'Sim' : 'Não' }}" readonly>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <label class="form-label fw-bold">Controle de Temperatura</label>
+                        <input type="text" class="form-control-plaintext" value="{{ $shipment->requires_temperature_control ? 'Sim' : 'Não' }}" readonly>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        @if($shipment->requires_temperature_control)
+                        <label class="form-label fw-bold">Faixa de Temperatura</label>
+                        <input type="text" class="form-control-plaintext" 
+                               value="{{ $shipment->min_temperature }}°{{ $shipment->temperature_unit }} a {{ $shipment->max_temperature }}°{{ $shipment->temperature_unit }}" readonly>
+                        @endif
                     </div>
                 </div>
             </div>
@@ -43,12 +98,27 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="start_address" class="form-label fw-bold">Origem</label>
+                        <label for="start_address" class="form-label fw-bold required-field">Origem</label>
                         <input id="start_address" name="start_address" type="text" class="form-control" required>
+                        <div class="invalid-feedback">Por favor, informe o endereço de origem.</div>
                     </div>
                     <div class="col-md-6 mb-3">
-                        <label for="destination_address" class="form-label fw-bold">Destino</label>
+                        <label for="destination_address" class="form-label fw-bold required-field">Destino</label>
                         <input id="destination_address" name="destination_address" type="text" class="form-control" required>
+                        <div class="invalid-feedback">Por favor, informe o endereço de destino.</div>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="pickup_date" class="form-label fw-bold required-field">Data de Coleta</label>
+                        <input type="datetime-local" id="pickup_date" name="pickup_date" class="form-control" required>
+                        <div class="invalid-feedback">Por favor, informe a data de coleta.</div>
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="delivery_date" class="form-label fw-bold required-field">Data Estimada de Entrega</label>
+                        <input type="datetime-local" id="delivery_date" name="delivery_date" class="form-control" required>
+                        <div class="invalid-feedback">Por favor, informe a data estimada de entrega.</div>
                     </div>
                 </div>
             </div>
@@ -62,38 +132,120 @@
             <div class="card-body">
                 <div class="row">
                     <div class="col-md-6 mb-3">
-                        <label for="truck_type" class="form-label fw-bold">Tipo de Veículo</label>
+                        <label for="truck_type" class="form-label fw-bold required-field">Tipo de Veículo</label>
                         <select id="truck_type" name="truck_type" class="form-select" required>
                             <option value="" disabled selected>Selecione o tipo</option>
                             <option value="pequeno">Pequeno (até 3 ton)</option>
                             <option value="medio">Médio (3-8 ton)</option>
                             <option value="grande">Grande (8+ ton)</option>
+                            @if($shipment->requires_temperature_control)
+                            <option value="refrigerado_pequeno">Refrigerado Pequeno</option>
+                            <option value="refrigerado_medio">Refrigerado Médio</option>
+                            <option value="refrigerado_grande">Refrigerado Grande</option>
+                            @endif
+                            @if($shipment->is_hazardous)
+                            <option value="tanque_pequeno">Tanque Pequeno (produtos perigosos)</option>
+                            <option value="tanque_grande">Tanque Grande (produtos perigosos)</option>
+                            @endif
                         </select>
+                        <div class="invalid-feedback">Por favor, selecione o tipo de veículo.</div>
                     </div>
+                    
                     <div class="col-md-6 mb-3">
-                        <label for="freight_value" class="form-label fw-bold">Valor do Frete (R$)</label>
+                        <label class="form-label fw-bold">Método de Pagamento</label>
+                        <input type="text" class="form-control-plaintext" value="PIX" readonly>
+                        <input type="hidden" name="payment_method" value="pix">
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="freight_value" class="form-label fw-bold required-field">Valor do Frete (R$)</label>
                         <div class="input-group">
                             <span class="input-group-text">R$</span>
                             <input type="number" id="freight_value" name="freight_value" class="form-control" step="0.01" min="0" required>
                         </div>
+                        <div class="invalid-feedback">Por favor, informe o valor do frete.</div>
                         <small class="text-muted">Valor sugerido: <span id="suggested_value">R$ 0,00</span></small>
+                    </div>
+                </div>
+                
+                <!-- Seção de Seguradoras -->
+                <div class="row mt-3">
+                    <div class="col-md-12">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">Filtro por Seguradoras</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <label class="form-label fw-bold">Selecione as Seguradoras</label>
+                                        <div class="form-control" style="height: auto; min-height: 100px; max-height: 200px; overflow-y: auto;">
+                                            @foreach(['Allianz', 'Porto Seguro', 'Suhai', 'Sompo', 'Mapfre', 'Tokio Marine', 'Liberty', 'Azul', 'Bradesco', 'Itaú'] as $insurer)
+                                            <div class="form-check">
+                                                <input class="form-check-input" type="checkbox" name="insurance_carriers[]" 
+                                                       value="{{ strtolower(str_replace(' ', '_', $insurer)) }}" 
+                                                       id="{{ $insurer }}Check">
+                                                <label class="form-check-label" for="{{ $insurer }}Check">
+                                                    {{ $insurer }}
+                                                </label>
+                                            </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="alert alert-warning h-100">
+                                            <div class="d-flex align-items-start">
+                                                <i class="fas fa-exclamation-triangle fa-2x me-3 mt-1"></i>
+                                                <div>
+                                                    <h5 class="alert-heading">Atenção</h5>
+                                                    <hr>
+                                                    <p class="mb-0">
+                                                        Ao selecionar uma ou mais seguradoras, somente motoristas cadastrados 
+                                                        nas seguradoras selecionadas poderão visualizar e aceitar este frete.
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- Campos ocultos para coordenadas e informações da rota -->
-        <input type="hidden" id="current_position" name="current_position">
-        <input type="hidden" id="current_lat" name="current_lat">
-        <input type="hidden" id="current_lng" name="current_lng">
-        <input type="hidden" id="start_lat" name="start_lat">
-        <input type="hidden" id="start_lng" name="start_lng">
-        <input type="hidden" id="destination_lat" name="destination_lat">
-        <input type="hidden" id="destination_lng" name="destination_lng">
-        <input type="hidden" id="distance_value" name="distance">
-        <input type="hidden" id="duration_value" name="duration">
-        <input type="hidden" id="distance_km" name="distance_km">
-        <input type="hidden" id="duration_min" name="duration_min">
+        <!-- Informações Adicionais -->
+        <div class="card mb-4 shadow-sm">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">Informações Adicionais</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-12 mb-3">
+                        <label for="freight_description" class="form-label fw-bold">Descrição do Frete (Opcional)</label>
+                        <textarea id="freight_description" name="freight_description" class="form-control" rows="4" 
+                                  placeholder="Adicione informações adicionais sobre o frete, como instruções especiais, detalhes de carga/descarga, ou outros requisitos"></textarea>
+                        <small class="text-muted">Esta descrição será visível para os motoristas interessados</small>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="loading_instructions" class="form-label fw-bold">Instruções de Carregamento</label>
+                        <input type="text" id="loading_instructions" name="loading_instructions" class="form-control" 
+                               placeholder="Ex: Portão 3, doca 5">
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="unloading_instructions" class="form-label fw-bold">Instruções de Descarga</label>
+                        <input type="text" id="unloading_instructions" name="unloading_instructions" class="form-control" 
+                               placeholder="Ex: Falar com João na recepção">
+                    </div>
+                </div>
+            </div>
+        </div>
 
         <!-- Rota e Detalhes -->
         <div class="card mb-4 shadow-sm">
@@ -108,7 +260,7 @@
                         <div class="card h-100 border-info">
                             <div class="card-body text-center">
                                 <h6 class="mb-2">Distância</h6>
-                                <p id="distance" class="h4 mb-0">-</p>
+                                <p id="distance_value" class="h4 mb-0">-</p>
                             </div>
                         </div>
                     </div>
@@ -116,7 +268,7 @@
                         <div class="card h-100 border-info">
                             <div class="card-body text-center">
                                 <h6 class="mb-2">Tempo Estimado</h6>
-                                <p id="duration" class="h4 mb-0">-</p>
+                                <p id="duration_value" class="h4 mb-0">-</p>
                             </div>
                         </div>
                     </div>
@@ -134,12 +286,57 @@
                 <div class="row mt-4">
                     <div class="col-md-12">
                         <div class="card border-primary">
-                            <div class="card-header bg-primary text-white">
-                                <h6 class="mb-0">Valor Final do Frete</h6>
+                            <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Resumo Financeiro</h6>
+                                <i class="fas fa-calculator"></i>
                             </div>
-                            <div class="card-body text-center">
-                                <p id="final_value" class="display-5 text-success fw-bold mb-1">R$ 0,00</p>
-                                <small class="text-muted">Este será o valor cobrado</small>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-7">
+                                        <div class="freight-summary">
+                                            <div class="d-flex justify-content-between mb-3">
+                                                <span class="text-muted">Valor Base:</span>
+                                                <span id="base_freight_value">R$ 0,00</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between mb-3">
+                                                <span class="text-muted">Taxa da Plataforma ({{ $settings->cloud_percentage ?? 15 }}%):</span>
+                                                <span id="platform_fee_value" class="text-danger">- R$ 0,00</span>
+                                            </div>
+                                            <hr class="my-3">
+                                            <div class="d-flex justify-content-between mb-3">
+                                                <span class="fw-bold">Total a Pagar:</span>
+                                                <span id="final_value" class="fw-bold">R$ 0,00</span>
+                                            </div>
+                                            
+                                            <div class="driver-value-container bg-light p-3 rounded">
+                                                <div class="d-flex justify-content-between align-items-center">
+                                                    <div>
+                                                        <h6 class="mb-1">Valor para o Motorista</h6>
+                                                        <small class="text-muted">Após desconto da plataforma</small>
+                                                    </div>
+                                                    <span id="driver_value" class="display-6 text-success fw-bold">R$ 0,00</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="col-md-5">
+                                        <div class="alert alert-info h-100">
+                                            <div class="d-flex align-items-start">
+                                                <i class="fas fa-info-circle fa-2x me-3 mt-1"></i>
+                                                <div>
+                                                    <h5 class="alert-heading">Sobre os Valores</h5>
+                                                    <hr>
+                                                    <ul class="mb-0 ps-3">
+                                                        <li>O <strong>Valor Base</strong> é calculado pela distância × taxa por km</li>
+                                                        <li>A <strong>Taxa da Plataforma</strong> de {{ $settings->cloud_percentage ?? 15 }}% é descontada do valor total</li>
+                                                        <li>O <strong>Motorista recebe</strong> o valor após o desconto</li>
+                                                    </ul>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -152,7 +349,7 @@
                 Cancelar
             </button>
             <button type="submit" class="btn btn-primary" id="submitBtn">
-                <i class="fas fa-external-link-alt me-2"></i> Confirmar e Pagar
+                <i class="fas fa-qrcode me-2"></i> Confirmar e Pagar via PIX
             </button>
         </div>
     </form>
@@ -167,7 +364,6 @@
 
 <script>
     let map, directionsService, directionsRenderer, autocompleteStart, autocompleteDestination;
-    let calculatedFreightValue = 0;
 
     function initMap() {
         const mapDiv = document.getElementById('map');
@@ -214,14 +410,37 @@
 
     function calculateFreightValue(distanceInKm, truckType) {
         const rates = {
-            'pequeno': 3.20,
-            'medio': 4.80,
-            'grande': 6.50
+            'pequeno': {{ $settings->small_truck_rate ?? 3.20 }},
+            'medio': {{ $settings->medium_truck_rate ?? 4.80 }},
+            'grande': {{ $settings->large_truck_rate ?? 6.50 }},
+            'refrigerado_pequeno': {{ $settings->small_refrigerated_rate ?? 4.50 }},
+            'refrigerado_medio': {{ $settings->medium_refrigerated_rate ?? 6.20 }},
+            'refrigerado_grande': {{ $settings->large_refrigerated_rate ?? 8.00 }},
+            'tanque_pequeno': {{ $settings->small_tanker_rate ?? 5.50 }},
+            'tanque_grande': {{ $settings->large_tanker_rate ?? 7.50 }}
         };
         
+        const platformPercentage = {{ $settings->cloud_percentage ?? 15 }};
+        
         let value = distanceInKm * rates[truckType];
-        value = Math.max(value, 50); // Valor mínimo
-        return Math.round(value * 100) / 100;
+        value = Math.max(value, {{ $settings->minimum_freight_value ?? 50 }});
+        
+        // Aplicar fatores adicionais
+        const weight = parseFloat("{{ $shipment->weight }}");
+        if (weight > 5000) value *= 1.15;
+        else if (weight > 3000) value *= 1.10;
+        
+        if ("{{ $shipment->is_fragile }}" === "1") value *= 1.20;
+        if ("{{ $shipment->is_hazardous }}" === "1") value *= 1.30;
+        
+        const platformFee = value * (platformPercentage / 100);
+        const driverValue = value - platformFee;
+        
+        return {
+            total: Math.round(value * 100) / 100,
+            platformFee: Math.round(platformFee * 100) / 100,
+            driverValue: Math.round(driverValue * 100) / 100
+        };
     }
 
     function formatCurrency(value) {
@@ -243,14 +462,21 @@
         return minutes;
     }
 
+    function updateFinancialSummary(freightData) {
+        $('#base_freight_value').text(formatCurrency(freightData.total));
+        $('#platform_fee_value').text(formatCurrency(freightData.platformFee));
+        $('#final_value').text(formatCurrency(freightData.total));
+        $('#driver_value').text(formatCurrency(freightData.driverValue));
+        $('#freight_value').val(freightData.total.toFixed(2));
+        $('#driver_freight_value').val(freightData.driverValue.toFixed(2));
+        $('#calculated_value').text(formatCurrency(freightData.total));
+        $('#suggested_value').text(formatCurrency(freightData.total));
+    }
+
     function calculateRoute() {
         const startPlace = autocompleteStart.getPlace();
         const destinationPlace = autocompleteDestination.getPlace();
         const truckType = $('#truck_type').val();
-
-        if (!startPlace?.geometry || !destinationPlace?.geometry || !truckType) {
-            return;
-        }
 
         const request = {
             origin: startPlace.geometry.location,
@@ -263,62 +489,101 @@
             if (status === google.maps.DirectionsStatus.OK) {
                 directionsRenderer.setDirections(response);
                 const route = response.routes[0].legs[0];
-
-                // Atualiza a exibição
-                $('#distance').text(route.distance.text);
-                $('#duration').text(route.duration.text);
-                
-                // Calcula valores numéricos
                 const distanceKm = parseFloat(route.distance.text.replace(' km', '').replace(',', '.'));
                 const durationMin = parseDuration(route.duration.text);
+
+                // Update display
+                $('#distance_value').text(route.distance.text);
+                $('#duration_value').text(route.duration.text);
                 
-                // Preenche os campos ocultos
-                document.getElementById('distance_value').value = route.distance.text;
-                document.getElementById('duration_value').value = route.duration.text;
-                document.getElementById('distance_km').value = distanceKm;
-                document.getElementById('duration_min').value = durationMin;
-                document.getElementById('current_position').value = $('#start_address').val();
-                document.getElementById('current_lat').value = startPlace.geometry.location.lat();
-                document.getElementById('current_lng').value = startPlace.geometry.location.lng();
-                document.getElementById('start_lat').value = startPlace.geometry.location.lat();
-                document.getElementById('start_lng').value = startPlace.geometry.location.lng();
-                document.getElementById('destination_lat').value = destinationPlace.geometry.location.lat();
-                document.getElementById('destination_lng').value = destinationPlace.geometry.location.lng();
+                // Update hidden fields
+                $('#distance').val(route.distance.text);
+                $('#duration').val(route.duration.text);
+                $('#distance_km').val(distanceKm);
+                $('#duration_min').val(durationMin);
+                $('#current_position').val($('#start_address').val());
+                $('#current_lat').val(startPlace.geometry.location.lat());
+                $('#current_lng').val(startPlace.geometry.location.lng());
+                $('#start_lat').val(startPlace.geometry.location.lat());
+                $('#start_lng').val(startPlace.geometry.location.lng());
+                $('#destination_lat').val(destinationPlace.geometry.location.lat());
+                $('#destination_lng').val(destinationPlace.geometry.location.lng());
 
-                // Calcular valor do frete
-                calculatedFreightValue = calculateFreightValue(distanceKm, truckType);
-
-                // Atualizar campos de valor
-                $('#suggested_value').text(formatCurrency(calculatedFreightValue));
-                $('#calculated_value').text(formatCurrency(calculatedFreightValue));
-                $('#freight_value').val(calculatedFreightValue.toFixed(2));
-                $('#final_value').text(formatCurrency(calculatedFreightValue));
+                // Calculate and update values
+                const freightData = calculateFreightValue(distanceKm, truckType);
+                updateFinancialSummary(freightData);
+                
+                // Set dates
+                const pickupDate = new Date(new Date().getTime() + 60 * 60 * 1000);
+                $('#pickup_date').val(pickupDate.toISOString().slice(0, 16));
+                
+                const deliveryDate = new Date(pickupDate.getTime() + durationMin * 60 * 1000 * 1.25);
+                $('#delivery_date').val(deliveryDate.toISOString().slice(0, 16));
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Erro',
+                    text: 'Não foi possível calcular a rota. Verifique os endereços informados.',
+                });
             }
         });
     }
 
     $(document).ready(function() {
+        // Bootstrap validation
+        (function() {
+            'use strict';
+            
+            // Fetch the form we want to apply custom Bootstrap validation styles to
+            const form = document.getElementById('freightRequestForm');
+            
+            // Loop over them and prevent submission
+            form.addEventListener('submit', function(event) {
+                if (!form.checkValidity()) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                }
+                
+                form.classList.add('was-validated');
+            }, false);
+        })();
+
         $('#truck_type').change(function() {
             if (autocompleteStart?.getPlace() && autocompleteDestination?.getPlace()) {
                 calculateRoute();
             }
         });
 
-        $('#freight_value').on('change', function() {
-            const manualValue = parseFloat($(this).val());
-            if (!isNaN(manualValue)) {
-                $('#final_value').text(formatCurrency(manualValue));
-            }
-        });
-
         $('#freightRequestForm').on('submit', function(e) {
             e.preventDefault();
             
-            if (!$('#distance_value').val() || !$('#duration_value').val()) {
+            // Validate required fields
+            const requiredFields = [
+                'start_address', 
+                'destination_address',
+                'pickup_date',
+                'delivery_date',
+                'truck_type',
+                'freight_value',
+                'distance_km',
+                'duration_min'
+            ];
+
+            let isValid = true;
+            requiredFields.forEach(field => {
+                if (!$(`#${field}`).val()) {
+                    $(`#${field}`).addClass('is-invalid');
+                    isValid = false;
+                } else {
+                    $(`#${field}`).removeClass('is-invalid');
+                }
+            });
+
+            if (!isValid) {
                 Swal.fire({
-                    icon: 'warning',
-                    title: 'Atenção',
-                    text: 'Por favor, calcule a rota antes de enviar o formulário.',
+                    icon: 'error',
+                    title: 'Campos obrigatórios',
+                    text: 'Por favor, preencha todos os campos obrigatórios e calcule a rota.',
                 });
                 return;
             }
@@ -326,6 +591,12 @@
             $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...');
 
             const formData = new FormData(this);
+
+            // Debug: mostra todos os valores do formulário
+            console.log('Valores do formulário:');
+            for (let [name, value] of formData.entries()) {
+                console.log(`${name}: ${value}`);
+            }
 
             fetch(this.action, {
                 method: 'POST',
@@ -338,28 +609,31 @@
             })
             .then(response => response.json())
             .then(data => {
-                console.log('resposta data', data);
                 if (data.payment_link) {
-                    // Abre o pagamento em nova aba
                     const paymentWindow = window.open(data.payment_link, '_blank');
                     
-                    // Verifica se o popup foi bloqueado
-                    if (!paymentWindow || paymentWindow.closed || typeof paymentWindow.closed == 'undefined') {
+                    if (!paymentWindow) {
                         Swal.fire({
                             icon: 'warning',
                             title: 'Popup bloqueado',
                             text: 'Por favor, permita popups para este site para completar o pagamento.',
                         });
-                        $('#submitBtn').prop('disabled', false).html('<i class="fas fa-external-link-alt me-2"></i> Confirmar e Pagar');
+                        $('#submitBtn').prop('disabled', false).html('<i class="fas fa-qrcode me-2"></i> Confirmar e Pagar via PIX');
                         return;
                     }
                     
-                    // Redireciona após o pagamento
-                    setTimeout(() => {
-                        window.location.href = '{{ route("freights") }}';
-                    }, 3000);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Frete criado com sucesso!',
+                        text: 'Você será redirecionado para a página de fretes.',
+                        timer: 3000,
+                        timerProgressBar: true,
+                        willClose: () => {
+                            window.location.href = '{{ route("freights") }}';
+                        }
+                    });
                 } else {
-                    $('#submitBtn').prop('disabled', false).html('<i class="fas fa-external-link-alt me-2"></i> Confirmar e Pagar');
+                    $('#submitBtn').prop('disabled', false).html('<i class="fas fa-qrcode me-2"></i> Confirmar e Pagar via PIX');
                     Swal.fire({
                         icon: 'error',
                         title: 'Erro',
@@ -369,7 +643,7 @@
             })
             .catch(error => {
                 console.error('Error:', error);
-                $('#submitBtn').prop('disabled', false).html('<i class="fas fa-external-link-alt me-2"></i> Confirmar e Pagar');
+                $('#submitBtn').prop('disabled', false).html('<i class="fas fa-qrcode me-2"></i> Confirmar e Pagar via PIX');
                 Swal.fire({
                     icon: 'error',
                     title: 'Erro',
@@ -417,14 +691,77 @@
         padding: 0.375rem 0;
         background-color: transparent;
     }
-    .display-5 {
-        font-size: 2.5rem;
+    .display-6 {
+        font-size: 1.75rem;
     }
     .form-select {
         cursor: pointer;
     }
     .swal2-popup.swal2-toast {
         padding: 1em 1.5em;
+    }
+    textarea.form-control-plaintext {
+        resize: none;
+    }
+    .form-check-input:disabled {
+        opacity: 1;
+    }
+    .alert.alert-info {
+        background-color: #e7f5ff;
+        border-color: #a5d8ff;
+        color: #1864ab;
+    }
+    .alert.alert-warning {
+        background-color: #fff3bf;
+        border-color: #ffec99;
+        color: #5f3f00;
+    }
+    .alert.alert-info h5,
+    .alert.alert-warning h5 {
+        font-weight: 600;
+    }
+    .freight-summary {
+        background-color: #f8f9fa;
+        padding: 1.5rem;
+        border-radius: 8px;
+        border: 1px solid #e9ecef;
+    }
+    .driver-value-container {
+        border: 2px solid #d1e7dd;
+        background-color: rgba(209, 231, 221, 0.2) !important;
+    }
+    .freight-summary hr {
+        border-top: 2px dashed #dee2e6;
+    }
+    .btn-primary {
+        background-color: #32BB91;
+        border-color: #32BB91;
+    }
+    .btn-primary:hover {
+        background-color: #2AA381;
+        border-color: #2AA381;
+    }
+    .form-control[type="checkbox"] {
+        margin-right: 8px;
+    }
+    .is-invalid {
+        border-color: #dc3545 !important;
+    }
+    .invalid-feedback {
+        color: #dc3545;
+        display: none;
+        margin-top: 0.25rem;
+        font-size: 0.875em;
+    }
+    .was-validated .form-control:invalid ~ .invalid-feedback,
+    .was-validated .form-control:invalid ~ .invalid-tooltip,
+    .form-control.is-invalid ~ .invalid-feedback,
+    .form-control.is-invalid ~ .invalid-tooltip {
+        display: block;
+    }
+    .required-field::after {
+        content: " *";
+        color: #dc3545;
     }
 </style>
 @endsection

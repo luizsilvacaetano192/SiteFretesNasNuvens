@@ -2,10 +2,8 @@
 
 namespace App\Models;
 
-use Aws\S3\Transfer;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Freight extends Model
 {
@@ -13,35 +11,45 @@ class Freight extends Model
 
     protected $fillable = [
         'shipment_id',
-        'current_position',
+        'company_id',
         'status_id',
-        'shipment_id',
+        'freight_description',
+        'loading_instructions',
+        'unloading_instructions',
         'start_address',
         'destination_address',
+        'pickup_date',
+        'delivery_date',
+        'truck_type',
+        'freight_value',
+        'driver_freight_value',
+        'distance_value',
+        'duration_value',
+        'distance_km',
+        'duration_min',
+        'current_position',
         'current_lat',
         'current_lng',
         'start_lat',
         'start_lng',
         'destination_lat',
         'destination_lng',
-        'company_id',
-        'truck_type',
-        'status_id',
-        'distance',
-        'duration' ,
-        'directions',
-        'freight_value',
-        'asaas_payment_id',
-        'paymentLink',
-        'is_payment_confirmed'
+        'insurance_carriers'
     ];
 
+    protected $casts = [
+        'pickup_date' => 'datetime',
+        'delivery_date' => 'datetime',
+        'insurance_carriers' => 'array',
+    ];
+
+    // Relacionamento com Shipment
     public function shipment()
     {
         return $this->belongsTo(Shipment::class);
     }
 
-    // Relacionamento com a tabela companies
+    // Relacionamento com Company
     public function company()
     {
         return $this->belongsTo(Company::class);
@@ -52,18 +60,50 @@ class Freight extends Model
         return $this->belongsTo(Driver::class);
     }
 
-    public function status()
+    // Relacionamento com Status
+    public function freightStatus()
     {
         return $this->belongsTo(FreightStatus::class);
     }
-
-    public function transfers()
+    public function charge()
     {
-        return $this->hasMany(Transfer::class);
+        return $this->belongsTo(charge::class);
     }
 
-    public function charge() : hasOne
+    // Métodos auxiliares
+    public function getFormattedFreightValueAttribute()
     {
-        return $this->hasOne(charge::class);
+        return 'R$ ' . number_format($this->freight_value, 2, ',', '.');
+    }
+
+    public function getFormattedDriverFreightValueAttribute()
+    {
+        return 'R$ ' . number_format($this->driver_freight_value, 2, ',', '.');
+    }
+
+    public function getFormattedPickupDateAttribute()
+    {
+        return $this->pickup_date->format('d/m/Y H:i');
+    }
+
+    public function getFormattedDeliveryDateAttribute()
+    {
+        return $this->delivery_date->format('d/m/Y H:i');
+    }
+
+    public function getTruckTypeNameAttribute()
+    {
+        $types = [
+            'pequeno' => 'Pequeno (até 3 ton)',
+            'medio' => 'Médio (3-8 ton)',
+            'grande' => 'Grande (8+ ton)',
+            'refrigerado_pequeno' => 'Refrigerado Pequeno',
+            'refrigerado_medio' => 'Refrigerado Médio',
+            'refrigerado_grande' => 'Refrigerado Grande',
+            'tanque_pequeno' => 'Tanque Pequeno',
+            'tanque_grande' => 'Tanque Grande'
+        ];
+
+        return $types[$this->truck_type] ?? $this->truck_type;
     }
 }

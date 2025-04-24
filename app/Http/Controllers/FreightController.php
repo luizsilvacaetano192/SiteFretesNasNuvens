@@ -27,7 +27,7 @@ class FreightController extends Controller
 
     public function getDataTable(Request $request)
     {
-        $query = Freight::with(['driver', 'status', 'company', 'shipment', 'charge'])
+        $query = Freight::with(['driver', 'FreightStatus', 'company', 'shipment', 'charge'])
                 ->select('freights.*');
     
     
