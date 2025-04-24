@@ -342,6 +342,12 @@ class FreightController extends Controller
         ]);
     }
 
+
+    public function getStatuses()
+    {
+        return FreightStatus::all(['id', 'name']);
+    }
+
     public function export()
     {
         return Excel::download(new FreightsExport, 'fretes.xlsx');

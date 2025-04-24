@@ -14,6 +14,11 @@ class CompanyController extends Controller
         return view('companies.index');
     }
 
+    public function list()
+    {
+        return Company::orderBy('name')->get(['id', 'name']);
+    }
+
     public function show($id)
     {
         $company = Company::findOrFail($id);

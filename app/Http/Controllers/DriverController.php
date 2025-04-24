@@ -21,6 +21,11 @@ class DriverController extends Controller
         return view('drivers.index');
     }
 
+    public function list()
+    {
+        return Driver::orderBy('name')->get(['id', 'name']);
+    }
+
     public function show($id)
     {
         $driver = Driver::findOrFail($id);

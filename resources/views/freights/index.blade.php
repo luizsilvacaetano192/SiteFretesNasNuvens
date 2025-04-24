@@ -141,15 +141,41 @@
     </div>
 
     <div class="card shadow-sm border-0 rounded-lg">
-        <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-            <h5 class="mb-0">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <h5 class="mb-3 mb-md-0">
                 <i class="fas fa-list me-2"></i>Lista de Fretes
             </h5>
-            <div class="input-group" style="width: 300px;">
-                <span class="input-group-text bg-transparent">
-                    <i class="fas fa-search"></i>
-                </span>
-                <input type="text" id="freight-search" class="form-control" placeholder="Pesquisar...">
+            <div class="d-flex flex-column flex-md-row gap-3 w-100 w-md-auto">
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-filter"></i>
+                    </span>
+                    <select id="status-filter" class="form-select">
+                        <option value="">Todos Status</option>
+                    </select>
+                </div>
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-building"></i>
+                    </span>
+                    <select id="company-filter" class="form-select">
+                        <option value="">Todas Empresas</option>
+                    </select>
+                </div>
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-truck"></i>
+                    </span>
+                    <select id="driver-filter" class="form-select">
+                        <option value="">Todos Motoristas</option>
+                    </select>
+                </div>
+                <div class="input-group" style="width: 300px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-search"></i>
+                    </span>
+                    <input type="text" id="freight-search" class="form-control" placeholder="Pesquisar...">
+                </div>
             </div>
         </div>
         
@@ -230,42 +256,119 @@
                                 </div>
                             </div>
                         </div>
+                        
+                        <!-- Histórico de Atividades -->
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-history me-2"></i>Histórico de Atividades
+                                </h6>
+                            </div>
+                            <div class="card-body p-0">
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0" id="history-table">
+                                        <thead>
+                                            <tr>
+                                                <th width="120">Data/Hora</th>
+                                                <th>Evento</th>
+                                                <th>Detalhes</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="activity-history">
+                                            <!-- Histórico será preenchido via JS -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                     
                     <div class="col-md-4">
                         <div class="card mb-4">
                             <div class="card-header bg-white">
                                 <h6 class="mb-0">
-                                    <i class="fas fa-info-circle me-2"></i>Informações
+                                    <i class="fas fa-boxes me-2"></i>Detalhes da Carga
                                 </h6>
                             </div>
                             <div class="card-body">
                                 <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Empresa</h6>
+                                    <h6 class="text-muted mb-2">Informações Gerais</h6>
+                                    <p class="mb-1"><strong>Tipo:</strong> <span id="cargo-type">-</span></p>
+                                    <p class="mb-1"><strong>Peso:</strong> <span id="cargo-weight">-</span></p>
+                                    <p class="mb-1"><strong>Dimensões:</strong> <span id="cargo-dimensions">-</span></p>
+                                    <p class="mb-1"><strong>Volume:</strong> <span id="cargo-volume">-</span></p>
+                                    <p class="mb-1"><strong>Descrição:</strong> <span id="cargo-description">-</span></p>
+                                </div>
+                                
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Características</h6>
+                                    <p class="mb-1"><strong>Frágil:</strong> <span id="cargo-fragile">-</span></p>
+                                    <p class="mb-1"><strong>Perigosa:</strong> <span id="cargo-hazardous">-</span></p>
+                                    <p class="mb-1"><strong>Controle de Temperatura:</strong> <span id="cargo-temperature-control">-</span></p>
+                                    <p class="mb-1"><strong>Faixa de Temperatura:</strong> <span id="cargo-temperature-range">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-truck me-2"></i>Informações do Frete
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Empresa Contratante</h6>
                                     <p class="mb-1" id="company-info">-</p>
                                 </div>
+                                
                                 <div class="mb-3">
                                     <h6 class="text-muted mb-2">Motorista</h6>
                                     <p class="mb-1" id="driver-info">-</p>
+                                    <p class="mb-1"><strong>Contato:</strong> <span id="driver-contact">-</span></p>
+                                    <p class="mb-1"><strong>Veículo:</strong> <span id="truck-type">-</span></p>
+                                    <p class="mb-1"><strong>Placa:</strong> <span id="truck-plate">-</span></p>
                                 </div>
+                                
                                 <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Detalhes da Carga</h6>
-                                    <p class="mb-1"><strong>Tipo:</strong> <span id="cargo-type">-</span></p>
-                                    <p class="mb-1"><strong>Peso:</strong> <span id="cargo-weight">-</span></p>
+                                    <h6 class="text-muted mb-2">Datas</h6>
+                                    <p class="mb-1"><strong>Criação:</strong> <span id="created-at">-</span></p>
+                                    <p class="mb-1"><strong>Coleta:</strong> <span id="pickup-date">-</span></p>
+                                    <p class="mb-1"><strong>Entrega:</strong> <span id="delivery-date">-</span></p>
+                                    <p class="mb-1"><strong>Conclusão:</strong> <span id="completed-at">-</span></p>
                                 </div>
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Pagamento</h6>
-                                    <p class="mb-1"><strong>Status:</strong> <span id="payment-status">-</span></p>
-                                    <p class="mb-1"><strong>Valor:</strong> <span id="payment-value">-</span></p>
-                                    <div id="payment-buttons"></div>
-                                </div>
-                                <hr>
+                                
                                 <div class="mb-3">
                                     <h6 class="text-muted mb-2">Endereços</h6>
                                     <p class="mb-1"><strong>Origem:</strong> <span id="start-address">-</span></p>
                                     <p class="mb-1"><strong>Destino:</strong> <span id="destination-address">-</span></p>
                                 </div>
-                                <hr>
+                                
+                                <div class="mb-3">
+                                    <h6 class="text-muted mb-2">Instruções</h6>
+                                    <p class="mb-1"><strong>Carregamento:</strong> <span id="loading-instructions">-</span></p>
+                                    <p class="mb-1"><strong>Descarga:</strong> <span id="unloading-instructions">-</span></p>
+                                    <p class="mb-1"><strong>Observações:</strong> <span id="freight-notes">-</span></p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="card mb-4">
+                            <div class="card-header bg-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-money-bill-wave me-2"></i>Pagamento
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="mb-3">
+                                    <p class="mb-1"><strong>Status:</strong> <span id="payment-status">-</span></p>
+                                    <p class="mb-1"><strong>Valor Total:</strong> <span id="payment-value">-</span></p>
+                                    <p class="mb-1"><strong>Valor Motorista:</strong> <span id="driver-value">-</span></p>
+                                    <p class="mb-1"><strong>Método:</strong> <span id="payment-method">-</span></p>
+                                    <p class="mb-1"><strong>Seguradoras:</strong> <span id="insurance-carriers">-</span></p>
+                                    <div id="payment-buttons" class="mt-2"></div>
+                                </div>
+                                
                                 <div class="row">
                                     <div class="col-md-6">
                                         <h6 class="text-muted mb-2">Distância</h6>
@@ -281,24 +384,26 @@
                     </div>
                 </div>
                 
+                <!-- Documentos Anexos -->
                 <div class="card">
                     <div class="card-header bg-white">
                         <h6 class="mb-0">
-                            <i class="fas fa-history me-2"></i>Histórico de Localização
+                            <i class="fas fa-paperclip me-2"></i>Documentos Anexos
                         </h6>
                     </div>
-                    <div class="card-body p-0">
+                    <div class="card-body">
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="history-table">
+                            <table class="table table-hover mb-0" id="documents-table">
                                 <thead>
                                     <tr>
-                                        <th width="120">Data/Hora</th>
-                                        <th>Localização</th>
-                                        <th width="100">Status</th>
+                                        <th>Tipo</th>
+                                        <th>Documento</th>
+                                        <th>Data</th>
+                                        <th>Ações</th>
                                     </tr>
                                 </thead>
-                                <tbody id="location-history">
-                                    <!-- Histórico será preenchido via JS -->
+                                <tbody id="documents-list">
+                                    <!-- Documentos serão preenchidos via JS -->
                                 </tbody>
                             </table>
                         </div>
@@ -311,6 +416,9 @@
                 </button>
                 <button type="button" class="btn btn-primary" id="print-freight">
                     <i class="fas fa-print me-1"></i>Imprimir
+                </button>
+                <button type="button" class="btn btn-success" id="edit-freight">
+                    <i class="fas fa-edit me-1"></i>Editar
                 </button>
             </div>
         </div>
@@ -546,6 +654,10 @@ function initializeDataTable() {
             type: 'GET',
             data: function(d) {
                 d.order = [{ column: 0, dir: 'desc' }];
+                // Adiciona os filtros aos parâmetros da requisição
+                d.status_filter = $('#status-filter').val();
+                d.company_filter = $('#company-filter').val();
+                d.driver_filter = $('#driver-filter').val();
             },
             error: function(xhr, error, thrown) {
                 console.error('Erro ao carregar dados:', xhr.responseText);
@@ -637,6 +749,53 @@ function initializeDataTable() {
             updateStats();
         }
     });
+
+    // Carrega os filtros dinâmicos
+    loadStatusFilter();
+    loadCompanyFilter();
+    loadDriverFilter();
+}
+
+function loadStatusFilter() {
+    $.get('{{ route('freights.statuses') }}', function(response) {
+        const select = $('#status-filter');
+        select.empty();
+        select.append('<option value="">Todos Status</option>');
+        
+        response.forEach(status => {
+            select.append(`<option value="${status.id}">${status.name}</option>`);
+        });
+    }).fail(function() {
+        toastr.error('Erro ao carregar filtro de status');
+    });
+}
+
+function loadCompanyFilter() {
+    $.get('{{ route('companies.list') }}', function(response) {
+        const select = $('#company-filter');
+        select.empty();
+        select.append('<option value="">Todas Empresas</option>');
+        
+        response.forEach(company => {
+            select.append(`<option value="${company.id}">${company.name}</option>`);
+        });
+    }).fail(function() {
+        toastr.error('Erro ao carregar filtro de empresas');
+    });
+}
+
+function loadDriverFilter() {
+    $.get('{{ route('drivers.list') }}', function(response) {
+        const select = $('#driver-filter');
+        select.empty();
+        select.append('<option value="">Todos Motoristas</option>');
+        
+        response.forEach(driver => {
+            select.append(`<option value="${driver.id}">${driver.name}</option>`);
+        });
+    }).fail(function() {
+        toastr.error('Erro ao carregar filtro de motoristas');
+    });
 }
 
 function setupEventHandlers() {
@@ -670,6 +829,11 @@ function setupEventHandlers() {
     $(document).on('click', '.delete-freight', function() {
         const freightId = $(this).data('id');
         confirmDeleteFreight(freightId);
+    });
+
+    // Filtros
+    $(document).on('change', '#status-filter, #company-filter, #driver-filter', function() {
+        freightTable.ajax.reload();
     });
 }
 
@@ -1046,32 +1210,85 @@ function loadFreightDetails(freightId) {
     $.get(`/freights/${freightId}`, function(response) {
         // Preenche informações básicas
         $('#modal-title').text(`Frete #${response.id} - ${response.company.name}`);
-        $('#company-info').text(response.company.name);
-        $('#driver-info').text(response.driver ? response.driver.name : 'Não atribuído');
+        
+        // Informações da Carga
         $('#cargo-type').text(response.shipment.cargo_type);
         $('#cargo-weight').text(`${response.shipment.weight} kg`);
+        $('#cargo-dimensions').text(response.shipment.dimensions);
+        $('#cargo-volume').text(response.shipment.volume);
+        $('#cargo-description').text(response.shipment.description || 'N/A');
+        $('#cargo-fragile').text(response.shipment.is_fragile ? 'Sim' : 'Não');
+        $('#cargo-hazardous').text(response.shipment.is_hazardous ? 'Sim' : 'Não');
+        $('#cargo-temperature-control').text(response.shipment.requires_temperature_control ? 'Sim' : 'Não');
+        
+        if(response.shipment.requires_temperature_control) {
+            $('#cargo-temperature-range').text(
+                `${response.shipment.min_temperature}°${response.shipment.temperature_unit} a ` +
+                `${response.shipment.max_temperature}°${response.shipment.temperature_unit}`
+            );
+        } else {
+            $('#cargo-temperature-range').text('N/A');
+        }
+        
+        // Informações do Frete
+        $('#company-info').text(response.company.name);
+        
+        if(response.driver) {
+            $('#driver-info').text(response.driver.name);
+            $('#driver-contact').text(response.driver.phone || 'N/A');
+            $('#truck-type').text(response.truck_type ? response.truck_type.replace(/_/g, ' ').capitalize() : 'N/A');
+            $('#truck-plate').text(response.driver.truck_plate || 'N/A');
+        } else {
+            $('#driver-info').text('Não atribuído');
+            $('#driver-contact').text('N/A');
+            $('#truck-type').text('N/A');
+            $('#truck-plate').text('N/A');
+        }
+        
+        // Datas
+        $('#created-at').text(response.created_at ? new Date(response.created_at).toLocaleString() : 'N/A');
+        $('#pickup-date').text(response.pickup_date ? new Date(response.pickup_date).toLocaleString() : 'N/A');
+        $('#delivery-date').text(response.delivery_date ? new Date(response.delivery_date).toLocaleString() : 'N/A');
+        $('#completed-at').text(response.completed_at ? new Date(response.completed_at).toLocaleString() : 'N/A');
+        
+        // Endereços
         $('#start-address').text(response.start_address);
         $('#destination-address').text(response.destination_address);
-        $('#current-position').text(response.current_position || 'Não disponível');
-        $('#last-update').text(new Date().toLocaleString());
-
-        // Preenche informações de pagamento
+        
+        // Instruções
+        $('#loading-instructions').text(response.loading_instructions || 'N/A');
+        $('#unloading-instructions').text(response.unloading_instructions || 'N/A');
+        $('#freight-notes').text(response.freight_description || 'N/A');
+        
+        // Seguradoras
+        if(response.insurance_carriers && response.insurance_carriers.length > 0) {
+            $('#insurance-carriers').text(
+                response.insurance_carriers.map(c => c.replace(/_/g, ' ').capitalize()).join(', ')
+            );
+        } else {
+            $('#insurance-carriers').text('Nenhuma seguradora específica');
+        }
+        
+        // Pagamento
+        $('#payment-method').text(response.payment_method ? response.payment_method.toUpperCase() : 'N/A');
+        
         if(response.charge) {
             $('#payment-status').html(response.status ? `<span class="badge ${getStatusBadgeClass(response.status.slug)}">${response.status.name}</span>` : 'N/A');
             $('#payment-value').text(response.freight_value ? 'R$ ' + parseFloat(response.freight_value).toFixed(2).replace('.', ',') : 'N/A');
+            $('#driver-value').text(response.driver_freight_value ? 'R$ ' + parseFloat(response.driver_freight_value).toFixed(2).replace('.', ',') : 'N/A');
             
             // Configura os botões de pagamento
             let paymentButtons = '';
             if(response.status && response.status.slug === 'paid' && response.charge.receipt_url) {
                 paymentButtons = `
-                    <a href="${response.charge.receipt_url}" class="btn btn-sm btn-info mt-2" target="_blank">
-                        <i class="fas fa-file-invoice-dollar me-1"></i>Visualizar Recibo
+                    <a href="${response.charge.receipt_url}" class="btn btn-sm btn-info" target="_blank">
+                        <i class="fas fa-file-invoice-dollar me-1"></i>Recibo
                     </a>
                 `;
             } else if(response.charge.charge_url) {
                 paymentButtons = `
-                    <a href="${response.charge.charge_url}" class="btn btn-sm btn-success mt-2" target="_blank">
-                        <i class="fas fa-credit-card me-1"></i>Realizar Pagamento
+                    <a href="${response.charge.charge_url}" class="btn btn-sm btn-success" target="_blank">
+                        <i class="fas fa-credit-card me-1"></i>Pagar
                     </a>
                 `;
             }
@@ -1079,6 +1296,7 @@ function loadFreightDetails(freightId) {
         } else {
             $('#payment-status').text('N/A');
             $('#payment-value').text('N/A');
+            $('#driver-value').text('N/A');
             $('#payment-buttons').html('');
         }
 
@@ -1104,6 +1322,9 @@ function loadFreightDetails(freightId) {
 
         // Carrega o histórico
         loadFreightHistory(freightId);
+        
+        // Carrega documentos anexos
+        loadFreightDocuments(freightId);
 
         // Abre o modal
         $('#freightModal').modal('show');
@@ -1111,6 +1332,41 @@ function loadFreightDetails(freightId) {
         toastr.error('Erro ao carregar detalhes do frete');
     });
 }
+
+function loadFreightDocuments(freightId) {
+    $.get(`/freights/${freightId}/documents`, function(response) {
+        const documentsTable = $('#documents-list');
+        documentsTable.empty();
+
+        if (response.length === 0) {
+            documentsTable.append('<tr><td colspan="4" class="text-center">Nenhum documento anexado</td></tr>');
+            return;
+        }
+
+        response.forEach(doc => {
+            const date = new Date(doc.created_at);
+            documentsTable.append(`
+                <tr>
+                    <td>${doc.type}</td>
+                    <td>${doc.name}</td>
+                    <td>${date.toLocaleDateString()}</td>
+                    <td>
+                        <a href="${doc.url}" class="btn btn-sm btn-primary" target="_blank">
+                            <i class="fas fa-download me-1"></i>Baixar
+                        </a>
+                    </td>
+                </tr>
+            `);
+        });
+    }).fail(function() {
+        console.error('Erro ao carregar documentos');
+    });
+}
+
+// Helper para capitalizar strings
+String.prototype.capitalize = function() {
+    return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+};
 
 function calculateAndDisplayRoute(startLat, startLng, destLat, destLng) {
     const start = new google.maps.LatLng(startLat, startLng);
@@ -1178,7 +1434,7 @@ function updateTruckPosition(lat, lng) {
 
 function loadFreightHistory(freightId) {
     $.get(`/freights/${freightId}/history`, function(response) {
-        const historyTable = $('#location-history');
+        const historyTable = $('#activity-history');
         historyTable.empty();
 
         if (response.length === 0) {
@@ -1191,13 +1447,13 @@ function loadFreightHistory(freightId) {
             historyTable.append(`
                 <tr>
                     <td>${date.toLocaleString()}</td>
-                    <td>${entry.address || 'N/A'}</td>
-                    <td><span class="badge ${getStatusBadgeClass(entry.status || '')}">${entry.status || 'N/A'}</span></td>
+                    <td>${entry.event || 'N/A'}</td>
+                    <td>${entry.details || 'N/A'}</td>
                 </tr>
             `);
         });
     }).fail(function() {
-        toastr.error('Erro ao carregar histórico de localização');
+        toastr.error('Erro ao carregar histórico de atividades');
     });
 }
 

@@ -60,6 +60,8 @@ Route::get('/drivers/data', [DriverController::class, 'getData'])->name('drivers
 Route::post('/transfer/{driver}', [TransferController::class, 'transfer'])
     ->name('transfer');
 
+Route::get('/drivers/list', [DriverController::class, 'list'])->name('drivers.list');
+
 Route::get('/drivers/send-push', [DriverController::class, 'showSendPushForm'])->name('drivers.pushForm');
 Route::get('/drivers/{id}', [DriverController::class, 'show'])->name('drivers.show');
 Route::post('/drivers/send-push', [DriverController::class, 'sendPush'])->name('drivers.sendPush');
@@ -119,6 +121,7 @@ Route::get('freights/stats', [FreightController::class, 'getStats'])->name('frei
 Route::get('/shipments/{id}/request-freight', [ShipmentController::class, 'requestFreight'])->name('shipments.requestFreight');
 
 Route::get('freights/stats', [FreightController::class, 'getStats'])->name('freights.stats');
+Route::get('/freights/statuses', [FreightController::class, 'getStatuses'])->name('freights.statuses');
 
 // Defina a rota 'freights' que chama o método 'index' no seu controlador
 Route::get('freights', [FreightController::class, 'index'])->name('freights');
@@ -133,6 +136,7 @@ Route::get('/freights/data', [FreightController::class, 'getDataTable'])->name('
 Route::get('/freights/{freight}', [FreightController::class, 'show'])->name('freights.show');
 Route::get('/freights/index', [FreightController::class, 'index'])->name('freights.index');
 
+Route::get('/companies/list', [CompanyController::class, 'list'])->name('companies.list');
 
 
 Route::delete('/shipments/clear', [ShipmentController::class, 'clear'])->name('shipments.clear');
