@@ -13,9 +13,6 @@ class FreightStatus extends Model
       'name'
     ];
 
-    public function freight()
-    {
-        return $this->hasMany(freight::class);
-    }
+
         
 }
