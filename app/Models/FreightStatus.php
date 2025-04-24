@@ -12,5 +12,10 @@ class FreightStatus extends Model
     protected $fillable = [
       'name'
     ];
+
+    public function freight()
+    {
+        return $this->belongsTo(freight::class);
+    }
         
 }

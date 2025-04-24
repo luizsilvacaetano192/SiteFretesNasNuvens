@@ -36,5 +36,9 @@ class Charge extends Model
         ];
     }
 
-    
+    // Relationships
+    public function freight():belongsTo
+    {
+        return $this->belongsTo(Freight::class);
+    }
 }
