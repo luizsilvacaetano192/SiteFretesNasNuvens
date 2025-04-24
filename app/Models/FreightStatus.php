@@ -15,7 +15,7 @@ class FreightStatus extends Model
 
     public function freight()
     {
-        return $this->belongsTo(freight::class);
+        return $this->hasMany(freight::class);
     }
         
 }
