@@ -52,7 +52,7 @@ class Freight extends Model
     // Relacionamento com Company
     public function company()
     {
-        return $this->belongsTo(Company::class);
+        return $this->hasOne(Company::class);
     }
 
     public function driver()
@@ -67,7 +67,7 @@ class Freight extends Model
     }
     public function charge()
     {
-        return $this->belongsTo(charge::class);
+        return $this->hasOne(charge::class);
     }
 
     // Métodos auxiliares
