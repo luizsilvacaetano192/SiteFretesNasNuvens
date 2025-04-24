@@ -110,20 +110,17 @@ class FreightController extends Controller
                 }
                 
                 if ($request->has('search') && !empty($request->search['value'])) {
-                    $search = $request->search['value'];
-                    $query->where(function($q) use ($search) {
-                        $q->whereHas('company', function($q) use ($search) {
-                            $q->where('name', 'like', "%$search%");
-                        })
-                        ->orWhereHas('driver', function($q) use ($search) {
-                            $q->where('name', 'like', "%$search%");
-                        })
-                        ->orWhereHas('charge', function($q) use ($search) {
-                            $q->where('payment_id', 'like', "%$search%");
-                        })
-                        ->orWhere('start_address', 'like', "%$search%")
-                        ->orWhere('destination_address', 'like', "%$search%")
-                        ->orWhere('id', 'like', "%$search%");
+                  
+                    $query = Freight::with(['company', 'driver', 'status'])
+                    ->when($request->has('filters.status') && $request->filters['status'], function($q) use ($request) {
+                        $q->where('status_id', $request->filters['status']);
+                    })
+                    ->when($request->has('filters.company') && $request->filters['company'], function($q) use ($request) {
+                        $q->where('company_id', $request->filters['company']);
+                    })
+                    ->when($request->has('filters.driver') && $request->filters['driver'], function($q) use ($request) {
+                        $q->where('driver_id', $request->filters['driver']);
+                
                     });
                 }
             })
