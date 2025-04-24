@@ -30,7 +30,6 @@ class FreightController extends Controller
         $query = Freight::with(['driver', 'FreightStatus', 'company', 'shipment', 'charge'])
                 ->select('freights.*');
     
-    
         return DataTables::of($query)
             ->addColumn('company_name', function($freight) {
                 return $freight->company->name ?? 'N/A';
