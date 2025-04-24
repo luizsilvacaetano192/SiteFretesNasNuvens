@@ -27,7 +27,7 @@ class FreightController extends Controller
 
     public function getDataTable(Request $request)
     {
-        $query = Freight::with(['driver', 'FreightStatus', 'company', 'shipment', 'charge'])
+        $query = Freight::with(['driver', 'freightStatus', 'company', 'shipment', 'charge'])
                 ->select('freights.*');
     
         return DataTables::of($query)
@@ -39,7 +39,7 @@ class FreightController extends Controller
             })
             ->addColumn('status_badge', function($freight) {
                 $status = $freight->freightStatus;
-                
+                if (!$status) return '<span class="badge bg-secondary">N/A</span>';
                 
                 $badgeClass = [
                     '3' => 'bg-warning',

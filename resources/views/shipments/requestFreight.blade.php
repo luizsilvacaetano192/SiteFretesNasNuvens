@@ -29,6 +29,7 @@
         <input type="hidden" id="start_lng" name="start_lng">
         <input type="hidden" id="destination_lat" name="destination_lat">
         <input type="hidden" id="destination_lng" name="destination_lng">
+        <input type="hidden" id="status_id" name="status_id" value="3">
 
         <!-- Informações da Carga -->
         <div class="card mb-4 shadow-sm">
