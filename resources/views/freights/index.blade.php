@@ -170,6 +170,18 @@
                         <option value="">Todos Motoristas</option>
                     </select>
                 </div>
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-calendar"></i>
+                    </span>
+                    <input type="date" id="start-date-filter" class="form-control" placeholder="Data inicial">
+                </div>
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-calendar"></i>
+                    </span>
+                    <input type="date" id="end-date-filter" class="form-control" placeholder="Data final">
+                </div>
                 <div class="input-group" style="width: 300px;">
                     <span class="input-group-text bg-transparent">
                         <i class="fas fa-search"></i>
@@ -192,6 +204,7 @@
                             <th>Status</th>
                             <th>Valor</th>
                             <th width="120">Pagamento</th>
+                            <th width="120">Criado em</th>
                             <th width="120">Ações</th>
                         </tr>
                     </thead>
@@ -557,6 +570,10 @@ body {
     font-size: 1.5rem;
 }
 
+.input-group {
+    margin-right: 0.5rem;
+}
+
 @media (max-width: 992px) {
     .modal-xl {
         max-width: 95%;
@@ -594,6 +611,11 @@ body {
     
     .d-flex.justify-content-between.align-items-center.mb-4 > div:last-child {
         justify-content: flex-start;
+    }
+    
+    .input-group {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
     }
 }
 </style>
@@ -658,6 +680,8 @@ function initializeDataTable() {
                 d.status_filter = $('#status-filter').val();
                 d.company_filter = $('#company-filter').val();
                 d.driver_filter = $('#driver-filter').val();
+                d.start_date = $('#start-date-filter').val();
+                d.end_date = $('#end-date-filter').val();
             },
             error: function(xhr, error, thrown) {
                 console.error('Erro ao carregar dados:', xhr.responseText);
@@ -723,6 +747,13 @@ function initializeDataTable() {
                 orderable: false,
                 searchable: false,
                 className: 'text-center'
+            },
+            { 
+                data: 'created_at', 
+                name: 'created_at',
+                render: function(data) {
+                    return data ? new Date(data).toLocaleDateString('pt-BR') : 'N/A';
+                }
             },
             { 
                 data: 'actions', 
@@ -832,7 +863,7 @@ function setupEventHandlers() {
     });
 
     // Filtros
-    $(document).on('change', '#status-filter, #company-filter, #driver-filter', function() {
+    $(document).on('change', '#status-filter, #company-filter, #driver-filter, #start-date-filter, #end-date-filter', function() {
         freightTable.ajax.reload();
     });
 }
@@ -1188,23 +1219,43 @@ function deleteFreight(freightId) {
 
 // Funções do Mapa
 function initMap() {
-    map = new google.maps.Map(document.getElementById("map"), {
-        zoom: 7,
-        center: { lat: -15.7801, lng: -47.9292 },
-        mapTypeId: google.maps.MapTypeId.ROADMAP
-    });
+    // Verifica se o elemento do mapa existe
+    const mapElement = document.getElementById("map");
+    if (!mapElement) return;
+    
+    // Configurações padrão do mapa
+    const defaultCenter = { lat: -15.7801, lng: -47.9292 }; // Centro do Brasil
+    
+    try {
+        map = new google.maps.Map(mapElement, {
+            zoom: 7,
+            center: defaultCenter,
+            mapTypeId: google.maps.MapTypeId.ROADMAP
+        });
 
-    directionsService = new google.maps.DirectionsService();
-    directionsRenderer = new google.maps.DirectionsRenderer({
-        suppressMarkers: true,
-        map: map,
-        polylineOptions: {
-            strokeColor: '#4e73df',
-            strokeOpacity: 0.8,
-            strokeWeight: 4
-        }
-    });
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer({
+            suppressMarkers: true,
+            map: map,
+            polylineOptions: {
+                strokeColor: '#4e73df',
+                strokeOpacity: 0.8,
+                strokeWeight: 4
+            }
+        });
+    } catch (error) {
+        console.error("Erro ao inicializar o mapa:", error);
+    }
 }
+
+// Garante que o mapa seja carregado quando o modal for aberto
+$('#freightModal').on('shown.bs.modal', function() {
+    if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+        initMap();
+    } else {
+        console.error("Google Maps API não carregada");
+    }
+});
 
 function loadFreightDetails(freightId) {
     $.get(`/freights/${freightId}`, function(response) {
