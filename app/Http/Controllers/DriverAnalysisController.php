@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Driver;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Aws\Rekognition\RekognitionClient;
@@ -14,8 +15,10 @@ class DriverAnalysisController extends Controller
     public function analyze($driver_id)
     {
        
+        $driver = Driver::findorfail($driver_id);
 
-        dd($driver_id);
+        dd($driver);
+       
     
         try {
             $rekognition = new RekognitionClient([
