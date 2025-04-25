@@ -322,7 +322,7 @@
                                                 <span id="base_freight_value">R$ 0,00</span>
                                             </div>
                                             <div class="d-flex justify-content-between mb-3">
-                                                <span class="text-muted">Taxa da Plataforma ({{ $settings->cloud_percentage ?? 15 }}%):</span>
+                                                <span class="text-muted">Taxa da Plataforma ({{ $settings->cloud_percentage }}%):</span>
                                                 <span id="platform_fee_value" class="text-danger">- R$ 0,00</span>
                                             </div>
                                             <hr class="my-3">
@@ -352,7 +352,7 @@
                                                     <hr>
                                                     <ul class="mb-0 ps-3">
                                                         <li>O <strong>Valor Base</strong> é calculado pela distância × taxa por km</li>
-                                                        <li>A <strong>Taxa da Plataforma</strong> de {{ $settings->cloud_percentage ?? 15 }}% é descontada do valor total</li>
+                                                        <li>A <strong>Taxa da Plataforma</strong> de {{ $settings->cloud_percentage }}% é descontada do valor total</li>
                                                         <li>O <strong>Motorista recebe</strong> o valor após o desconto</li>
                                                     </ul>
                                                 </div>
@@ -381,22 +381,44 @@
 
 @push('scripts')
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places" async defer></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+    // Variáveis globais
     let map, directionsService, directionsRenderer, autocompleteStart, autocompleteDestination;
+    
+    // Função para carregar o Google Maps
+    function loadGoogleMaps() {
+        // Verificar se os elementos necessários existem
+        if (!document.getElementById('map') || 
+            !document.getElementById('start_address') || 
+            !document.getElementById('destination_address')) {
+            return;
+        }
 
-    function initMap() {
+        // Verificar se a API do Google Maps foi carregada
+        if (typeof google === 'object' && typeof google.maps === 'object') {
+            initializeMap();
+        } else {
+            // Tentar novamente após um curto período
+            setTimeout(loadGoogleMaps, 200);
+        }
+    }
+
+    // Função para inicializar o mapa
+    function initializeMap() {
         const mapDiv = document.getElementById('map');
         if (!mapDiv) return;
 
+        // Configurações iniciais do mapa
         map = new google.maps.Map(mapDiv, {
-            center: { lat: -15.7801, lng: -47.9292 },
+            center: { lat: -15.7801, lng: -47.9292 }, // Centro do Brasil
             zoom: 5
         });
 
+        // Inicializar serviços de rota
         directionsService = new google.maps.DirectionsService();
         directionsRenderer = new google.maps.DirectionsRenderer({
             suppressMarkers: false,
@@ -408,64 +430,97 @@
         });
         directionsRenderer.setMap(map);
 
+        // Inicializar autocomplete para os campos de endereço
         initAutocomplete();
     }
 
+    // Função para inicializar autocomplete
     function initAutocomplete() {
         const startAddressInput = document.getElementById('start_address');
         const destinationAddressInput = document.getElementById('destination_address');
 
         if (!startAddressInput || !destinationAddressInput) return;
 
+        // Configurar autocomplete para origem
         autocompleteStart = new google.maps.places.Autocomplete(startAddressInput, {
             fields: ['address_components', 'geometry'],
             componentRestrictions: { country: 'br' }
         });
 
+        // Configurar autocomplete para destino
         autocompleteDestination = new google.maps.places.Autocomplete(destinationAddressInput, {
             fields: ['address_components', 'geometry'],
             componentRestrictions: { country: 'br' }
         });
 
+        // Adicionar listeners para calcular a rota quando os endereços mudarem
         autocompleteStart.addListener('place_changed', calculateRoute);
         autocompleteDestination.addListener('place_changed', calculateRoute);
     }
 
-    function calculateFreightValue(distanceInKm, truckType) {
-        const rates = {
-            'pequeno': {{ $settings->small_truck_rate ?? 3.20 }},
-            'medio': {{ $settings->medium_truck_rate ?? 4.80 }},
-            'grande': {{ $settings->large_truck_rate ?? 6.50 }},
-            'refrigerado_pequeno': {{ $settings->small_refrigerated_rate ?? 4.50 }},
-            'refrigerado_medio': {{ $settings->medium_refrigerated_rate ?? 6.20 }},
-            'refrigerado_grande': {{ $settings->large_refrigerated_rate ?? 8.00 }},
-            'tanque_pequeno': {{ $settings->small_tanker_rate ?? 5.50 }},
-            'tanque_grande': {{ $settings->large_tanker_rate ?? 7.50 }}
-        };
-        
-        const platformPercentage = {{ $settings->cloud_percentage ?? 15 }};
-        
-        let value = distanceInKm * rates[truckType];
-        value = Math.max(value, {{ $settings->minimum_freight_value ?? 50 }});
-        
-        // Aplicar fatores adicionais
-        const weight = parseFloat("{{ $shipment->weight }}");
-        if (weight > 5000) value *= 1.15;
-        else if (weight > 3000) value *= 1.10;
-        
-        if ("{{ $shipment->is_fragile }}" === "1") value *= 1.20;
-        if ("{{ $shipment->is_hazardous }}" === "1") value *= 1.30;
-        
-        const platformFee = value * (platformPercentage / 100);
-        const driverValue = value - platformFee;
-        
-        return {
-            total: Math.round(value * 100) / 100,
-            platformFee: Math.round(platformFee * 100) / 100,
-            driverValue: Math.round(driverValue * 100) / 100
-        };
+    function getSafeSetting(settingName, defaultValue = 0) {
+    // Mapear todas as configurações disponíveis
+    const settings = {
+        small_truck_rate: {{ $settings->small_truck_rate ?? 0 }},
+        medium_truck_rate: {{ $settings->medium_truck_rate ?? 0 }},
+        large_truck_rate: {{ $settings->large_truck_rate ?? 0 }},
+        small_refrigerated_rate: {{ $settings->small_refrigerated_rate ?? 0 }},
+        medium_refrigerated_rate: {{ $settings->medium_refrigerated_rate ?? 0 }},
+        large_refrigerated_rate: {{ $settings->large_refrigerated_rate ?? 0 }},
+        small_tanker_rate: {{ $settings->small_tanker_rate ?? 0 }},
+        large_tanker_rate: {{ $settings->large_tanker_rate ?? 0 }},
+        cloud_percentage: {{ $settings->cloud_percentage ?? 0 }},
+        minimum_freight_value: {{ $settings->minimum_freight_value ?? 0 }},
+        weight_surcharge_5000: {{ $settings->weight_surcharge_5000 ?? 1 }},
+        weight_surcharge_3000: {{ $settings->weight_surcharge_3000 ?? 1 }},
+        fragile_surcharge: {{ $settings->fragile_surcharge ?? 1 }},
+        hazardous_surcharge: {{ $settings->hazardous_surcharge ?? 1 }}
+    };
+
+    // Obter o valor da configuração ou usar o padrão
+    const value = settings[settingName] !== undefined ? settings[settingName] : defaultValue;
+    const num = parseFloat(value);
+    
+    return isNaN(num) ? defaultValue : num;
+}
+
+function calculateFreightValue(distanceInKm, truckType) {
+    const rates = {
+        'pequeno': getSafeSetting('small_truck_rate'),
+        'medio': getSafeSetting('medium_truck_rate'),
+        'grande': getSafeSetting('large_truck_rate'),
+        'refrigerado_pequeno': getSafeSetting('small_refrigerated_rate'),
+        'refrigerado_medio': getSafeSetting('medium_refrigerated_rate'),
+        'refrigerado_grande': getSafeSetting('large_refrigerated_rate'),
+        'tanque_pequeno': getSafeSetting('small_tanker_rate'),
+        'tanque_grande': getSafeSetting('large_tanker_rate')
+    };
+    
+    
+    const platformPercentage = {{ $settings->cloud_percentage }};
+    
+    let value = distanceInKm * rates[truckType];
+    value = Math.max(value, {{ $settings->minimum_freight_value }});
+    
+    // Aplicar fatores adicionais
+    const weight = parseFloat("{{ $shipment->weight }}");
+    if (weight > 5000) value *= {{ $settings->weight_surcharge_5000 }};
+    else if (weight > 3000) value *= {{ $settings->weight_surcharge_3000 }};
+    
+    if ("{{ $shipment->is_fragile }}" === "1") value *= {{ $settings->fragile_surcharge }};
+    if ("{{ $shipment->is_hazardous }}" === "1") value *= {{ $settings->hazardous_surcharge }};
+    
+    const platformFee = value * (platformPercentage / 100);
+    const driverValue = value - platformFee;
+    
+    return {
+        total: Math.round(value * 100) / 100,
+        platformFee: Math.round(platformFee * 100) / 100,
+        driverValue: Math.round(driverValue * 100) / 100
+    };
     }
 
+    // Função para formatar valores monetários
     function formatCurrency(value) {
         return value.toLocaleString('pt-BR', { 
             style: 'currency', 
@@ -474,6 +529,7 @@
         });
     }
 
+    // Função para converter texto de duração em minutos
     function parseDuration(durationText) {
         let minutes = 0;
         const hoursMatch = durationText.match(/(\d+)\s*h/);
@@ -485,9 +541,10 @@
         return minutes;
     }
 
+    // Função para atualizar o resumo financeiro
     function updateFinancialSummary(freightData) {
         $('#base_freight_value').text(formatCurrency(freightData.total));
-        $('#platform_fee_value').text(formatCurrency(freightData.platformFee));
+        $('#platform_fee_value').text('- ' + formatCurrency(freightData.platformFee));
         $('#final_value').text(formatCurrency(freightData.total));
         $('#driver_value').text(formatCurrency(freightData.driverValue));
         $('#freight_value').val(freightData.total.toFixed(2));
@@ -496,11 +553,18 @@
         $('#suggested_value').text(formatCurrency(freightData.total));
     }
 
+    // Função principal para calcular a rota
     function calculateRoute() {
         const startPlace = autocompleteStart.getPlace();
         const destinationPlace = autocompleteDestination.getPlace();
         const truckType = $('#truck_type').val();
 
+        // Verificar se todos os dados necessários estão disponíveis
+        if (!startPlace || !destinationPlace || !startPlace.geometry || !destinationPlace.geometry || !truckType) {
+            return;
+        }
+
+        // Configurar requisição para o serviço de rotas
         const request = {
             origin: startPlace.geometry.location,
             destination: destinationPlace.geometry.location,
@@ -508,18 +572,20 @@
             unitSystem: google.maps.UnitSystem.METRIC
         };
 
+        // Chamar o serviço de rotas
         directionsService.route(request, (response, status) => {
             if (status === google.maps.DirectionsStatus.OK) {
+                // Exibir a rota no mapa
                 directionsRenderer.setDirections(response);
                 const route = response.routes[0].legs[0];
                 const distanceKm = parseFloat(route.distance.text.replace(' km', '').replace(',', '.'));
                 const durationMin = parseDuration(route.duration.text);
 
-                // Update display
+                // Atualizar exibição
                 $('#distance_value').text(route.distance.text);
                 $('#duration_value').text(route.duration.text);
                 
-                // Update hidden fields
+                // Atualizar campos ocultos
                 $('#distance').val(route.distance.text);
                 $('#duration').val(route.duration.text);
                 $('#distance_km').val(distanceKm);
@@ -532,17 +598,18 @@
                 $('#destination_lat').val(destinationPlace.geometry.location.lat());
                 $('#destination_lng').val(destinationPlace.geometry.location.lng());
 
-                // Calculate and update values
+                // Calcular e atualizar valores do frete
                 const freightData = calculateFreightValue(distanceKm, truckType);
                 updateFinancialSummary(freightData);
                 
-                // Set dates
-                const pickupDate = new Date(new Date().getTime() + 60 * 60 * 1000);
+                // Definir datas sugeridas
+                const pickupDate = new Date(new Date().getTime() + 60 * 60 * 1000); // 1 hora a partir de agora
                 $('#pickup_date').val(pickupDate.toISOString().slice(0, 16));
                 
-                const deliveryDate = new Date(pickupDate.getTime() + durationMin * 60 * 1000 * 1.25);
+                const deliveryDate = new Date(pickupDate.getTime() + durationMin * 60 * 1000 * 1.25); // Tempo de rota + 25% de margem
                 $('#delivery_date').val(deliveryDate.toISOString().slice(0, 16));
             } else {
+                // Exibir erro se a rota não puder ser calculada
                 Swal.fire({
                     icon: 'error',
                     title: 'Erro',
@@ -552,15 +619,14 @@
         });
     }
 
+    // Quando o documento estiver pronto
     $(document).ready(function() {
-        // Bootstrap validation
+        // Inicializar validação do formulário
         (function() {
             'use strict';
             
-            // Fetch the form we want to apply custom Bootstrap validation styles to
             const form = document.getElementById('freightRequestForm');
             
-            // Loop over them and prevent submission
             form.addEventListener('submit', function(event) {
                 if (!form.checkValidity()) {
                     event.preventDefault();
@@ -571,16 +637,21 @@
             }, false);
         })();
 
+        // Carregar o Google Maps
+        loadGoogleMaps();
+
+        // Listener para mudança no tipo de veículo
         $('#truck_type').change(function() {
             if (autocompleteStart?.getPlace() && autocompleteDestination?.getPlace()) {
                 calculateRoute();
             }
         });
 
+        // Listener para envio do formulário
         $('#freightRequestForm').on('submit', function(e) {
             e.preventDefault();
             
-            // Validate required fields
+            // Validar campos obrigatórios
             const requiredFields = [
                 'start_address', 
                 'destination_address',
@@ -611,16 +682,13 @@
                 return;
             }
 
+            // Desabilitar botão de envio
             $('#submitBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span> Enviando...');
 
+            // Preparar dados do formulário
             const formData = new FormData(this);
 
-            // Debug: mostra todos os valores do formulário
-            console.log('Valores do formulário:');
-            for (let [name, value] of formData.entries()) {
-                console.log(`${name}: ${value}`);
-            }
-
+            // Enviar requisição AJAX
             fetch(this.action, {
                 method: 'POST',
                 body: formData,
@@ -633,6 +701,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.payment_link) {
+                    // Abrir link de pagamento em nova aba
                     const paymentWindow = window.open(data.payment_link, '_blank');
                     
                     if (!paymentWindow) {
@@ -645,6 +714,7 @@
                         return;
                     }
                     
+                    // Exibir mensagem de sucesso
                     Swal.fire({
                         icon: 'success',
                         title: 'Frete criado com sucesso!',
@@ -656,6 +726,7 @@
                         }
                     });
                 } else {
+                    // Exibir mensagem de erro
                     $('#submitBtn').prop('disabled', false).html('<i class="fas fa-qrcode me-2"></i> Confirmar e Pagar via PIX');
                     Swal.fire({
                         icon: 'error',

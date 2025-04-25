@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Shipment;
 use App\Models\Company;
 use App\Models\Driver;
+use App\Models\Setting;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 
@@ -200,6 +201,7 @@ class ShipmentController extends Controller
     {
         $shipment = Shipment::findOrFail($id);
         $companies = Company::findOrFail($shipment->company_id);
-        return view('shipments.requestFreight', compact('shipment', 'companies'));
+        $settings =  Setting::first();
+        return view('shipments.requestFreight', compact('shipment', 'companies','settings'));
     }
 }
