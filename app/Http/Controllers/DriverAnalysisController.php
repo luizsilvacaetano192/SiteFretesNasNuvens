@@ -16,8 +16,6 @@ class DriverAnalysisController extends Controller
     {
        
         $driver = Driver::findorfail($driver_id);
-
-        dd($driver);
        
     
         try {
