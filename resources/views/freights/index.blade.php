@@ -389,32 +389,6 @@
                         </div>
                     </div>
                 </div>
-                
-                <!-- Documentos Anexos -->
-                <div class="card">
-                    <div class="card-header bg-white">
-                        <h6 class="mb-0">
-                            <i class="fas fa-paperclip me-2"></i>Documentos Anexos
-                        </h6>
-                    </div>
-                    <div class="card-body">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0" id="documents-table">
-                                <thead>
-                                    <tr>
-                                        <th>Tipo</th>
-                                        <th>Documento</th>
-                                        <th>Data</th>
-                                        <th>Ações</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="documents-list">
-                                    <!-- Documentos serão preenchidos via JS -->
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
@@ -691,12 +665,12 @@ body {
 
 <script>
 // Variáveis globais
+let map, directionsService, directionsRenderer, truckMarker, trackingInterval;
 let freightTable;
 let refreshInterval = 10000; // 10 segundos
 let nextRefreshCountdown = refreshInterval / 1000;
 let countdownInterval;
 let lastData = null;
-let currentFreightId = null;
 
 // Configuração do Toastr
 toastr.options = {
@@ -757,7 +731,7 @@ function initializeDataTable() {
                 render: function(data, type, row) {
                     if (!data) return 'N/A';
                     return `
-                        <div style="width:50px" class="text-truncate-container" title="${data}">
+                        <div class="text-truncate-container" title="${data}">
                             <span class="fw-semibold">${data}</span>
                         </div>
                     `;
@@ -1283,149 +1257,36 @@ function initMap() {
     const defaultCenter = { lat: -15.7801, lng: -47.9292 };
     
     try {
-        // Verifica se o mapa já foi inicializado
-        if (window.map) {
-            window.map.setCenter(defaultCenter);
-            window.map.setZoom(7);
-            return window.map;
-        }
-        
-        window.map = new google.maps.Map(mapElement, {
+        map = new google.maps.Map(mapElement, {
             zoom: 7,
             center: defaultCenter,
             mapTypeId: google.maps.MapTypeId.ROADMAP
         });
 
-        window.directionsService = new google.maps.DirectionsService();
-        window.directionsRenderer = new google.maps.DirectionsRenderer({
+        directionsService = new google.maps.DirectionsService();
+        directionsRenderer = new google.maps.DirectionsRenderer({
             suppressMarkers: true,
-            map: window.map,
+            map: map,
             polylineOptions: {
                 strokeColor: '#4e73df',
                 strokeOpacity: 0.8,
                 strokeWeight: 4
             }
         });
-        
-        return window.map;
     } catch (error) {
         console.error("Erro ao inicializar o mapa:", error);
-        return null;
     }
 }
 
-function calculateAndDisplayRoute(startLat, startLng, destLat, destLng) {
-    if (!window.directionsService || !window.directionsRenderer) {
-        console.error("Serviço de rotas não inicializado");
-        return;
-    }
-
-    const start = new google.maps.LatLng(startLat, startLng);
-    const end = new google.maps.LatLng(destLat, destLng);
-
-    window.directionsService.route({
-        origin: start,
-        destination: end,
-        travelMode: google.maps.TravelMode.DRIVING,
-        provideRouteAlternatives: false
-    }, (response, status) => {
-        if (status === 'OK') {
-            window.directionsRenderer.setDirections(response);
-            
-            const route = response.routes[0].legs[0];
-            $('#distance').text(route.distance.text);
-            $('#duration').text(route.duration.text);
-            
-            // Adiciona marcadores personalizados
-            new google.maps.Marker({
-                position: start,
-                map: window.map,
-                icon: {
-                    url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-                    scaledSize: new google.maps.Size(32, 32)
-                },
-                title: "Ponto de Partida"
-            });
-
-            new google.maps.Marker({
-                position: end,
-                map: window.map,
-                icon: {
-                    url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                    scaledSize: new google.maps.Size(32, 32)
-                },
-                title: "Ponto de Destino"
-            });
-            
-            // Ajusta o zoom para mostrar toda a rota
-            const bounds = new google.maps.LatLngBounds();
-            bounds.extend(start);
-            bounds.extend(end);
-            window.map.fitBounds(bounds);
-        } else {
-            console.error('Erro ao calcular rota:', status);
-            toastr.error('Erro ao calcular rota: ' + status);
-        }
-    });
-}
-
-function updateTruckPosition(lat, lng) {
-    if (!window.map) {
-        console.error("Mapa não inicializado");
-        return;
-    }
-
-    const position = new google.maps.LatLng(lat, lng);
-    
-    // Atualiza ou cria o marcador do caminhão
-    if (!window.truckMarker) {
-        window.truckMarker = new google.maps.Marker({
-            position: position,
-            map: window.map,
-            icon: {
-                url: "https://img.icons8.com/ios-filled/50/000000/truck.png",
-                scaledSize: new google.maps.Size(40, 40),
-                anchor: new google.maps.Point(20, 20)
-            },
-            title: "Posição Atual do Caminhão"
-        });
+$('#freightModal').on('shown.bs.modal', function() {
+    if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
+        initMap();
     } else {
-        window.truckMarker.setPosition(position);
+        console.error("Google Maps API não carregada");
     }
-    
-    // Atualiza a informação de posição
-    $('#current-position').text(`${lat.toFixed(6)}, ${lng.toFixed(6)}`);
-    $('#last-update').text(new Date().toLocaleTimeString());
-    
-    // Centraliza o mapa na posição do caminhão
-    window.map.panTo(position);
-    window.map.setZoom(16);
-    
-    // Inicia/Reinicia o rastreamento em tempo real
-    if (window.trackingInterval) {
-        clearInterval(window.trackingInterval);
-    }
-    
-    window.trackingInterval = setInterval(() => {
-        fetchUpdatedPosition();
-    }, 10000); // Atualiza a cada 10 segundos
-}
-
-function fetchUpdatedPosition() {
-    if (!currentFreightId) return;
-    
-    $.get(`/freights/${currentFreightId}/position`, function(response) {
-        if (response.lat && response.lng) {
-            updateTruckPosition(response.lat, response.lng);
-        }
-    }).fail(function() {
-        console.error('Erro ao buscar posição atualizada');
-    });
-}
+});
 
 function loadFreightDetails(freightId) {
-    currentFreightId = freightId;
-    
     $.get(`/freights/${freightId}`, function(response) {
         $('#modal-title').text(`Frete #${response.id} - ${response.company.name}`);
         
@@ -1522,32 +1383,107 @@ function loadFreightDetails(freightId) {
             response.destination_lat && response.destination_lng) {
             
             calculateAndDisplayRoute(
-                parseFloat(response.start_lat), 
-                parseFloat(response.start_lng),
-                parseFloat(response.destination_lat), 
-                parseFloat(response.destination_lng)
+                (response.start_lat), 
+                (response.start_lng),
+                (response.destination_lat), 
+                (response.destination_lng)
             );
 
             // Atualiza a posição do caminhão se existir
             if (response.current_lat && response.current_lng) {
                 updateTruckPosition(
-                    parseFloat(response.current_lat), 
-                    parseFloat(response.current_lng)
+                    (response.current_lat), 
+                    (response.current_lng)
                 );
             }
         }
 
         // Carrega o histórico
         loadFreightHistory(freightId);
-        
-        // Carrega documentos anexos
-        loadFreightDocuments(freightId);
 
         // Abre o modal
         $('#freightModal').modal('show');
     }).fail(function() {
         toastr.error('Erro ao carregar detalhes do frete');
     });
+}
+
+function calculateAndDisplayRoute(startLat, startLng, destLat, destLng) {
+    const start = new google.maps.LatLng(startLat, startLng);
+    const end = new google.maps.LatLng(destLat, destLng);
+
+    directionsService.route({
+        origin: start,
+        destination: end,
+        travelMode: google.maps.TravelMode.DRIVING
+    }, (response, status) => {
+        if (status === 'OK') {
+            directionsRenderer.setDirections(response);
+            
+            const route = response.routes[0].legs[0];
+            $('#distance').text(route.distance.text);
+            $('#duration').text(route.duration.text);
+            
+            // Adiciona marcadores personalizados
+            new google.maps.Marker({
+                position: start,
+                map: map,
+                icon: {
+                    url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+                    scaledSize: new google.maps.Size(32, 32)
+                },
+                title: "Ponto de Partida"
+            });
+
+            new google.maps.Marker({
+                position: end,
+                map: map,
+                icon: {
+                    url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                    scaledSize: new google.maps.Size(32, 32)
+                },
+                title: "Ponto de Destino"
+            });
+
+            // Ajusta o zoom e centraliza para mostrar toda a rota
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend(start);
+            bounds.extend(end);
+            
+            // Ajusta o zoom com uma pequena margem
+            map.fitBounds(bounds);
+            
+            // Define um zoom máximo para evitar ficar muito distante
+            const zoom = map.getZoom();
+            if (zoom > 12) {
+                map.setZoom(12);
+            }
+        } else {
+            toastr.error('Erro ao calcular rota: ' + status);
+        }
+    });
+}
+
+function updateTruckPosition(lat, lng) {
+    const position = new google.maps.LatLng(lat, lng);
+    
+    if (!truckMarker) {
+        truckMarker = new google.maps.Marker({
+            position: position,
+            map: map,
+            icon: {
+                url: "https://img.icons8.com/ios-filled/50/000000/truck.png",
+                scaledSize: new google.maps.Size(40, 40)
+            },
+            title: "Posição Atual do Caminhão"
+        });
+    } else {
+        truckMarker.setPosition(position);
+    }
+    
+    // Centraliza o mapa na posição do caminhão
+    map.panTo(position);
+    map.setZoom(12);
 }
 
 function loadFreightHistory(freightId) {
@@ -1574,77 +1510,6 @@ function loadFreightHistory(freightId) {
         toastr.error('Erro ao carregar histórico de atividades');
     });
 }
-
-function loadFreightDocuments(freightId) {
-    $.get(`/freights/${freightId}/documents`, function(response) {
-        const documentsTable = $('#documents-list');
-        documentsTable.empty();
-
-        if (response.length === 0) {
-            documentsTable.append('<tr><td colspan="4" class="text-center">Nenhum documento anexado</td></tr>');
-            return;
-        }
-
-        response.forEach(doc => {
-            const date = new Date(doc.created_at);
-            documentsTable.append(`
-                <tr>
-                    <td>${doc.type}</td>
-                    <td>${doc.name}</td>
-                    <td>${date.toLocaleDateString()}</td>
-                    <td>
-                        <a href="${doc.url}" class="btn btn-sm btn-primary" target="_blank">
-                            <i class="fas fa-download me-1"></i>Baixar
-                        </a>
-                    </td>
-                </tr>
-            `);
-        });
-    }).fail(function() {
-        console.error('Erro ao carregar documentos');
-    });
-}
-
-// Evento quando o modal é aberto
-$('#freightModal').on('shown.bs.modal', function() {
-    // Força a inicialização do mapa se ainda não estiver pronto
-    if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
-        console.error("Google Maps API não carregada");
-        return;
-    }
-    
-    initMap();
-    
-    // Redesenha o mapa para corrigir possíveis problemas de renderização
-    setTimeout(() => {
-        if (window.map) {
-            google.maps.event.trigger(window.map, 'resize');
-        }
-    }, 100);
-});
-
-// Evento quando o modal é fechado
-$('#freightModal').on('hidden.bs.modal', function() {
-    // Limpa o intervalo de rastreamento
-    if (window.trackingInterval) {
-        clearInterval(window.trackingInterval);
-        window.trackingInterval = null;
-    }
-    
-    // Remove o marcador do caminhão
-    if (window.truckMarker) {
-        window.truckMarker.setMap(null);
-        window.truckMarker = null;
-    }
-    
-    // Limpa a rota
-    if (window.directionsRenderer) {
-        window.directionsRenderer.setMap(null);
-    }
-    
-    // Limpa o ID do frete atual
-    currentFreightId = null;
-});
 
 String.prototype.capitalize = function() {
     return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });

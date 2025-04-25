@@ -63,7 +63,10 @@ class DriverAnalysisController extends Controller
             if (count($matches) > 0 && $matches[0]['Similarity'] >= 80) {
                 return response()->json([
                     'status' => 'analisado',
-                    'message' => "✅ A foto do rosto é compatível com a CNH (semelhança: " . round($matches[0]['Similarity'], 2) . "%)"
+                    'message' => "✅ A foto do rosto é compatível com a CNH (semelhança: " . round($matches[0]['Similarity'], 2) . "%)",
+                    'driver_license_front_photo' => $targetImageKey,
+                    'address_proof_photo' => $driver['address_proof_photo'],
+                    'face_photo' => $sourceImageKey
                 ]);
             } else {
                 return response()->json([
