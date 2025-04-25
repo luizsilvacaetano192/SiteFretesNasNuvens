@@ -944,9 +944,13 @@ function showBalanceModal(driverId) {
 }
 
 function formatTruckDetails(d) {
+    // Verifica se os dados existem
+    if (!d) {
+        return '<div class="alert alert-warning">Dados do caminhão não disponíveis</div>';
+    }
+
     // Função para construir URL completa do S3 ou local
     function getS3Url(path) {
-        console.log('path', path)
         if (!path) return null;
         // Se já for uma URL completa, retorna como está
         if (path.startsWith('http')) return path;
@@ -990,38 +994,38 @@ function formatTruckDetails(d) {
         `;
     }
 
-    // Fotos do caminhão
+    // Fotos do caminhão - verifica se existe antes de tentar acessar
     let truckPhotosHtml = '';
-    if (d.photos) {
+    if (d.photos && (d.photos.front || d.photos.rear || d.photos.left_side || d.photos.right_side || d.photos.documents)) {
         truckPhotosHtml = `
         <div class="row mt-3">
             <div class="col-md-12">
                 <h6 class="fw-bold">Fotos do Caminhão</h6>
             </div>
             <div class="col-md-4 mb-3">
-                ${renderPhotoColumn(d.photos.front, 'Frente')}
+                ${renderPhotoColumn(d.photos?.front, 'Frente')}
             </div>
             <div class="col-md-4 mb-3">
-                ${renderPhotoColumn(d.photos.rear, 'Traseira')}
+                ${renderPhotoColumn(d.photos?.rear, 'Traseira')}
             </div>
             <div class="col-md-4 mb-3">
-                ${renderPhotoColumn(d.photos.left_side, 'Lateral Esquerda')}
+                ${renderPhotoColumn(d.photos?.left_side, 'Lateral Esquerda')}
             </div>
             <div class="col-md-4 mb-3">
-                ${renderPhotoColumn(d.photos.right_side, 'Lateral Direita')}
+                ${renderPhotoColumn(d.photos?.right_side, 'Lateral Direita')}
             </div>
             <div class="col-md-4 mb-3">
-                ${renderPhotoColumn(d.photos.documents?.crv, 'CRV')}
+                ${renderPhotoColumn(d.photos?.documents?.crv, 'CRV')}
             </div>
             <div class="col-md-4 mb-3">
-                ${renderPhotoColumn(d.photos.documents?.crlv, 'CRLV')}
+                ${renderPhotoColumn(d.photos?.documents?.crlv, 'CRLV')}
             </div>
         </div>`;
     }
 
-    // Implementos
+    // Implementos - verifica se existe antes de tentar acessar
     let implementsHtml = '';
-    if (d.implements && d.implements.length > 0) {
+    if (d.implements && Array.isArray(d.implements) && d.implements.length > 0) {
         implementsHtml = `
         <div class="mt-3">
             <h6 class="fw-bold">Implementos</h6>
@@ -1040,12 +1044,12 @@ function formatTruckDetails(d) {
                     <tbody>
                         ${d.implements.map(imp => `
                             <tr>
-                                <td>${imp.type || 'Não informado'}</td>
-                                <td>${(imp.brand || '') + ' ' + (imp.model || '') || 'Não informado'}</td>
-                                <td>${imp.license_plate || 'Não informado'}</td>
-                                <td>${imp.manufacture_year || 'Não informado'}</td>
-                                <td>${imp.capacity || 'Não informado'}</td>
-                                <td>${renderPhotoColumn(imp.photo)}</td>
+                                <td>${imp?.type || 'Não informado'}</td>
+                                <td>${(imp?.brand || '') + ' ' + (imp?.model || '') || 'Não informado'}</td>
+                                <td>${imp?.license_plate || 'Não informado'}</td>
+                                <td>${imp?.manufacture_year || 'Não informado'}</td>
+                                <td>${imp?.capacity || 'Não informado'}</td>
+                                <td>${renderPhotoColumn(imp?.photo)}</td>
                             </tr>
                         `).join('')}
                     </tbody>
