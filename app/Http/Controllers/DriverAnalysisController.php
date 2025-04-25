@@ -68,13 +68,19 @@ class DriverAnalysisController extends Controller
             } else {
                 return response()->json([
                     'status' => 'analisado',
-                    'message' => "⚠️ As imagens não são compatíveis o suficiente (semelhança abaixo de 80%)"
+                    'message' => "⚠️ As imagens não são compatíveis o suficiente (semelhança abaixo de 80%)",
+                    'driver_license_front_photo' => $targetImageKey,
+                    'address_proof_photo' => $driver['address_proof_photo'],
+                    'face_photo' => $sourceImageKey
                 ]);
             }
         } catch (\Exception $e) {
             return response()->json([
                 'status' => 'erro',
-                'message' => 'Erro ao usar o AWS Rekognition: ' . $e->getMessage()
+                'message' => 'Erro ao usar o AWS Rekognition: ' . $e->getMessage(),
+                'driver_license_front_photo' => $targetImageKey,
+                'address_proof_photo' => $driver['address_proof_photo'],
+                'face_photo' => $sourceImageKey
             ], 500);
         }
     }
