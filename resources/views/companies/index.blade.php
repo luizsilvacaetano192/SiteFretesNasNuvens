@@ -19,20 +19,16 @@
     .table td {
         vertical-align: middle;
     }
-    .badge-status {
-        font-size: 0.85rem;
-        padding: 5px 10px;
-        border-radius: 20px;
-    }
     .action-buttons .btn {
-        padding: 5px 8px;
+        padding: 5px;
         margin: 0 2px;
-        border-radius: 50%;
+        border-radius: 6px;
         width: 32px;
         height: 32px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        transition: all 0.2s;
     }
     .details-row {
         background-color: #f9fafb;
@@ -121,6 +117,42 @@
     .btn-edit:hover, .btn-delete:hover, .btn-view:hover {
         opacity: 0.9;
     }
+    .company-icon {
+        font-size: 1.5rem;
+        color: #3b7ddd;
+        background-color: rgba(59, 125, 221, 0.1);
+        width: 40px;
+        height: 40px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .badge-status {
+        font-size: 0.8rem;
+        padding: 5px 10px;
+        border-radius: 6px;
+        font-weight: 500;
+        display: inline-flex;
+        align-items: center;
+    }
+    .badge-status i {
+        margin-right: 4px;
+    }
+    .bg-success-light {
+        background-color: rgba(40, 167, 69, 0.1) !important;
+        border: 1px solid rgba(40, 167, 69, 0.2);
+    }
+    .bg-danger-light {
+        background-color: rgba(220, 53, 69, 0.1) !important;
+        border: 1px solid rgba(220, 53, 69, 0.2);
+    }
+    .text-success {
+        color: #28a745 !important;
+    }
+    .text-danger {
+        color: #dc3545 !important;
+    }
 </style>
 @endpush
 
@@ -128,11 +160,11 @@
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h2 class="mb-0"><i class="bi bi-building me-2"></i>Gestão de Empresas</h2>
+            <h2 class="mb-0"><i class="bi bi-buildings me-2"></i>Gestão de Empresas</h2>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item"><a href="{{ route('home') }}"><i class="bi bi-house-door me-1"></i>Home</a></li>
-                    <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-building me-1"></i>Empresas</li>
+                    <li class="breadcrumb-item active" aria-current="page"><i class="bi bi-buildings me-1"></i>Empresas</li>
                 </ol>
             </nav>
         </div>
@@ -232,7 +264,7 @@ $(document).ready(function() {
                 className: 'dt-control',
                 orderable: false,
                 data: null,
-                defaultContent: '<i class="bi bi-plus-circle"></i>',
+                defaultContent: '<i class="bi bi-chevron-down"></i>',
                 width: '5%'
             },
             { data: 'id', name: 'id' },
@@ -242,7 +274,9 @@ $(document).ready(function() {
                 render: function(data, type, row) {
                     return `<div class="d-flex align-items-center">
                                 <div class="flex-shrink-0 me-3">
-                                    <i class="bi bi-building fs-4 text-primary"></i>
+                                    <div class="company-icon">
+                                        <i class="bi bi-buildings"></i>
+                                    </div>
                                 </div>
                                 <div class="flex-grow-1">
                                     <strong>${data}</strong><br>
@@ -269,9 +303,10 @@ $(document).ready(function() {
                 data: 'active', 
                 name: 'active',
                 render: function(data) {
-                    const icon = data ? 'bi-check-circle-fill text-success' : 'bi-x-circle-fill text-danger';
-                    return `<span class="badge-status ${data ? 'bg-success' : 'bg-danger'}">
-                                <i class="bi ${icon} me-1"></i>${data ? 'Ativo' : 'Inativo'}
+                    const icon = data ? 'bi-check-circle' : 'bi-x-circle';
+                    const bgClass = data ? 'bg-success-light text-success' : 'bg-danger-light text-danger';
+                    return `<span class="badge-status ${bgClass}">
+                                <i class="bi ${icon}"></i>${data ? 'Ativo' : 'Inativo'}
                             </span>`;
                 }
             },
@@ -316,11 +351,11 @@ $(document).ready(function() {
         if (row.child.isShown()) {
             row.child.hide();
             tr.removeClass('shown');
-            $(this).html('<i class="bi bi-plus-circle"></i>');
+            $(this).html('<i class="bi bi-chevron-down"></i>');
         } else {
             row.child(format(row.data())).show();
             tr.addClass('shown');
-            $(this).html('<i class="bi bi-dash-circle"></i>');
+            $(this).html('<i class="bi bi-chevron-up"></i>');
         }
     });
 
