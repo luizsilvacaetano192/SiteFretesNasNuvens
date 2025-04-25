@@ -41,6 +41,8 @@ class DriverAnalysisController extends Controller
             if (empty($sourceImageKey) || empty($targetImageKey)) {
                 throw new \Exception("Caminhos das imagens inválidos.");
             }
+
+            die('esta aq');
                 
             $result = $rekognition->compareFaces([
                 'SimilarityThreshold' => 80,
