@@ -1290,6 +1290,8 @@ function loadFreightDetails(freightId) {
     $.get(`/freights/${freightId}`, function(response) {
         $('#modal-title').text(`Frete #${response.id} - ${response.company.name}`);
         
+        $('#current-position').text(response.current_position || 'Não disponível');
+        $('#last-update').text(new Date().toLocaleString());
         // Informações da Carga
         $('#cargo-type').text(response.shipment.cargo_type);
         $('#cargo-weight').text(`${response.shipment.weight} kg`);
@@ -1381,7 +1383,7 @@ function loadFreightDetails(freightId) {
         // Configura o mapa e a rota
         if (response.start_lat && response.start_lng && 
             response.destination_lat && response.destination_lng) {
-            
+            console.log('esponse.start_lat', response.start_lat)
             calculateAndDisplayRoute(
                 (response.start_lat), 
                 (response.start_lng),
@@ -1390,10 +1392,12 @@ function loadFreightDetails(freightId) {
             );
 
             // Atualiza a posição do caminhão se existir
+            console.log('response.current_lat',response.current_lat)
+            console.log('response.current_lng', response.current_lng)
             if (response.current_lat && response.current_lng) {
                 updateTruckPosition(
-                    (response.current_lat), 
-                    (response.current_lng)
+                    parseFloat(response.current_lat), 
+                    parseFloat(response.current_lng)
                 );
             }
         }
@@ -1444,25 +1448,13 @@ function calculateAndDisplayRoute(startLat, startLng, destLat, destLng) {
                 },
                 title: "Ponto de Destino"
             });
-
-            // Ajusta o zoom e centraliza para mostrar toda a rota
-            const bounds = new google.maps.LatLngBounds();
-            bounds.extend(start);
-            bounds.extend(end);
-            
-            // Ajusta o zoom com uma pequena margem
-            map.fitBounds(bounds);
-            
-            // Define um zoom máximo para evitar ficar muito distante
-            const zoom = map.getZoom();
-            if (zoom > 12) {
-                map.setZoom(12);
-            }
         } else {
             toastr.error('Erro ao calcular rota: ' + status);
         }
     });
 }
+
+
 
 function updateTruckPosition(lat, lng) {
     const position = new google.maps.LatLng(lat, lng);
@@ -1485,6 +1477,7 @@ function updateTruckPosition(lat, lng) {
     map.panTo(position);
     map.setZoom(12);
 }
+
 
 function loadFreightHistory(freightId) {
     $.get(`/freights/${freightId}/history`, function(response) {
