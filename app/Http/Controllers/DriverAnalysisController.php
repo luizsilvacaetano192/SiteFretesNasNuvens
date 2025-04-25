@@ -28,19 +28,10 @@ class DriverAnalysisController extends Controller
                 ],
             ]);
     
-            $sourceImageKey =     env('AWS_URL') . $driver['face_photo'];
-            $targetImageKey =     env('AWS_URL') . $driver['driver_license_front'];
+            $sourceImageKey =      $driver['face_photo'];
+            $targetImageKey =      $driver['driver_license_front'];
 
-            // Se for uma URL HTTP, extrai o caminho; se não, usa o valor diretamente
-            if (str_starts_with($sourceImageKey, 'http')) {
-                $sourceImageKey = parse_url($sourceImageKey, PHP_URL_PATH);
-                $sourceImageKey = ltrim($sourceImageKey, '/');
-            }
-            if (str_starts_with($targetImageKey, 'http')) {
-                $targetImageKey = parse_url($targetImageKey, PHP_URL_PATH);
-                $targetImageKey = ltrim($targetImageKey, '/');
-            }
-
+           
             // Verifica se o bucket está configurado
             if (empty(env('AWS_BUCKET'))) {
                 throw new \Exception("Bucket S3 não configurado no .env");
