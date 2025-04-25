@@ -1429,7 +1429,7 @@ function loadFreightDetails(freightId) {
         loadFreightHistory(freightId);
         
         // Carrega documentos anexos
-        loadFreightDocuments(freightId);
+       // loadFreightDocuments(freightId);
 
         // Abre o modal
         $('#freightModal').modal('show');
