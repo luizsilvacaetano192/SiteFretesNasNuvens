@@ -142,9 +142,7 @@
 
     <div class="card shadow-sm border-0 rounded-lg">
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center">
-            <h5 class="mb-3 mb-md-0">
-                <i class="fas fa-list me-2"></i>Lista de Fretes
-            </h5>
+        
             <div class="d-flex flex-column flex-md-row gap-3 w-100 w-md-auto">
                 <div class="input-group" style="width: 200px;">
                     <span class="input-group-text bg-transparent">
@@ -182,13 +180,9 @@
                     </span>
                     <input type="date" id="end-date-filter" class="form-control" placeholder="Data final">
                 </div>
-                <div class="input-group" style="width: 300px;">
-                    <span class="input-group-text bg-transparent">
-                        <i class="fas fa-search"></i>
-                    </span>
-                    <input type="text" id="freight-search" class="form-control" placeholder="Pesquisar...">
-                </div>
+                
             </div>
+            
         </div>
         
         <div class="card-body p-0">

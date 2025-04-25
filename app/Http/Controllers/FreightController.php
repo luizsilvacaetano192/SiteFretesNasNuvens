@@ -30,6 +30,31 @@ class FreightController extends Controller
         $query = Freight::with(['driver', 'freightStatus', 'company', 'shipment', 'charge'])
                 ->select('freights.*');
     
+        // Aplica os filtros antes de passar para o DataTables
+        if ($request->status_filter) {
+            $query->where('status_id', $request->status_filter);
+        }
+    
+        if ($request->company_filter) {
+            $query->where('company_id', $request->company_filter);
+        }
+    
+        if ($request->driver_filter) {
+            $query->where('driver_id', $request->driver_filter);
+        }
+    
+        // Filtros de data
+        if ($request->start_date) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+    
+        if ($request->end_date) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+    
+        // Ordenação padrão
+        $query->orderBy('id', 'desc');
+    
         return DataTables::of($query)
             ->addColumn('company_name', function($freight) {
                 return $freight->company->name ?? 'N/A';
@@ -47,16 +72,15 @@ class FreightController extends Controller
                 $status = $freight->freightStatus;
                 if (!$status) return '<span class="badge bg-secondary">N/A</span>';
                 
-                // Mapeamento dos status conforme solicitado
                 $badgeClass = [
-                    '1' => 'bg-secondary', // Carga cadastrada (removido conforme solicitado)
-                    '3' => 'bg-warning',   // Aguardando pagamento
-                    '4' => 'bg-info',      // Aguardando motorista
-                    '5' => 'bg-secondary', // Aguardando aprovação empresa
-                    '6' => 'bg-primary',   // Aguardando retirada
-                    '7' => 'bg-primary',   // Indo retirar carga
-                    '8' => 'bg-info',      // Em processo de entrega
-                    '9' => 'bg-success',   // Carga entregue
+                    '1' => 'bg-secondary',
+                    '3' => 'bg-warning',
+                    '4' => 'bg-info',
+                    '5' => 'bg-secondary',
+                    '6' => 'bg-primary',
+                    '7' => 'bg-primary',
+                    '8' => 'bg-info',
+                    '9' => 'bg-success',
                 ][$status->id] ?? 'bg-secondary';
                 
                 return '<span class="badge '.$badgeClass.'">'.$status->name.'</span>';
@@ -70,7 +94,6 @@ class FreightController extends Controller
                 $status = strtolower($freight->charge->status ?? '');
                 
                 if ($status === 'paid') {
-                    // Status PAID - Mostrar botão de recibo se existir
                     if ($freight->charge->receipt_url) {
                         return '
                             <a href="'.$freight->charge->receipt_url.'" class="btn btn-sm btn-info" target="_blank" title="Visualizar Recibo">
@@ -80,7 +103,6 @@ class FreightController extends Controller
                     }
                     return '<span class="badge bg-success">Pago</span>';
                 } else {
-                    // Status NÃO PAID - Mostrar botão de pagar se existir
                     if ($freight->charge->charge_url) {
                         return '
                             <a href="'.$freight->charge->charge_url.'" class="btn btn-sm btn-success" target="_blank" title="Realizar Pagamento">
@@ -104,26 +126,6 @@ class FreightController extends Controller
                 ';
             })
             ->rawColumns(['status_badge', 'actions', 'payment_button', 'driver_name'])
-            ->filter(function ($query) use ($request) {
-                if ($request->has('status') && $request->status != '') {
-                    $query->where('status_id', $request->status);
-                }
-                
-                if ($request->has('search') && !empty($request->search['value'])) {
-                  
-                    $query = Freight::with(['company', 'driver', 'status'])
-                    ->when($request->has('filters.status') && $request->filters['status'], function($q) use ($request) {
-                        $q->where('status_id', $request->filters['status']);
-                    })
-                    ->when($request->has('filters.company') && $request->filters['company'], function($q) use ($request) {
-                        $q->where('company_id', $request->filters['company']);
-                    })
-                    ->when($request->has('filters.driver') && $request->filters['driver'], function($q) use ($request) {
-                        $q->where('driver_id', $request->filters['driver']);
-                
-                    });
-                }
-            })
             ->make(true);
     }
 
