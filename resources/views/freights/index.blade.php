@@ -142,7 +142,6 @@
 
     <div class="card shadow-sm border-0 rounded-lg">
         <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center">
-        
             <div class="d-flex flex-column flex-md-row gap-3 w-100 w-md-auto">
                 <div class="input-group" style="width: 200px;">
                     <span class="input-group-text bg-transparent">
@@ -180,9 +179,7 @@
                     </span>
                     <input type="date" id="end-date-filter" class="form-control" placeholder="Data final">
                 </div>
-                
             </div>
-            
         </div>
         
         <div class="card-body p-0">
@@ -466,6 +463,58 @@ body {
     padding: 1rem 1.35rem;
 }
 
+/* Estilos para a tabela responsiva */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+/* Estilo para células com texto truncado */
+.text-truncate-container {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Mostrar tooltip no hover para texto truncado */
+.text-truncate-container:hover {
+    overflow: visible;
+    white-space: normal;
+    word-break: break-all;
+    z-index: 1000;
+    position: relative;
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Ajuste para telas menores */
+@media (max-width: 992px) {
+    #freights-table th, 
+    #freights-table td {
+        white-space: nowrap;
+    }
+    
+    .table-responsive {
+        width: 100%;
+        margin-bottom: 15px;
+        overflow-y: hidden;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+        border: 1px solid #ddd;
+    }
+}
+
+/* Garantir que os botões de ação sempre fiquem visíveis */
+#freights-table td:last-child {
+    position: sticky;
+    right: 0;
+    background-color: white;
+    z-index: 10;
+    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
+}
+
 .table thead th {
     vertical-align: middle;
     padding: 1rem;
@@ -663,117 +712,166 @@ $(document).ready(function() {
 
 function initializeDataTable() {
     freightTable = $('#freights-table').DataTable({
-        processing: true,
-        serverSide: true,
-        ajax: {
-            url: '{{ route('freights.data') }}',
-            type: 'GET',
-            data: function(d) {
-                d.order = [{ column: 0, dir: 'desc' }];
-                // Adiciona os filtros aos parâmetros da requisição
-                d.status_filter = $('#status-filter').val();
-                d.company_filter = $('#company-filter').val();
-                d.driver_filter = $('#driver-filter').val();
-                d.start_date = $('#start-date-filter').val();
-                d.end_date = $('#end-date-filter').val();
-            },
-            error: function(xhr, error, thrown) {
-                console.error('Erro ao carregar dados:', xhr.responseText);
-                toastr.error('Erro ao carregar dados da tabela');
-            }
+    processing: true,
+    serverSide: true,
+    ajax: {
+        url: '{{ route('freights.data') }}',
+        type: 'GET',
+        data: function(d) {
+            d.status_filter = $('#status-filter').val();
+            d.company_filter = $('#company-filter').val();
+            d.driver_filter = $('#driver-filter').val();
+            d.start_date = $('#start-date-filter').val();
+            d.end_date = $('#end-date-filter').val();
         },
-        order: [[0, 'desc']],
-        columns: [
-            { 
-                data: 'id', 
-                name: 'id',
-                className: 'fw-semibold'
-            },
-            { 
-                data: 'company_name', 
-                name: 'company.name',
-                render: function(data, type, row) {
-                    return data ? `<span class="fw-semibold">${data}</span>` : 'N/A';
-                }
-            },
-            { 
-                data: 'start_address', 
-                name: 'start_address',
-                render: function(data) {
-                    return data ? `<span class="text-truncate d-inline-block" style="max-width: 200px;" title="${data}">${data}</span>` : 'N/A';
-                }
-            },
-            { 
-                data: 'destination_address', 
-                name: 'destination_address',
-                render: function(data) {
-                    return data ? `<span class="text-truncate d-inline-block" style="max-width: 200px;" title="${data}">${data}</span>` : 'N/A';
-                }
-            },
-            { 
-                data: 'driver_name', 
-                name: 'driver.name',
-                render: function(data, type, row) {
-                    if (!data) return '<span class="text-muted">Não atribuído</span>';
-                    
-                    let badgeClass = 'bg-primary';
-                    if (row.driver_status === 'inactive') badgeClass = 'bg-secondary';
-                    if (row.driver_status === 'on_delivery') badgeClass = 'bg-warning';
-                    
-                    return `<span class="badge ${badgeClass}">${data}</span>`;
-                }
-            },
-            { 
-                data: 'status_badge', 
-                name: 'status.name',
-                orderable: false,
-                searchable: false
-            },
-            { 
-                data: 'formatted_value', 
-                name: 'freight_value',
-                orderable: true,
-                searchable: false
-            },
-            { 
-                data: 'payment_button', 
-                name: 'payment_button',
-                orderable: false,
-                searchable: false,
-                className: 'text-center'
-            },
-            { 
-                data: 'created_at', 
-                name: 'created_at',
-                render: function(data) {
-                    return data ? new Date(data).toLocaleDateString('pt-BR') : 'N/A';
-                }
-            },
-            { 
-                data: 'actions', 
-                name: 'actions',
-                orderable: false,
-                searchable: false,
-                className: 'text-center'
-            }
-        ],
-        language: {
-            url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
-        },
-        dom: '<"top"f>rt<"bottom"lip><"clear">',
-        buttons: [
-            {
-                extend: 'excel',
-                text: '<i class="fas fa-file-excel me-1"></i>Exportar',
-                className: 'btn btn-success',
-                title: 'Fretes'
-            }
-        ],
-        drawCallback: function(settings) {
-            updateTableInfo();
-            updateStats();
+        error: function(xhr, error, thrown) {
+            console.error('Erro ao carregar dados:', xhr.responseText);
+            toastr.error('Erro ao carregar dados da tabela');
         }
-    });
+    },
+    scrollX: true,
+    fixedColumns: {
+        left: 1,
+        right: 1
+    },
+    order: [[0, 'desc']],
+    columns: [
+        { 
+            data: 'id', 
+            name: 'id',
+            className: 'fw-semibold',
+            width: '50px'
+        },
+        { 
+            data: 'company_name', 
+            name: 'company.name',
+            width: '150px',
+            render: function(data, type, row) {
+                if (!data) return 'N/A';
+                return `
+                    <div class="text-truncate-container" title="${data}">
+                        <span class="fw-semibold">${data}</span>
+                    </div>
+                `;
+            }
+        },
+        { 
+            data: 'start_address', 
+            name: 'start_address',
+            width: '150px',
+            render: function(data) {
+                if (!data) return 'N/A';
+                return `
+                    <div class="text-truncate-container" title="${data}">
+                        ${data}
+                    </div>
+                `;
+            }
+        },
+        { 
+            data: 'destination_address', 
+            name: 'destination_address',
+            width: '150px',
+            render: function(data) {
+                if (!data) return 'N/A';
+                return `
+                    <div class="text-truncate-container" title="${data}">
+                        ${data}
+                    </div>
+                `;
+            }
+        },
+        { 
+            data: 'driver_name', 
+            name: 'driver.name',
+            width: '150px',
+            render: function(data, type, row) {
+                if (!data) return '<span class="text-muted">Não atribuído</span>';
+                
+                let badgeClass = 'bg-primary';
+                if (row.driver_status === 'inactive') badgeClass = 'bg-secondary';
+                if (row.driver_status === 'on_delivery') badgeClass = 'bg-warning';
+                
+                return `<span class="badge ${badgeClass}">${data}</span>`;
+            }
+        },
+        { 
+            data: 'status_badge', 
+            name: 'status.name',
+            width: '150px',
+            orderable: false,
+            searchable: false
+        },
+        { 
+            data: 'formatted_value', 
+            name: 'freight_value',
+            width: '100px',
+            orderable: true,
+            searchable: false,
+            className: 'text-end'
+        },
+        { 
+            data: 'payment_button', 
+            name: 'payment_button',
+            width: '120px',
+            orderable: false,
+            searchable: false,
+            className: 'text-center'
+        },
+        { 
+            data: 'created_at', 
+            name: 'created_at',
+            width: '120px',
+            render: function(data) {
+                return data ? new Date(data).toLocaleDateString('pt-BR') : 'N/A';
+            }
+        },
+        { 
+            data: 'actions', 
+            name: 'actions',
+            width: '120px',
+            orderable: false,
+            searchable: false,
+            className: 'text-center'
+        }
+    ],
+    columnDefs: [
+        { targets: 0, width: '50px' },    // ID
+        { targets: 1, width: '150px' },   // Empresa
+        { targets: 2, width: '150px' },   // Origem
+        { targets: 3, width: '150px' },   // Destino
+        { targets: -1, width: '120px' }   // Ações (última coluna)
+    ],
+    language: {
+        url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
+    },
+    dom: '<"top"f>rt<"bottom"lip><"clear">',
+    buttons: [
+        {
+            extend: 'excel',
+            text: '<i class="fas fa-file-excel me-1"></i>Exportar',
+            className: 'btn btn-success',
+            title: 'Fretes'
+        }
+    ],
+    initComplete: function() {
+        // Ativa tooltips para texto truncado
+        $('.text-truncate-container').tooltip({
+            placement: 'top',
+            trigger: 'hover'
+        });
+    },
+    drawCallback: function(settings) {
+        updateTableInfo();
+        updateStats();
+        
+        // Reativa tooltips após redesenhar a tabela
+        $('.text-truncate-container').tooltip({
+            placement: 'top',
+            trigger: 'hover'
+        });
+    }
+});
 
     // Carrega os filtros dinâmicos
     loadStatusFilter();
@@ -824,11 +922,6 @@ function loadDriverFilter() {
 }
 
 function setupEventHandlers() {
-    // Pesquisa personalizada
-    $('#freight-search').keyup(function() {
-        freightTable.search($(this).val()).draw();
-    });
-
     // Botão de atualizar
     $('#refresh-table').click(function() {
         manualRefreshTable();
@@ -875,7 +968,6 @@ function startAutoRefresh() {
 
 function updateTableWithNotifications() {
     $.get(freightTable.ajax.url(), function(newData) {
-        // Se for a primeira carga, apenas armazena os dados
         if (lastData === null) {
             lastData = newData.data || [];
             freightTable.ajax.reload(null, false);
@@ -884,23 +976,15 @@ function updateTableWithNotifications() {
             return;
         }
 
-        // Compara os dados novos com os antigos para detectar mudanças
         const hasChanges = compareDataAndNotify(lastData, newData.data || []);
         
-        // Se houver mudanças, atualiza a tabela
         if (hasChanges) {
-            // Atualiza os dados locais
             lastData = newData.data || [];
-            
-            // Recarrega a tabela sem resetar a paginação
             freightTable.ajax.reload(null, false);
         }
         
-        // Reinicia o contador
         nextRefreshCountdown = refreshInterval / 1000;
         updateCountdown();
-        
-        // Atualiza o horário da última atualização
         updateLastUpdateTime();
     }).fail(function() {
         toastr.error('Erro ao atualizar dados. Tentando novamente...');
@@ -916,7 +1000,6 @@ function compareDataAndNotify(oldData, newData) {
     console.log('Comparando dados:', {oldData, newData});
     let hasChanges = false;
 
-    // Cria mapa de IDs antigos com mais detalhes
     const oldDataMap = {};
     oldData.forEach(item => {
         oldDataMap[item.id] = {
@@ -930,40 +1013,26 @@ function compareDataAndNotify(oldData, newData) {
         };
     });
 
-    // Verifica novos registros e remoções
-    const newIds = newData.map(item => item.id);
-    oldData.forEach(item => {
-        if (!newIds.includes(item.id)) {
-            showFreightRemovedNotification(item);
-            hasChanges = true;
-        }
-    });
-
-    // Verifica cada novo item
     newData.forEach(newItem => {
         const oldItem = oldDataMap[newItem.id];
         
-        // Se é um novo registro
         if (!oldItem) {
             showNewFreightNotification(newItem);
             hasChanges = true;
             return;
         }
 
-        // Verifica mudanças de status
         if (oldItem.status_id !== newItem.status_id) {
             showStatusChangeNotification(oldItem, newItem);
             hasChanges = true;
         }
 
-        // Verifica mudanças no motorista (de null para preenchido ou alteração)
         if ((!oldItem.driver_id && newItem.driver_id) || 
             (oldItem.driver_id && newItem.driver_id && oldItem.driver_id !== newItem.driver_id)) {
             showDriverAssignedNotification(oldItem, newItem);
             hasChanges = true;
         }
 
-        // Verifica mudanças no status do motorista
         if (oldItem.driver_status !== newItem.driver_status && newItem.driver_id) {
             showDriverStatusChangeNotification(oldItem, newItem);
             hasChanges = true;
@@ -1097,7 +1166,6 @@ function getStatusNameById(statusId) {
 function updateCountdown() {
     nextRefreshCountdown--;
     
-    // Atualiza o botão de refresh com o contador
     $('#refresh-table').html(`
         <i class="fas fa-sync-alt me-1"></i>
         Atualizar (${nextRefreshCountdown}s)
@@ -1122,7 +1190,6 @@ function updateLastUpdateTime() {
 }
 
 function manualRefreshTable() {
-    // Força uma atualização imediata
     clearInterval(countdownInterval);
     updateTableWithNotifications();
     countdownInterval = setInterval(updateCountdown, 1000);
@@ -1157,7 +1224,7 @@ function deleteAllFreights() {
             if(response.success) {
                 toastr.success(response.message);
                 freightTable.ajax.reload();
-                lastData = []; // Reseta os dados locais
+                lastData = [];
             } else {
                 toastr.error(response.message);
             }
@@ -1197,7 +1264,6 @@ function deleteFreight(freightId) {
                 toastr.success(response.message);
                 freightTable.ajax.reload();
                 
-                // Remove o frete dos dados locais
                 if (lastData) {
                     lastData = lastData.filter(item => item.id !== freightId);
                 }
@@ -1213,12 +1279,10 @@ function deleteFreight(freightId) {
 
 // Funções do Mapa
 function initMap() {
-    // Verifica se o elemento do mapa existe
     const mapElement = document.getElementById("map");
     if (!mapElement) return;
     
-    // Configurações padrão do mapa
-    const defaultCenter = { lat: -15.7801, lng: -47.9292 }; // Centro do Brasil
+    const defaultCenter = { lat: -15.7801, lng: -47.9292 };
     
     try {
         map = new google.maps.Map(mapElement, {
@@ -1242,7 +1306,6 @@ function initMap() {
     }
 }
 
-// Garante que o mapa seja carregado quando o modal for aberto
 $('#freightModal').on('shown.bs.modal', function() {
     if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
         initMap();
@@ -1253,7 +1316,6 @@ $('#freightModal').on('shown.bs.modal', function() {
 
 function loadFreightDetails(freightId) {
     $.get(`/freights/${freightId}`, function(response) {
-        // Preenche informações básicas
         $('#modal-title').text(`Frete #${response.id} - ${response.company.name}`);
         
         // Informações da Carga
@@ -1322,7 +1384,6 @@ function loadFreightDetails(freightId) {
             $('#payment-value').text(response.freight_value ? 'R$ ' + parseFloat(response.freight_value).toFixed(2).replace('.', ',') : 'N/A');
             $('#driver-value').text(response.driver_freight_value ? 'R$ ' + parseFloat(response.driver_freight_value).toFixed(2).replace('.', ',') : 'N/A');
             
-            // Configura os botões de pagamento
             let paymentButtons = '';
             if(response.status && response.status.slug === 'paid' && response.charge.receipt_url) {
                 paymentButtons = `
@@ -1345,7 +1406,7 @@ function loadFreightDetails(freightId) {
             $('#payment-buttons').html('');
         }
 
-        // Configura o mapa
+        // Configura o mapa e a rota
         if (response.start_lat && response.start_lng && 
             response.destination_lat && response.destination_lng) {
             
@@ -1355,14 +1416,14 @@ function loadFreightDetails(freightId) {
                 parseFloat(response.destination_lat), 
                 parseFloat(response.destination_lng)
             );
-        }
 
-        // Atualiza a posição do caminhão
-        if (response.current_lat && response.current_lng) {
-            updateTruckPosition(
-                parseFloat(response.current_lat), 
-                parseFloat(response.current_lng)
-            );
+            // Atualiza a posição do caminhão se existir
+            if (response.current_lat && response.current_lng) {
+                updateTruckPosition(
+                    parseFloat(response.current_lat), 
+                    parseFloat(response.current_lng)
+                );
+            }
         }
 
         // Carrega o histórico
@@ -1377,41 +1438,6 @@ function loadFreightDetails(freightId) {
         toastr.error('Erro ao carregar detalhes do frete');
     });
 }
-
-function loadFreightDocuments(freightId) {
-    $.get(`/freights/${freightId}/documents`, function(response) {
-        const documentsTable = $('#documents-list');
-        documentsTable.empty();
-
-        if (response.length === 0) {
-            documentsTable.append('<tr><td colspan="4" class="text-center">Nenhum documento anexado</td></tr>');
-            return;
-        }
-
-        response.forEach(doc => {
-            const date = new Date(doc.created_at);
-            documentsTable.append(`
-                <tr>
-                    <td>${doc.type}</td>
-                    <td>${doc.name}</td>
-                    <td>${date.toLocaleDateString()}</td>
-                    <td>
-                        <a href="${doc.url}" class="btn btn-sm btn-primary" target="_blank">
-                            <i class="fas fa-download me-1"></i>Baixar
-                        </a>
-                    </td>
-                </tr>
-            `);
-        });
-    }).fail(function() {
-        console.error('Erro ao carregar documentos');
-    });
-}
-
-// Helper para capitalizar strings
-String.prototype.capitalize = function() {
-    return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
-};
 
 function calculateAndDisplayRoute(startLat, startLng, destLat, destLng) {
     const start = new google.maps.LatLng(startLat, startLng);
@@ -1502,6 +1528,40 @@ function loadFreightHistory(freightId) {
     });
 }
 
+function loadFreightDocuments(freightId) {
+    $.get(`/freights/${freightId}/documents`, function(response) {
+        const documentsTable = $('#documents-list');
+        documentsTable.empty();
+
+        if (response.length === 0) {
+            documentsTable.append('<tr><td colspan="4" class="text-center">Nenhum documento anexado</td></tr>');
+            return;
+        }
+
+        response.forEach(doc => {
+            const date = new Date(doc.created_at);
+            documentsTable.append(`
+                <tr>
+                    <td>${doc.type}</td>
+                    <td>${doc.name}</td>
+                    <td>${date.toLocaleDateString()}</td>
+                    <td>
+                        <a href="${doc.url}" class="btn btn-sm btn-primary" target="_blank">
+                            <i class="fas fa-download me-1"></i>Baixar
+                        </a>
+                    </td>
+                </tr>
+            `);
+        });
+    }).fail(function() {
+        console.error('Erro ao carregar documentos');
+    });
+}
+
+String.prototype.capitalize = function() {
+    return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
+};
+
 function getStatusBadgeClass(statusSlug) {
     const slug = statusSlug.toLowerCase();
     if(slug === 'pending') return 'bg-warning';
@@ -1520,7 +1580,6 @@ function updateTableInfo() {
 
 function updateStats() {
     $.get('{{ route('freights.stats') }}', function(response) {
-        // Atualiza cada contador individualmente
         $('#waiting-payment-count').text(response['Aguardando pagamento'] || 0);
         $('#waiting-driver-count').text(response['Aguardando motorista'] || 0);
         $('#waiting-approval-count').text(response['Aguardando Aprovação empresa'] || 0);
@@ -1531,7 +1590,6 @@ function updateStats() {
         $('#cancelled-count').text(response['Cancelado'] || 0);
         $('#total-count').text(response['total'] || 0);
         
-        // Atualiza também o texto de informações da tabela
         const info = freightTable.page.info();
         $('#table-info').html(
             `Mostrando ${info.start + 1} a ${info.end} de ${info.recordsDisplay} registros (Total: ${response.total || 0})`
