@@ -30,7 +30,7 @@ class DriverAnalysisController extends Controller
                 ],
             ]);
     
-            dd($driver);
+            dd($driver['face_photo']);
             $sourceImageKey = parse_url($driver['face_photo'], PHP_URL_PATH);
             $targetImageKey = parse_url($driver['driver_license_front'], PHP_URL_PATH);
     
