@@ -20,23 +20,15 @@
     <div class="card border-0 shadow-sm rounded-4">
         <div class="card-header bg-white border-0 py-3 rounded-top-4">
             <div class="d-flex justify-content-between align-items-center flex-wrap gap-3">
-                <div class="status-legend d-flex flex-wrap gap-3">
-                    <div class="d-flex align-items-center">
-                        <span class="status-badge bg-warning me-2"></span>
-                        <span class="text-muted">Pendente</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <span class="status-badge bg-success me-2"></span>
-                        <span class="text-muted">Aprovado</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <span class="status-badge bg-danger me-2"></span>
-                        <span class="text-muted">Rejeitado</span>
-                    </div>
-                    <div class="d-flex align-items-center">
-                        <span class="status-badge bg-primary me-2"></span>
-                        <span class="text-muted">Completo</span>
-                    </div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="freightFilterDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-truck me-1"></i>Todas as Cargas
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="freightFilterDropdown">
+                        <li><a class="dropdown-item filter-freight active" href="#" data-filter="all">Todas as Cargas</a></li>
+                        <li><a class="dropdown-item filter-freight" href="#" data-filter="with">Com Frete</a></li>
+                        <li><a class="dropdown-item filter-freight" href="#" data-filter="without">Sem Frete</a></li>
+                    </ul>
                 </div>
                 
                 <div class="flex-grow-1" style="min-width: 250px;">
@@ -57,10 +49,10 @@
                         <tr>
                             <th width="40"></th>
                             <th class="ps-4">ID</th>
+                            <th>Frete</th>
                             <th>Empresa</th>
                             <th>Peso</th>
                             <th>Tipo de Carga</th>
-                            <th>Dimensões</th>
                             <th>Status</th>
                             <th class="text-end pe-4">Ações</th>
                         </tr>
@@ -70,28 +62,19 @@
         </div>
         
         <div class="card-footer bg-white border-0 py-3">
-            <div class="d-flex justify-content-between align-items-center flex-wrap">
-                <div class="text-muted d-flex align-items-center">
-                    <div class="me-3 d-none d-sm-block">
-                        <i class="fas fa-info-circle me-1"></i>
-                        <span id="page-info"></span>
-                    </div>
-                </div>
-                <div class="mt-2 mt-sm-0">
-                    <button id="reload-table" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-sync-alt me-1"></i>Recarregar
-                    </button>
-                </div>
+            <div class="d-flex justify-content-end">
+                <button id="reload-table" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-sync-alt me-1"></i>Recarregar
+                </button>
             </div>
         </div>
     </div>
 </div>
 @endsection
 
-
+@push('styles')
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-@push('styles')
 <style>
 /* ESTILOS ESPECÍFICOS PARA O BOTÃO DE EXPANSÃO */
 td.dt-control {
@@ -177,6 +160,22 @@ tr.shown div.row {
     margin-left: 0;
     margin-right: 0;
 }
+
+/* Estilo para o dropdown de filtro */
+.dropdown-menu {
+    min-width: 12rem;
+}
+
+.filter-freight.active {
+    background-color: #f8f9fa;
+    font-weight: 500;
+}
+
+/* Estilo para a coluna de frete */
+#shipments-table td:nth-child(3) .badge {
+    font-size: 0.8em;
+    padding: 0.35em 0.65em;
+}
 </style>
 @endpush
 
@@ -184,6 +183,7 @@ tr.shown div.row {
 <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
 $(document).ready(function() {
@@ -194,12 +194,39 @@ $(document).ready(function() {
 
     // Função para formatar os detalhes expandidos
     function formatDetails(d) {
+        // Determina o status a ser mostrado
+        const statusToShow = d.freight_id ? (d.freight_status || 'Pendente') : (d.status || 'Pendente');
+        
         return `
             <div class="row px-4 py-3 bg-light rounded-3 mx-1 my-2">
                 <div class="col-md-12 mb-3">
                     <div class="card border-0 shadow-sm">
                         <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Descrição Completa da Carga</h6>
+                            <h6 class="mb-0 fw-bold">Informações do Frete</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <small class="text-muted">Frete</small>
+                                    <p class="mb-2 fw-semibold">
+                                        ${d.freight_id ? 
+                                            `<span class="badge bg-success">Com Frete (ID: ${d.freight_id})</span>` : 
+                                            `<span class="badge bg-secondary">Sem Frete</span>`}
+                                    </p>
+                                </div>
+                                <div class="col-md-6">
+                                    <small class="text-muted">Status</small>
+                                    <p class="mb-2">${statusToShow}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-12 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0 fw-bold">Descrição da Carga</h6>
                         </div>
                         <div class="card-body">
                             <p class="mb-0">${d.description || 'Nenhuma descrição disponível'}</p>
@@ -210,28 +237,37 @@ $(document).ready(function() {
                 <div class="col-md-6">
                     <div class="card border-0 shadow-sm mb-3">
                         <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Informações da Carga</h6>
+                            <h6 class="mb-0 fw-bold">Detalhes da Carga</h6>
                         </div>
                         <div class="card-body">
                             <div class="row">
                                 <div class="col-6 mb-2">
-                                    <small class="text-muted">Volume</small>
-                                    <p class="mb-0 fw-semibold">${d.volume || 'N/A'}</p>
-                                </div>
-                                <div class="col-6 mb-2">
                                     <small class="text-muted">Peso</small>
                                     <p class="mb-0 fw-semibold">${d.weight || '0 kg'}</p>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted">Tipo de Carga</small>
+                                    <p class="mb-0 fw-semibold">${d.cargo_type || 'N/A'}</p>
                                 </div>
                                 <div class="col-6 mb-2">
                                     <small class="text-muted">Dimensões</small>
                                     <p class="mb-0 fw-semibold">${d.dimensions || 'N/A'}</p>
                                 </div>
                                 <div class="col-6 mb-2">
-                                    <small class="text-muted">Tipo de Carga</small>
-                                    <p class="mb-0 fw-semibold">${d.cargo_type || 'N/A'}</p>
+                                    <small class="text-muted">Volume</small>
+                                    <p class="mb-0 fw-semibold">${d.volume || 'N/A'}</p>
                                 </div>
                             </div>
-                            <div class="row mt-2">
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card border-0 shadow-sm mb-3">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0 fw-bold">Características</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
                                 <div class="col-6 mb-2">
                                     <small class="text-muted">Frágil</small>
                                     <p class="mb-0">
@@ -245,41 +281,15 @@ $(document).ready(function() {
                                     </p>
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="card border-0 shadow-sm mb-3">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Controle de Temperatura</h6>
-                        </div>
-                        <div class="card-body">
                             ${d.requires_temperature_control ? `
-                                <div class="row">
-                                    <div class="col-6 mb-2">
-                                        <small class="text-muted">Temperatura Mínima</small>
-                                        <p class="mb-0 fw-semibold">${d.min_temperature || 'N/A'}°${d.temperature_unit === 'celsius' ? 'C' : 'F'}</p>
-                                    </div>
-                                    <div class="col-6 mb-2">
-                                        <small class="text-muted">Temperatura Máxima</small>
-                                        <p class="mb-0 fw-semibold">${d.max_temperature || 'N/A'}°${d.temperature_unit === 'celsius' ? 'C' : 'F'}</p>
-                                    </div>
-                                    <div class="col-6 mb-2">
-                                        <small class="text-muted">Tolerância</small>
-                                        <p class="mb-0 fw-semibold">${d.temperature_tolerance || 'N/A'}</p>
-                                    </div>
-                                    <div class="col-6 mb-2">
-                                        <small class="text-muted">Tipo de Controle</small>
-                                        <p class="mb-0 fw-semibold">${d.temperature_control_type || 'N/A'}</p>
-                                    </div>
+                                <div class="mt-3">
+                                    <small class="text-muted">Controle de Temperatura</small>
+                                    <p class="mb-0 fw-semibold">
+                                        ${d.min_temperature || 'N/A'}°${d.temperature_unit === 'celsius' ? 'C' : 'F'} 
+                                        a ${d.max_temperature || 'N/A'}°${d.temperature_unit === 'celsius' ? 'C' : 'F'}
+                                    </p>
                                 </div>
-                                ${d.temperature_notes ? `
-                                    <div class="mt-2">
-                                        <small class="text-muted">Observações</small>
-                                        <p class="mb-0 fw-semibold">${d.temperature_notes}</p>
-                                    </div>
-                                ` : ''}
-                            ` : '<p class="mb-0 text-muted">Não requer controle de temperatura</p>'}
+                            ` : ''}
                         </div>
                     </div>
                 </div>
@@ -311,6 +321,14 @@ $(document).ready(function() {
                 className: 'ps-4 fw-semibold'
             },
             { 
+                data: 'freight_id',
+                render: function(data, type, row) {
+                    return data ? 
+                        '<span class="badge bg-success">Com Frete</span>' : 
+                        '<span class="badge bg-secondary">Sem Frete</span>';
+                }
+            },
+            { 
                 data: 'company.name',
                 name: 'company_id',
                 render: data => data || 'N/A'
@@ -326,10 +344,6 @@ $(document).ready(function() {
                 </span>`
             },
             { 
-                data: 'dimensions',
-                render: data => data || 'N/A'
-            },
-            { 
                 data: 'status_badge',
                 orderable: false,
                 searchable: false
@@ -343,12 +357,6 @@ $(document).ready(function() {
         ],
         language: {
             url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
-        },
-        drawCallback: function(settings) {
-            const api = this.api();
-            $('#page-info').html(
-                `Mostrando ${api.page.info().start + 1} a ${api.page.info().end} de ${api.page.info().recordsDisplay} registros`
-            );
         }
     });
 
@@ -374,6 +382,29 @@ $(document).ready(function() {
     // Recarregar tabela
     $('#reload-table').click(function() {
         table.ajax.reload(null, false);
+    });
+
+    // Filtro por frete
+    $(document).on('click', '.filter-freight', function(e) {
+        e.preventDefault();
+        const filter = $(this).data('filter');
+        
+        // Remove a classe ativa de todos os itens
+        $('.filter-freight').removeClass('active');
+        // Adiciona a classe ativa ao item clicado
+        $(this).addClass('active');
+        
+        // Atualiza o texto do botão dropdown
+        $('#freightFilterDropdown').html(`<i class="fas fa-truck me-1"></i>${$(this).text()}`);
+        
+        // Aplica o filtro na tabela
+        if (filter === 'all') {
+            table.columns(2).search('').draw();
+        } else if (filter === 'with') {
+            table.columns(2).search('^Com Frete$', true, false).draw();
+        } else if (filter === 'without') {
+            table.columns(2).search('^Sem Frete$', true, false).draw();
+        }
     });
 });
 </script>
