@@ -14,6 +14,8 @@ class DriverAnalysisController extends Controller
     public function analyze(Request $request)
     {
         $driver = $request->all();
+
+        dd($request);
     
         try {
             $rekognition = new RekognitionClient([
