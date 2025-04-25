@@ -55,7 +55,7 @@ Route::get('/companies', [CompanyController::class, 'index'])->name('companies.i
 Route::get('/companies/data', [CompanyController::class, 'getData'])->name('companies.data');
 
 
-Route::post('/drivers/{id}/analyze', [DriverAnalysisController::class, 'analyze']);
+Route::get('/drivers/{id}/analyze', [DriverAnalysisController::class, 'analyze']);
 
 Route::post('/drivers/store', [DriverController::class, 'store'])->name('drivers.store');
 Route::get('/drivers/create', [DriverController::class, 'create'])->name('drivers.create');
