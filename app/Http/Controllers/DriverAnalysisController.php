@@ -28,8 +28,8 @@ class DriverAnalysisController extends Controller
                 ],
             ]);
     
-            $sourceImageKey = parse_url($driver['face_photo'], env('AWS_URL'));
-            $targetImageKey = parse_url($driver['driver_license_front'], env('AWS_URL'));
+            $sourceImageKey =     env('AWS_URL') . $driver['face_photo'];
+            $targetImageKey =     env('AWS_URL') . $driver['driver_license_front'];
 
             dd( $sourceImageKey);
     
