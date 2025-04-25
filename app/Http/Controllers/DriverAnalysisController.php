@@ -41,7 +41,12 @@ class DriverAnalysisController extends Controller
                 $targetImageKey = ltrim($targetImageKey, '/');
             }
 
-            dd($sourceImageKey);
+            // Verifica se o bucket está configurado
+            if (empty(env('AWS_BUCKET'))) {
+                throw new \Exception("Bucket S3 não configurado no .env");
+            }
+
+            dd($targetImageKey);
 
             // Verifica se as chaves não estão vazias
             if (empty($sourceImageKey) || empty($targetImageKey)) {
