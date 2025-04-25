@@ -11,11 +11,11 @@ use Illuminate\Support\Facades\Storage;
 class DriverAnalysisController extends Controller
 {
    
-    public function analyze(Request $request)
+    public function analyze($driver_id)
     {
-        $driver = $request->all();
+       
 
-        dd($request);
+        dd($driver_id);
     
         try {
             $rekognition = new RekognitionClient([
