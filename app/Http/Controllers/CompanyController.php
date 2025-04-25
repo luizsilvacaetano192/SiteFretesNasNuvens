@@ -48,17 +48,50 @@ class CompanyController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validatedData = $request->validate([
+            // Dados da Empresa
             'name' => 'required|string|max:255',
-            'cnpj' => 'required|string|unique:companies,cnpj|size:18', // 18 caracteres com máscara
-            'phone' => 'nullable|string|size:15', // 15 caracteres com máscara
-            'email' => 'required|email|unique:companies,email',
+            'trading_name' => 'nullable|string|max:255',
+            'cnpj' => 'required|string|unique:companies,cnpj|size:18', // 00.000.000/0000-00
+            'state_registration' => 'nullable|string|max:20',
+            
+            // Contatos
+            'phone' => 'required|string|size:14', // (00) 0000-0000
+            'whatsapp' => 'nullable|string|size:15', // (00) 00000-0000
+            'email' => 'required|email|unique:companies,email|max:255',
+            
+            // Endereço
             'address' => 'required|string|max:255',
+            'number' => 'required|string|max:10',
+            'complement' => 'nullable|string|max:100',
+            'neighborhood' => 'required|string|max:100',
+            'city' => 'required|string|max:100',
+            'state' => 'required|string|size:2',
+            'zip_code' => 'required|string|size:9', // 00000-000
+            
+            // Segurança
+            'password' => 'required|string|min:8|confirmed',
+            'password_confirmation' => 'required|string',
+            
+            // Informações Adicionais
+            'description' => 'nullable|string',
+            'website' => 'nullable|url|max:255',
         ]);
-
-        Company::create($request->all());
-
-        return redirect()->route('companies.index')->with('success', 'Company created successfully.');
+    
+        // Remove a confirmação de senha antes de criar
+        unset($validatedData['password_confirmation']);
+    
+        // Remove máscaras dos campos antes de salvar
+        $validatedData['cnpj'] = preg_replace('/[^0-9]/', '', $validatedData['cnpj']);
+        $validatedData['phone'] = preg_replace('/[^0-9]/', '', $validatedData['phone']);
+        $validatedData['whatsapp'] = $validatedData['whatsapp'] ? preg_replace('/[^0-9]/', '', $validatedData['whatsapp']) : null;
+        $validatedData['zip_code'] = preg_replace('/[^0-9]/', '', $validatedData['zip_code']);
+    
+        // Cria a empresa com os dados validados
+        Company::create($validatedData);
+    
+        return redirect()->route('companies.index')
+            ->with('success', 'Empresa cadastrada com sucesso!');
     }
 
     public function edit(Company $company)

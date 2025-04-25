@@ -8,7 +8,7 @@
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
+    @stack('styles')
     <style>
         :root {
             --primary: #4e73df;
@@ -186,6 +186,7 @@
 
         }
     </style>
+     @stack('styles')
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 
 </head>
@@ -260,7 +261,7 @@
     <main class="main-content">
         @yield('content')
     </main>
-
+   
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Controle do menu mobile
@@ -293,7 +294,7 @@
         window.addEventListener('resize', adjustContentHeight);
     </script>
 
-    @stack('scripts')
+ 
     <script>
         function showToast(message) {
             const toast = document.createElement('div');
@@ -346,6 +347,6 @@
             setInterval(checkPendingTasks, 10 * 60 * 1000); // 10 minutos
         });
 </script>
-
+@stack('scripts')
 </body>
 </html>
