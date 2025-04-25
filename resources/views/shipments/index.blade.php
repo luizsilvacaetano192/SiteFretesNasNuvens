@@ -321,12 +321,9 @@ $(document).ready(function() {
                 className: 'ps-4 fw-semibold'
             },
             { 
-                data: 'freight_id',
-                render: function(data, type, row) {
-                    return data ? 
-                        '<span class="badge bg-success">Com Frete</span>' : 
-                        '<span class="badge bg-secondary">Sem Frete</span>';
-                }
+                data: 'freight.id',
+                name: 'freight_id',
+                render: data => data || 'Sem Frete'
             },
             { 
                 data: 'company.name',

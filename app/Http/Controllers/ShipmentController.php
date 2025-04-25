@@ -45,7 +45,7 @@ class ShipmentController extends Controller
                 return $shipment->company->name ?? 'N/A';
             })
             ->addColumn('freight_status', function($shipment) {
-                return $shipment->freight ? $shipment->freight->status : 'Sem frete';
+                return $shipment->freight ? $shipment->freight->freightStatus->name : 'Sem frete';
             })
             ->addColumn('action', function($shipment) {
                 // Botão Visualizar
@@ -73,23 +73,23 @@ class ShipmentController extends Controller
     
                 return '<div class="btn-action-group">'.$btnEdit.$btnFreight.$btnDelete.'</div>';
             })
-            ->addColumn('status_badge', function($shipment) {
-                $status = $shipment->status ?? 'pending';
+            ->addColumn('status_badge', function($freight) {
+                $data = json_decode(json_encode($freight), true);
+                $status = $data['freight']['freight_status'];
+                if (!$status) return '<span class="badge bg-secondary">Carga Cadastrada</span>';
+                
                 $badgeClass = [
-                    'pending' => 'bg-warning',
-                    'approved' => 'bg-success',
-                    'rejected' => 'bg-danger',
-                    'completed' => 'bg-primary',
-                ][$status] ?? 'bg-secondary';
-    
-                $statusText = [
-                    'pending' => 'Pendente',
-                    'approved' => 'Aprovado',
-                    'rejected' => 'Rejeitado',
-                    'completed' => 'Completo',
-                ][$status] ?? ucfirst($status);
-    
-                return '<span class="badge '.$badgeClass.'">'.$statusText.'</span>';
+                    '1' => 'bg-secondary',
+                    '3' => 'bg-warning',
+                    '4' => 'bg-info',
+                    '5' => 'bg-secondary',
+                    '6' => 'bg-primary',
+                    '7' => 'bg-primary',
+                    '8' => 'bg-info',
+                    '9' => 'bg-success',
+                ][$status['id']] ?? 'bg-secondary';
+                
+                return '<span class="badge '.$badgeClass.'">'.$status['name'].'</span>';
             })
             ->rawColumns(['action', 'status_badge'])
             ->filter(function($query) use ($request) {
