@@ -183,26 +183,28 @@
         </div>
         
         <div class="card-body p-0">
-            <div class="table-responsive">
-                <table id="freights-table" class="table table-hover align-middle mb-0" style="width:100%">
-                    <thead class="table-light">
-                        <tr>
-                            <th width="50">ID</th>
-                            <th>Empresa</th>
-                            <th>Origem</th>
-                            <th>Destino</th>
-                            <th>Motorista</th>
-                            <th>Status</th>
-                            <th>Valor</th>
-                            <th width="120">Pagamento</th>
-                            <th width="120">Criado em</th>
-                            <th width="120">Ações</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <!-- Dados carregados via AJAX -->
-                    </tbody>
-                </table>
+            <div class="table-wrapper">
+                <div class="table-responsive">
+                    <table id="freights-table" class="table table-hover align-middle mb-0" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Empresa</th>
+                                <th style="width:10px">Origem</th>
+                                <th>Destino</th>
+                                <th>Motorista</th>
+                                <th>Status</th>
+                                <th>Valor</th>
+                                <th>Pagamento</th>
+                                <th>Criado em</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dados carregados via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
         
@@ -463,10 +465,18 @@ body {
     padding: 1rem 1.35rem;
 }
 
+/* Container da tabela */
+.table-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.35rem;
+}
+
 /* Estilos para a tabela responsiva */
 .table-responsive {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
+    min-height: 0.01%;
 }
 
 /* Estilo para células com texto truncado */
@@ -484,9 +494,9 @@ body {
     overflow: visible;
     white-space: normal;
     word-break: break-all;
-    z-index: 1000;
-    position: relative;
     background-color: white;
+    z-index: 10;
+    position: relative;
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
@@ -502,17 +512,7 @@ body {
         margin-bottom: 15px;
         overflow-y: hidden;
         -ms-overflow-style: -ms-autohiding-scrollbar;
-        border: 1px solid #ddd;
     }
-}
-
-/* Garantir que os botões de ação sempre fiquem visíveis */
-#freights-table td:last-child {
-    position: sticky;
-    right: 0;
-    background-color: white;
-    z-index: 10;
-    box-shadow: -2px 0 5px rgba(0,0,0,0.1);
 }
 
 .table thead th {
@@ -660,6 +660,20 @@ body {
         width: 100% !important;
         margin-bottom: 0.5rem;
     }
+    
+    #freights-table {
+        display: block;
+        width: 100%;
+    }
+    
+    #freights-table td:last-child {
+        position: static;
+        z-index: auto;
+    }
+    
+    .table-responsive {
+        border: none;
+    }
 }
 </style>
 @endpush
@@ -712,166 +726,146 @@ $(document).ready(function() {
 
 function initializeDataTable() {
     freightTable = $('#freights-table').DataTable({
-    processing: true,
-    serverSide: true,
-    ajax: {
-        url: '{{ route('freights.data') }}',
-        type: 'GET',
-        data: function(d) {
-            d.status_filter = $('#status-filter').val();
-            d.company_filter = $('#company-filter').val();
-            d.driver_filter = $('#driver-filter').val();
-            d.start_date = $('#start-date-filter').val();
-            d.end_date = $('#end-date-filter').val();
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '{{ route('freights.data') }}',
+            type: 'GET',
+            data: function(d) {
+                d.status_filter = $('#status-filter').val();
+                d.company_filter = $('#company-filter').val();
+                d.driver_filter = $('#driver-filter').val();
+                d.start_date = $('#start-date-filter').val();
+                d.end_date = $('#end-date-filter').val();
+            },
+            error: function(xhr, error, thrown) {
+                console.error('Erro ao carregar dados:', xhr.responseText);
+                toastr.error('Erro ao carregar dados da tabela');
+            }
         },
-        error: function(xhr, error, thrown) {
-            console.error('Erro ao carregar dados:', xhr.responseText);
-            toastr.error('Erro ao carregar dados da tabela');
+        responsive: true,
+        order: [[0, 'desc']],
+        columns: [
+            { 
+                data: 'id', 
+                name: 'id',
+                className: 'fw-semibold'
+            },
+            { 
+                data: 'company_name', 
+                name: 'company.name',
+                render: function(data, type, row) {
+                    if (!data) return 'N/A';
+                    return `
+                        <div style="width:50px" class="text-truncate-container" title="${data}">
+                            <span class="fw-semibold">${data}</span>
+                        </div>
+                    `;
+                }
+            },
+            { 
+                data: 'start_address', 
+                name: 'start_address',
+             
+                render: function(data) {
+                    if (!data) return 'N/A';
+                    return `
+                        <div style="width:50px" class="text-truncate-container" title="${data}">
+                            ${data}
+                        </div>
+                    `;
+                }
+            },
+            { 
+                data: 'destination_address', 
+                name: 'destination_address',
+                render: function(data) {
+                    if (!data) return 'N/A';
+                    return `
+                        <div style="width:50px"  class="text-truncate-container" title="${data}">
+                            ${data}
+                        </div>
+                    `;
+                }
+            },
+            { 
+                data: 'driver_name', 
+                name: 'driver.name',
+                render: function(data, type, row) {
+                    if (!data) return '<span class="text-muted">Não atribuído</span>';
+                    
+                    let badgeClass = 'bg-primary';
+                    if (row.driver_status === 'inactive') badgeClass = 'bg-secondary';
+                    if (row.driver_status === 'on_delivery') badgeClass = 'bg-warning';
+                    
+                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                }
+            },
+            { 
+                data: 'status_badge', 
+                name: 'status.name',
+                orderable: false,
+                searchable: false
+            },
+            { 
+                data: 'formatted_value', 
+                name: 'freight_value',
+                orderable: true,
+                searchable: false,
+                className: 'text-end'
+            },
+            { 
+                data: 'payment_button', 
+                name: 'payment_button',
+                orderable: false,
+                searchable: false,
+                className: 'text-center'
+            },
+            { 
+                data: 'created_at', 
+                name: 'created_at',
+                render: function(data) {
+                    return data ? new Date(data).toLocaleDateString('pt-BR') : 'N/A';
+                }
+            },
+            { 
+                data: 'actions', 
+                name: 'actions',
+                orderable: false,
+                searchable: false,
+                className: 'text-center'
+            }
+        ],
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
+        },
+        dom: '<"top"f>rt<"bottom"lip><"clear">',
+        buttons: [
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel me-1"></i>Exportar',
+                className: 'btn btn-success',
+                title: 'Fretes'
+            }
+        ],
+        initComplete: function() {
+            // Ativa tooltips para texto truncado
+            $('.text-truncate-container').tooltip({
+                placement: 'top',
+                trigger: 'hover'
+            });
+        },
+        drawCallback: function(settings) {
+            updateTableInfo();
+            updateStats();
+            
+            // Reativa tooltips após redesenhar a tabela
+            $('.text-truncate-container').tooltip({
+                placement: 'top',
+                trigger: 'hover'
+            });
         }
-    },
-    scrollX: true,
-    fixedColumns: {
-        left: 1,
-        right: 1
-    },
-    order: [[0, 'desc']],
-    columns: [
-        { 
-            data: 'id', 
-            name: 'id',
-            className: 'fw-semibold',
-            width: '50px'
-        },
-        { 
-            data: 'company_name', 
-            name: 'company.name',
-            width: '150px',
-            render: function(data, type, row) {
-                if (!data) return 'N/A';
-                return `
-                    <div class="text-truncate-container" title="${data}">
-                        <span class="fw-semibold">${data}</span>
-                    </div>
-                `;
-            }
-        },
-        { 
-            data: 'start_address', 
-            name: 'start_address',
-            width: '150px',
-            render: function(data) {
-                if (!data) return 'N/A';
-                return `
-                    <div class="text-truncate-container" title="${data}">
-                        ${data}
-                    </div>
-                `;
-            }
-        },
-        { 
-            data: 'destination_address', 
-            name: 'destination_address',
-            width: '150px',
-            render: function(data) {
-                if (!data) return 'N/A';
-                return `
-                    <div class="text-truncate-container" title="${data}">
-                        ${data}
-                    </div>
-                `;
-            }
-        },
-        { 
-            data: 'driver_name', 
-            name: 'driver.name',
-            width: '150px',
-            render: function(data, type, row) {
-                if (!data) return '<span class="text-muted">Não atribuído</span>';
-                
-                let badgeClass = 'bg-primary';
-                if (row.driver_status === 'inactive') badgeClass = 'bg-secondary';
-                if (row.driver_status === 'on_delivery') badgeClass = 'bg-warning';
-                
-                return `<span class="badge ${badgeClass}">${data}</span>`;
-            }
-        },
-        { 
-            data: 'status_badge', 
-            name: 'status.name',
-            width: '150px',
-            orderable: false,
-            searchable: false
-        },
-        { 
-            data: 'formatted_value', 
-            name: 'freight_value',
-            width: '100px',
-            orderable: true,
-            searchable: false,
-            className: 'text-end'
-        },
-        { 
-            data: 'payment_button', 
-            name: 'payment_button',
-            width: '120px',
-            orderable: false,
-            searchable: false,
-            className: 'text-center'
-        },
-        { 
-            data: 'created_at', 
-            name: 'created_at',
-            width: '120px',
-            render: function(data) {
-                return data ? new Date(data).toLocaleDateString('pt-BR') : 'N/A';
-            }
-        },
-        { 
-            data: 'actions', 
-            name: 'actions',
-            width: '120px',
-            orderable: false,
-            searchable: false,
-            className: 'text-center'
-        }
-    ],
-    columnDefs: [
-        { targets: 0, width: '50px' },    // ID
-        { targets: 1, width: '150px' },   // Empresa
-        { targets: 2, width: '150px' },   // Origem
-        { targets: 3, width: '150px' },   // Destino
-        { targets: -1, width: '120px' }   // Ações (última coluna)
-    ],
-    language: {
-        url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
-    },
-    dom: '<"top"f>rt<"bottom"lip><"clear">',
-    buttons: [
-        {
-            extend: 'excel',
-            text: '<i class="fas fa-file-excel me-1"></i>Exportar',
-            className: 'btn btn-success',
-            title: 'Fretes'
-        }
-    ],
-    initComplete: function() {
-        // Ativa tooltips para texto truncado
-        $('.text-truncate-container').tooltip({
-            placement: 'top',
-            trigger: 'hover'
-        });
-    },
-    drawCallback: function(settings) {
-        updateTableInfo();
-        updateStats();
-        
-        // Reativa tooltips após redesenhar a tabela
-        $('.text-truncate-container').tooltip({
-            placement: 'top',
-            trigger: 'hover'
-        });
-    }
-});
+    });
 
     // Carrega os filtros dinâmicos
     loadStatusFilter();
@@ -1155,10 +1149,15 @@ function showFreightRemovedNotification(item) {
 
 function getStatusNameById(statusId) {
     const statusMap = {
-        1: 'Aguardando Pagamento',
-        2: 'Em Processo',
-        3: 'Concluído',
-        4: 'Cancelado'
+        1: 'Carga cadastrada',
+        2: 'Frete Solicitado',
+        3: 'Aguardando pagamento',
+        4: 'Aguardando motorista',
+        5: 'Aguardando retirada',
+        6: 'Indo retirar carga',
+        7: 'Em processo de entrega',
+        8: 'Carga entregue',
+        9: 'Aguardando Aprovação empresa'
     };
     return statusMap[statusId] || 'Desconhecido';
 }

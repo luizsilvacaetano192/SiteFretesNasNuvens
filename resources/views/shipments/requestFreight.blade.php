@@ -183,7 +183,29 @@
                                     <div class="col-md-8">
                                         <label class="form-label fw-bold">Selecione as Seguradoras</label>
                                         <div class="form-control" style="height: auto; min-height: 100px; max-height: 200px; overflow-y: auto;">
-                                            @foreach(['Allianz', 'Porto Seguro', 'Suhai', 'Sompo', 'Mapfre', 'Tokio Marine', 'Liberty', 'Azul', 'Bradesco', 'Itaú'] as $insurer)
+                                            @foreach([
+                                                'Allianz Carga',
+                                                'Berkley Seguros',
+                                                'Bradesco Carga',
+                                                'Chubb Carga',
+                                                'Fairfax Seguros',
+                                                'HDI Seguros Carga',
+                                                'Itaú Seguros Carga',
+                                                'J. Malucelli Seguros',
+                                                'Liberty Seguros Carga',
+                                                'Mapfre Carga',
+                                                'Mitsui Sumitomo Seguros',
+                                                'Pamcary',
+                                                'Porto Seguro Carga',
+                                                'Seguradora Líder (DPVAT)',
+                                                'Sompo Carga',
+                                                'Sura Carga',
+                                                'Tokio Marine Carga',
+                                                'Yousure Carga',
+                                                'Zurich Carga',
+                                              
+                                                    ]
+                                                    as $insurer)
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" name="insurance_carriers[]" 
                                                        value="{{ strtolower(str_replace(' ', '_', $insurer)) }}" 
