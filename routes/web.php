@@ -16,6 +16,7 @@ use App\Http\Controllers\MessagePushController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\SettingController;
 use App\Http\Controllers\TruckController;
+use App\Http\Controllers\DriverAnalysisController;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
@@ -52,6 +53,9 @@ Route::get('/companies/create', [CompanyController::class, 'create'])->name('com
 Route::post('/companies/store', [CompanyController::class, 'store'])->name('companies.store');
 Route::get('/companies', [CompanyController::class, 'index'])->name('companies.index');
 Route::get('/companies/data', [CompanyController::class, 'getData'])->name('companies.data');
+
+
+Route::post('/drivers/{id}/analyze', [DriverAnalysisController::class, 'analyze']);
 
 Route::post('/drivers/store', [DriverController::class, 'store'])->name('drivers.store');
 Route::get('/drivers/create', [DriverController::class, 'create'])->name('drivers.create');
