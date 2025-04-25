@@ -567,9 +567,9 @@ function analyzeDriver(driverId) {
                 <p>${result.message.replace(/\n/g, "<br>")}</p>
             </div>
             <div class="row">
-                ${renderImageColumn('Frente CNH', result.driver_license_front)}
-                ${renderImageColumn('Comprovante de Endereço', result.address_proof)}
-                ${renderImageColumn('Foto do Rosto', result.face_photo)}
+                ${renderImageColumn('Frente CNH', 'https://fretes.s3.amazonaws.com/' + result.driver_license_front_photo)}
+                ${renderImageColumn('Comprovante de Endereço', 'https://fretes.s3.amazonaws.com/' + result.address_proof_photo)}
+                ${renderImageColumn('Foto do Rosto', 'https://fretes.s3.amazonaws.com' + result.face_photo)}
             </div>
         `);
     }).fail(() => {
