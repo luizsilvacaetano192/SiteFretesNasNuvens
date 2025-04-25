@@ -41,6 +41,8 @@ class DriverAnalysisController extends Controller
                 $targetImageKey = ltrim($targetImageKey, '/');
             }
 
+            dd($sourceImageKey);
+
             // Verifica se as chaves não estão vazias
             if (empty($sourceImageKey) || empty($targetImageKey)) {
                 throw new \Exception("Caminhos das imagens inválidos.");
