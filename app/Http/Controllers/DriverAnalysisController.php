@@ -30,7 +30,22 @@ class DriverAnalysisController extends Controller
     
             $sourceImageKey =     env('AWS_URL') . $driver['face_photo'];
             $targetImageKey =     env('AWS_URL') . $driver['driver_license_front'];
-    
+
+            // Se for uma URL HTTP, extrai o caminho; se não, usa o valor diretamente
+            if (str_starts_with($sourceImageKey, 'http')) {
+                $sourceImageKey = parse_url($sourceImageKey, PHP_URL_PATH);
+                $sourceImageKey = ltrim($sourceImageKey, '/');
+            }
+            if (str_starts_with($targetImageKey, 'http')) {
+                $targetImageKey = parse_url($targetImageKey, PHP_URL_PATH);
+                $targetImageKey = ltrim($targetImageKey, '/');
+            }
+
+            // Verifica se as chaves não estão vazias
+            if (empty($sourceImageKey) || empty($targetImageKey)) {
+                throw new \Exception("Caminhos das imagens inválidos.");
+            }
+                
             $result = $rekognition->compareFaces([
                 'SimilarityThreshold' => 80,
                 'SourceImage' => [
