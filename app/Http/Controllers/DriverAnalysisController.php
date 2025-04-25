@@ -29,7 +29,7 @@ class DriverAnalysisController extends Controller
             ]);
     
             $sourceImageKey =      $driver['face_photo'];
-            $targetImageKey =      $driver['driver_license_front'];
+            $targetImageKey =      $driver['driver_license_front_photo'];
 
            
             // Verifica se o bucket está configurado
@@ -37,9 +37,6 @@ class DriverAnalysisController extends Controller
                 throw new \Exception("Bucket S3 não configurado no .env");
             }
 
-
-
-            dd($targetImageKey);
             // Verifica se as chaves não estão vazias
             if (empty($sourceImageKey) || empty($targetImageKey)) {
                 throw new \Exception("Caminhos das imagens inválidos.");
