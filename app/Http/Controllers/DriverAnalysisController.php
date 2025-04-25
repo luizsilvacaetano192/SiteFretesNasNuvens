@@ -28,8 +28,10 @@ class DriverAnalysisController extends Controller
                 ],
             ]);
     
-            $sourceImageKey = parse_url($driver['face_photo'], PHP_URL_PATH);
-            $targetImageKey = parse_url($driver['driver_license_front'], PHP_URL_PATH);
+            $sourceImageKey = parse_url($driver['face_photo'], env('AWS_URL'));
+            $targetImageKey = parse_url($driver['driver_license_front'], env('AWS_URL'));
+
+            dd( $sourceImageKey);
     
             $result = $rekognition->compareFaces([
                 'SimilarityThreshold' => 80,
