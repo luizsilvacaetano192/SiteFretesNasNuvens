@@ -76,7 +76,7 @@ class ShipmentController extends Controller
             ->addColumn('status_badge', function($freight) {
                 $data = json_decode(json_encode($freight), true);
                 $status = $data??['freight']??['freight_status'];
-                if (!$status) return '<span class="badge bg-secondary">Carga Cadastrada</span>';
+                if (!$freight) return '<span class="badge bg-secondary">Carga Cadastrada</span>';
                 
                 $badgeClass = [
                     '1' => 'bg-secondary',
