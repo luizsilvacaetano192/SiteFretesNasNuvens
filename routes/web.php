@@ -32,7 +32,7 @@ use Illuminate\Http\Request;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return view('home');
  
 
 });
@@ -137,13 +137,14 @@ Route::get('/freight/create', [FreightController::class, 'create'])->name('freig
 Route::get('/freights/data', [FreightController::class, 'getDataTable'])->name('freights.data');
 
 
-Route::get('/freights/{freight}', [FreightController::class, 'show'])->name('freights.show');
+Route::get('/freights/{id}', [FreightController::class, 'show'])->name('freights.show');
 Route::get('/freights/index', [FreightController::class, 'index'])->name('freights.index');
 
 Route::get('/companies/list', [CompanyController::class, 'list'])->name('companies.list');
 
 
 Route::delete('/shipments/clear', [ShipmentController::class, 'clear'])->name('shipments.clear');
+
 
 
 Route::get('/freight-statuses', [FreightStatusController::class, 'index'])->name('freight_statuses.index');

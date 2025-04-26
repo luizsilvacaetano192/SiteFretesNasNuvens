@@ -220,198 +220,17 @@
         </div>
     </div>
 </div>
-
-<!-- Modal de Detalhes -->
-<div class="modal fade" id="freightModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header bg-primary text-white">
-                <h5 class="modal-title">
-                    <i class="fas fa-info-circle me-2"></i>
-                    <span id="modal-title">Detalhes do Frete</span>
-                </h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="row">
-                    <div class="col-md-8">
-                        <div class="card mb-4">
-                            <div class="card-header bg-white d-flex justify-content-between align-items-center">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-map-marked-alt me-2"></i>Rota e Localização
-                                </h6>
-                                <div class="badge bg-primary bg-opacity-10 text-primary" id="real-time-badge">
-                                    <i class="fas fa-circle text-success me-1"></i>Tempo real
-                                </div>
-                            </div>
-                            <div class="card-body p-0">
-                                <div id="map-container" style="position: relative;">
-                                    <div id="location-info" class="p-3 bg-light border-bottom">
-                                        <div class="d-flex justify-content-between">
-                                            <div>
-                                                <strong>📍 Posição atual:</strong> 
-                                                <span id="current-position">Carregando...</span>
-                                            </div>
-                                            <div>
-                                                <strong>🔄 Atualizado em:</strong> 
-                                                <span id="last-update">-</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                    <div id="map" style="height: 400px;"></div>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <!-- Histórico de Atividades -->
-                        <div class="card mb-4">
-                            <div class="card-header bg-white">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-history me-2"></i>Histórico de Atividades
-                                </h6>
-                            </div>
-                            <div class="card-body p-0">
-                                <div class="table-responsive">
-                                    <table class="table table-hover mb-0" id="history-table">
-                                        <thead>
-                                            <tr>
-                                                <th width="120">Data/Hora</th>
-                                                <th>Evento</th>
-                                                <th>Detalhes</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody id="activity-history">
-                                            <!-- Histórico será preenchido via JS -->
-                                        </tbody>
-                                    </table>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="col-md-4">
-                        <div class="card mb-4">
-                            <div class="card-header bg-white">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-boxes me-2"></i>Detalhes da Carga
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Informações Gerais</h6>
-                                    <p class="mb-1"><strong>Tipo:</strong> <span id="cargo-type">-</span></p>
-                                    <p class="mb-1"><strong>Peso:</strong> <span id="cargo-weight">-</span></p>
-                                    <p class="mb-1"><strong>Dimensões:</strong> <span id="cargo-dimensions">-</span></p>
-                                    <p class="mb-1"><strong>Volume:</strong> <span id="cargo-volume">-</span></p>
-                                    <p class="mb-1"><strong>Descrição:</strong> <span id="cargo-description">-</span></p>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Características</h6>
-                                    <p class="mb-1"><strong>Frágil:</strong> <span id="cargo-fragile">-</span></p>
-                                    <p class="mb-1"><strong>Perigosa:</strong> <span id="cargo-hazardous">-</span></p>
-                                    <p class="mb-1"><strong>Controle de Temperatura:</strong> <span id="cargo-temperature-control">-</span></p>
-                                    <p class="mb-1"><strong>Faixa de Temperatura:</strong> <span id="cargo-temperature-range">-</span></p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card mb-4">
-                            <div class="card-header bg-white">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-truck me-2"></i>Informações do Frete
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Empresa Contratante</h6>
-                                    <p class="mb-1" id="company-info">-</p>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Motorista</h6>
-                                    <p class="mb-1" id="driver-info">-</p>
-                                    <p class="mb-1"><strong>Contato:</strong> <span id="driver-contact">-</span></p>
-                                    <p class="mb-1"><strong>Veículo:</strong> <span id="truck-type">-</span></p>
-                                    <p class="mb-1"><strong>Placa:</strong> <span id="truck-plate">-</span></p>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Datas</h6>
-                                    <p class="mb-1"><strong>Criação:</strong> <span id="created-at">-</span></p>
-                                    <p class="mb-1"><strong>Coleta:</strong> <span id="pickup-date">-</span></p>
-                                    <p class="mb-1"><strong>Entrega:</strong> <span id="delivery-date">-</span></p>
-                                    <p class="mb-1"><strong>Conclusão:</strong> <span id="completed-at">-</span></p>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Endereços</h6>
-                                    <p class="mb-1"><strong>Origem:</strong> <span id="start-address">-</span></p>
-                                    <p class="mb-1"><strong>Destino:</strong> <span id="destination-address">-</span></p>
-                                </div>
-                                
-                                <div class="mb-3">
-                                    <h6 class="text-muted mb-2">Instruções</h6>
-                                    <p class="mb-1"><strong>Carregamento:</strong> <span id="loading-instructions">-</span></p>
-                                    <p class="mb-1"><strong>Descarga:</strong> <span id="unloading-instructions">-</span></p>
-                                    <p class="mb-1"><strong>Observações:</strong> <span id="freight-notes">-</span></p>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        <div class="card mb-4">
-                            <div class="card-header bg-white">
-                                <h6 class="mb-0">
-                                    <i class="fas fa-money-bill-wave me-2"></i>Pagamento
-                                </h6>
-                            </div>
-                            <div class="card-body">
-                                <div class="mb-3">
-                                    <p class="mb-1"><strong>Status:</strong> <span id="payment-status">-</span></p>
-                                    <p class="mb-1"><strong>Valor Total:</strong> <span id="payment-value">-</span></p>
-                                    <p class="mb-1"><strong>Valor Motorista:</strong> <span id="driver-value">-</span></p>
-                                    <p class="mb-1"><strong>Método:</strong> <span id="payment-method">-</span></p>
-                                    <p class="mb-1"><strong>Seguradoras:</strong> <span id="insurance-carriers">-</span></p>
-                                    <div id="payment-buttons" class="mt-2"></div>
-                                </div>
-                                
-                                <div class="row">
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">Distância</h6>
-                                        <p class="h5" id="distance">-</p>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <h6 class="text-muted mb-2">Tempo Estimado</h6>
-                                        <p class="h5" id="duration">-</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
-                    <i class="fas fa-times me-1"></i>Fechar
-                </button>
-                <button type="button" class="btn btn-primary" id="print-freight">
-                    <i class="fas fa-print me-1"></i>Imprimir
-                </button>
-                <button type="button" class="btn btn-success" id="edit-freight">
-                    <i class="fas fa-edit me-1"></i>Editar
-                </button>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
-@push('styles')
+
 <link href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.datatables.net/buttons/2.3.2/css/buttons.dataTables.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+@push('styles')
+
 <style>
+
 :root {
     --primary: #4e73df;
     --secondary: #858796;
@@ -524,16 +343,6 @@ body {
 .btn-sm {
     padding: 0.25rem 0.5rem;
     font-size: 0.85rem;
-}
-
-#map-container {
-    border-radius: 0.35rem;
-    overflow: hidden;
-    border: 1px solid #e3e6f0;
-}
-
-.modal-xl {
-    max-width: 1200px;
 }
 
 .toast-status-change {
@@ -661,11 +470,9 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initMap" async defer></script>
 
 <script>
 // Variáveis globais
-let map, directionsService, directionsRenderer, truckMarker, trackingInterval;
 let freightTable;
 let refreshInterval = 10000; // 10 segundos
 let nextRefreshCountdown = refreshInterval / 1000;
@@ -806,7 +613,19 @@ function initializeDataTable() {
                 name: 'actions',
                 orderable: false,
                 searchable: false,
-                className: 'text-center'
+                className: 'text-center',
+                render: function(data, type, row) {
+                    return `
+                    <div class="d-flex gap-2">
+                        <a href="/freights/${row.id}" class="btn btn-sm btn-primary view-freight" data-id="${row.id}" title="Visualizar">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button class="btn btn-sm btn-danger delete-freight" data-id="${row.id}" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    `;
+                }
             }
         ],
         language: {
@@ -904,14 +723,9 @@ function setupEventHandlers() {
         confirmDeleteAll();
     });
 
-    // Visualizar frete
-    $(document).on('click', '.view-freight', function() {
-        const freightId = $(this).data('id');
-        loadFreightDetails(freightId);
-    });
-
     // Excluir frete
-    $(document).on('click', '.delete-freight', function() {
+    $(document).on('click', '.delete-freight', function(e) {
+        e.preventDefault();
         const freightId = $(this).data('id');
         confirmDeleteFreight(freightId);
     });
@@ -1249,274 +1063,6 @@ function deleteFreight(freightId) {
     });
 }
 
-// Funções do Mapa
-function initMap() {
-    const mapElement = document.getElementById("map");
-    if (!mapElement) return;
-    
-    const defaultCenter = { lat: -15.7801, lng: -47.9292 };
-    
-    try {
-        map = new google.maps.Map(mapElement, {
-            zoom: 7,
-            center: defaultCenter,
-            mapTypeId: google.maps.MapTypeId.ROADMAP
-        });
-
-        directionsService = new google.maps.DirectionsService();
-        directionsRenderer = new google.maps.DirectionsRenderer({
-            suppressMarkers: true,
-            map: map,
-            polylineOptions: {
-                strokeColor: '#4e73df',
-                strokeOpacity: 0.8,
-                strokeWeight: 4
-            }
-        });
-    } catch (error) {
-        console.error("Erro ao inicializar o mapa:", error);
-    }
-}
-
-$('#freightModal').on('shown.bs.modal', function() {
-    if (typeof google !== 'undefined' && typeof google.maps !== 'undefined') {
-        initMap();
-    } else {
-        console.error("Google Maps API não carregada");
-    }
-});
-
-function loadFreightDetails(freightId) {
-    $.get(`/freights/${freightId}`, function(response) {
-        $('#modal-title').text(`Frete #${response.id} - ${response.company.name}`);
-        
-        $('#current-position').text(response.current_position || 'Não disponível');
-        $('#last-update').text(new Date().toLocaleString());
-        // Informações da Carga
-        $('#cargo-type').text(response.shipment.cargo_type);
-        $('#cargo-weight').text(`${response.shipment.weight} kg`);
-        $('#cargo-dimensions').text(response.shipment.dimensions);
-        $('#cargo-volume').text(response.shipment.volume);
-        $('#cargo-description').text(response.shipment.description || 'N/A');
-        $('#cargo-fragile').text(response.shipment.is_fragile ? 'Sim' : 'Não');
-        $('#cargo-hazardous').text(response.shipment.is_hazardous ? 'Sim' : 'Não');
-        $('#cargo-temperature-control').text(response.shipment.requires_temperature_control ? 'Sim' : 'Não');
-        
-        if(response.shipment.requires_temperature_control) {
-            $('#cargo-temperature-range').text(
-                `${response.shipment.min_temperature}°${response.shipment.temperature_unit} a ` +
-                `${response.shipment.max_temperature}°${response.shipment.temperature_unit}`
-            );
-        } else {
-            $('#cargo-temperature-range').text('N/A');
-        }
-        
-        // Informações do Frete
-        $('#company-info').text(response.company.name);
-        
-        if(response.driver) {
-            $('#driver-info').text(response.driver.name);
-            $('#driver-contact').text(response.driver.phone || 'N/A');
-            $('#truck-type').text(response.truck_type ? response.truck_type.replace(/_/g, ' ').capitalize() : 'N/A');
-            $('#truck-plate').text(response.driver.truck_plate || 'N/A');
-        } else {
-            $('#driver-info').text('Não atribuído');
-            $('#driver-contact').text('N/A');
-            $('#truck-type').text('N/A');
-            $('#truck-plate').text('N/A');
-        }
-        
-        // Datas
-        $('#created-at').text(response.created_at ? new Date(response.created_at).toLocaleString() : 'N/A');
-        $('#pickup-date').text(response.pickup_date ? new Date(response.pickup_date).toLocaleString() : 'N/A');
-        $('#delivery-date').text(response.delivery_date ? new Date(response.delivery_date).toLocaleString() : 'N/A');
-        $('#completed-at').text(response.completed_at ? new Date(response.completed_at).toLocaleString() : 'N/A');
-        
-        // Endereços
-        $('#start-address').text(response.start_address);
-        $('#destination-address').text(response.destination_address);
-        
-        // Instruções
-        $('#loading-instructions').text(response.loading_instructions || 'N/A');
-        $('#unloading-instructions').text(response.unloading_instructions || 'N/A');
-        $('#freight-notes').text(response.freight_description || 'N/A');
-        
-        // Seguradoras
-        if(response.insurance_carriers && response.insurance_carriers.length > 0) {
-            $('#insurance-carriers').text(
-                response.insurance_carriers.map(c => c.replace(/_/g, ' ').capitalize()).join(', ')
-            );
-        } else {
-            $('#insurance-carriers').text('Nenhuma seguradora específica');
-        }
-        
-        // Pagamento
-        $('#payment-method').text(response.payment_method ? response.payment_method.toUpperCase() : 'N/A');
-        
-        if(response.charge) {
-            $('#payment-status').html(response.status ? `<span class="badge ${getStatusBadgeClass(response.status.slug)}">${response.status.name}</span>` : 'N/A');
-            $('#payment-value').text(response.freight_value ? 'R$ ' + parseFloat(response.freight_value).toFixed(2).replace('.', ',') : 'N/A');
-            $('#driver-value').text(response.driver_freight_value ? 'R$ ' + parseFloat(response.driver_freight_value).toFixed(2).replace('.', ',') : 'N/A');
-            
-            let paymentButtons = '';
-            if(response.status && response.status.slug === 'paid' && response.charge.receipt_url) {
-                paymentButtons = `
-                    <a href="${response.charge.receipt_url}" class="btn btn-sm btn-info" target="_blank">
-                        <i class="fas fa-file-invoice-dollar me-1"></i>Recibo
-                    </a>
-                `;
-            } else if(response.charge.charge_url) {
-                paymentButtons = `
-                    <a href="${response.charge.charge_url}" class="btn btn-sm btn-success" target="_blank">
-                        <i class="fas fa-credit-card me-1"></i>Pagar
-                    </a>
-                `;
-            }
-            $('#payment-buttons').html(paymentButtons);
-        } else {
-            $('#payment-status').text('N/A');
-            $('#payment-value').text('N/A');
-            $('#driver-value').text('N/A');
-            $('#payment-buttons').html('');
-        }
-
-        // Configura o mapa e a rota
-        if (response.start_lat && response.start_lng && 
-            response.destination_lat && response.destination_lng) {
-            console.log('esponse.start_lat', response.start_lat)
-            calculateAndDisplayRoute(
-                (response.start_lat), 
-                (response.start_lng),
-                (response.destination_lat), 
-                (response.destination_lng)
-            );
-
-            // Atualiza a posição do caminhão se existir
-            console.log('response.current_lat',response.current_lat)
-            console.log('response.current_lng', response.current_lng)
-            if (response.current_lat && response.current_lng) {
-                updateTruckPosition(
-                    parseFloat(response.current_lat), 
-                    parseFloat(response.current_lng)
-                );
-            }
-        }
-
-        // Carrega o histórico
-        loadFreightHistory(freightId);
-
-        // Abre o modal
-        $('#freightModal').modal('show');
-    }).fail(function() {
-        toastr.error('Erro ao carregar detalhes do frete');
-    });
-}
-
-function calculateAndDisplayRoute(startLat, startLng, destLat, destLng) {
-    const start = new google.maps.LatLng(startLat, startLng);
-    const end = new google.maps.LatLng(destLat, destLng);
-
-    directionsService.route({
-        origin: start,
-        destination: end,
-        travelMode: google.maps.TravelMode.DRIVING
-    }, (response, status) => {
-        if (status === 'OK') {
-            directionsRenderer.setDirections(response);
-            
-            const route = response.routes[0].legs[0];
-            $('#distance').text(route.distance.text);
-            $('#duration').text(route.duration.text);
-            
-            // Adiciona marcadores personalizados
-            new google.maps.Marker({
-                position: start,
-                map: map,
-                icon: {
-                    url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-                    scaledSize: new google.maps.Size(32, 32)
-                },
-                title: "Ponto de Partida"
-            });
-
-            new google.maps.Marker({
-                position: end,
-                map: map,
-                icon: {
-                    url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                    scaledSize: new google.maps.Size(32, 32)
-                },
-                title: "Ponto de Destino"
-            });
-        } else {
-            toastr.error('Erro ao calcular rota: ' + status);
-        }
-    });
-}
-
-
-
-function updateTruckPosition(lat, lng) {
-    const position = new google.maps.LatLng(lat, lng);
-    
-    if (!truckMarker) {
-        truckMarker = new google.maps.Marker({
-            position: position,
-            map: map,
-            icon: {
-                url: "https://img.icons8.com/ios-filled/50/000000/truck.png",
-                scaledSize: new google.maps.Size(40, 40)
-            },
-            title: "Posição Atual do Caminhão"
-        });
-    } else {
-        truckMarker.setPosition(position);
-    }
-    
-    // Centraliza o mapa na posição do caminhão
-    map.panTo(position);
-    map.setZoom(12);
-}
-
-
-function loadFreightHistory(freightId) {
-    $.get(`/freights/${freightId}/history`, function(response) {
-        const historyTable = $('#activity-history');
-        historyTable.empty();
-
-        if (response.length === 0) {
-            historyTable.append('<tr><td colspan="3" class="text-center">Nenhum histórico disponível</td></tr>');
-            return;
-        }
-
-        response.forEach(entry => {
-            const date = new Date(entry.created_at);
-            historyTable.append(`
-                <tr>
-                    <td>${date.toLocaleString()}</td>
-                    <td>${entry.event || 'N/A'}</td>
-                    <td>${entry.details || 'N/A'}</td>
-                </tr>
-            `);
-        });
-    }).fail(function() {
-        toastr.error('Erro ao carregar histórico de atividades');
-    });
-}
-
-String.prototype.capitalize = function() {
-    return this.replace(/(?:^|\s)\S/g, function(a) { return a.toUpperCase(); });
-};
-
-function getStatusBadgeClass(statusSlug) {
-    const slug = statusSlug.toLowerCase();
-    if(slug === 'pending') return 'bg-warning';
-    if(slug === 'active') return 'bg-primary';
-    if(slug === 'completed' || slug === 'paid') return 'bg-success';
-    if(slug === 'cancelled') return 'bg-danger';
-    return 'bg-secondary';
-}
-
 function updateTableInfo() {
     const info = freightTable.page.info();
     $('#table-info').html(
@@ -1545,8 +1091,5 @@ function updateStats() {
         toastr.error('Erro ao carregar estatísticas dos fretes');
     });
 }
-
-// Inicializa o mapa quando a API do Google é carregada
-window.initMap = initMap;
 </script>
 @endpush

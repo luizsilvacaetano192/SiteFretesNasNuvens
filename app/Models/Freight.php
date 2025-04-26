@@ -70,6 +70,11 @@ class Freight extends Model
         return $this->hasOne(charge::class);
     }
 
+    public function history()
+    {
+        return $this->hasMany(History::class);
+    }
+
     // Métodos auxiliares
     public function getFormattedFreightValueAttribute()
     {

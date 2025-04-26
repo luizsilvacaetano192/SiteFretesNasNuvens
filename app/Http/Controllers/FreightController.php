@@ -185,47 +185,18 @@ class FreightController extends Controller
         }
     }
 
-    public function show(Freight $freight)
+    public function show($id)
     {
-        return response()->json([
-            'id' => $freight->id,
-            'company' => [
-                'name' => $freight->company->name ?? 'N/A',
-                'id' => $freight->company_id
-            ],
-            'driver' => [
-                'name' => $freight->driver->name ?? 'Não atribuído',
-                'id' => $freight->driver_id
-            ],
-            'shipment' => [
-                'id' => $freight->shipment_id,
-                'weight' => $freight->shipment->weight ?? 'N/A',
-                'cargo_type' => $freight->shipment->cargo_type ?? 'N/A'
-            ],
-            'start_address' => $freight->start_address,
-            'destination_address' => $freight->destination_address,
-            'start_lat' => $freight->start_lat,
-            'start_lng' => $freight->start_lng,
-            'destination_lat' => $freight->destination_lat,
-            'destination_lng' => $freight->destination_lng,
-            'current_lat' => $freight->current_lat,
-            'current_lng' => $freight->current_lng,
-            'current_position' => $freight->current_position,
-            'distance' => $freight->distance,
-            'duration' => $freight->duration,
-            'freight_value' => $freight->freight_value,
-            'status' => [
-                'id' => $freight->status_id,
-                'name' => $freight->status->name ?? 'N/A',
-                'slug' => $freight->status->slug ?? 'N/A'
-            ],
-            'payment_info' => [
-                'payment_link' => $freight->payment_link,
-                'asaas_payment_id' => $freight->asaas_payment_id,
-                'is_payment_confirmed' => $freight->is_payment_confirmed
-            ],
-            'created_at' => $freight->created_at->format('d/m/Y H:i'),
-            'updated_at' => $freight->updated_at->format('d/m/Y H:i')
+
+        $freight = Freight::with(['driver', 'freightStatus', 'company', 'shipment', 'charge','history'])
+        ->select('freights.*')->findorfail($id);
+        // Determina a classe do badge baseado no status
+        
+    
+        return view('freights.map', [
+            'freight' => $freight,
+            'statusBadgeClass' => '',
+            'paymentBadgeClass' => ''
         ]);
     }
 
@@ -238,7 +209,7 @@ class FreightController extends Controller
             ->orWhere('id', $freight->shipment_id)
             ->get();
 
-        return view('freights.edit', compact('freight', 'companies', 'drivers', 'statuses', 'shipments'));
+        return view('freights.edit', compact('freight', 'companies', 'drivers', 'statuses', 'shipments',));
     }
 
     public function update(Request $request, Freight $freight)
