@@ -538,7 +538,7 @@ function initializeDataTable() {
                 render: function(data, type, row) {
                     if (!data) return 'N/A';
                     return `
-                        <div class="text-truncate-container" title="${data}">
+                        <div style="width:40px"  class="text-truncate-container" title="${data}">
                             <span class="fw-semibold">${data}</span>
                         </div>
                     `;
@@ -550,7 +550,7 @@ function initializeDataTable() {
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
-                        <div style="width:50px" class="text-truncate-container" title="${data}">
+                        <div style="width:40px" class="text-truncate-container" title="${data}">
                             ${data}
                         </div>
                     `;
@@ -562,7 +562,7 @@ function initializeDataTable() {
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
-                        <div style="width:50px" class="text-truncate-container" title="${data}">
+                        <div style="width:40px" class="text-truncate-container" title="${data}">
                             ${data}
                         </div>
                     `;
