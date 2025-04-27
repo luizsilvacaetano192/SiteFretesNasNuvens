@@ -525,7 +525,7 @@ function initializeDataTable() {
             }
         },
         responsive: true,
-        order: [[0, 'desc']],
+        order: [[0, 'asc']],
         columns: [
             { 
                 data: 'id', 
