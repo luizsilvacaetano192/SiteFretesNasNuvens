@@ -16,6 +16,7 @@
                             <th>Motorista</th>
                             <th>Contato</th>
                             <th>Documentos</th>
+                            <th>Data</th>
                             <th>Status</th>
                             <th class="text-end" width="220">Ações</th>
                         </tr>
@@ -1297,7 +1298,7 @@ $(document).ready(function () {
         serverSide: true,
         ajax: "{{ route('drivers.data') }}",
         responsive: true,
-        order: [[1, 'desc']],
+        order: [[4, 'desc']],
         columns: [
             { className: 'dt-control', orderable: false, data: null, defaultContent: '' },
             { 
@@ -1320,6 +1321,10 @@ $(document).ready(function () {
                     <div>CPF: ${maskCPF(data) || 'Não informado'}</div>
                     <div class="text-muted small">CNH: ${row.driver_license_number || 'Não informada'}</div>
                 `
+            },
+            { 
+                data: 'created_at',
+                name: 'created_at'
             },
             {
                 data: 'status',
