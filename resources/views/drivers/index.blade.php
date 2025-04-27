@@ -441,6 +441,29 @@ function maskCPF(cpf) {
     return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
 }
 
+const maskDateTimeBR = (value) => {
+  if (!value) return '';
+
+  // Remove tudo que não é número
+  value = value.replace(/\D/g, '');
+
+  // Aplica a máscara
+  if (value.length <= 2) {
+    return value;
+  }
+  if (value.length <= 4) {
+    return value.replace(/(\d{2})(\d{1,2})/, '$1/$2');
+  }
+  if (value.length <= 8) {
+    return value.replace(/(\d{2})(\d{2})(\d{1,4})/, '$1/$2/$3');
+  }
+  if (value.length <= 12) {
+    return value.replace(/(\d{2})(\d{2})(\d{4})(\d{1,2})/, '$1/$2/$3 $4');
+  }
+  return value.replace(/(\d{2})(\d{2})(\d{4})(\d{2})(\d{1,2})/, '$1/$2/$3 $4:$5');
+};
+
+
 function formatDateBR(dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -1298,7 +1321,7 @@ $(document).ready(function () {
         serverSide: true,
         ajax: "{{ route('drivers.data') }}",
         responsive: true,
-        order: [[4, 'desc']],
+        order: [[4, 'asc']],
         columns: [
             { className: 'dt-control', orderable: false, data: null, defaultContent: '' },
             { 
@@ -1324,7 +1347,8 @@ $(document).ready(function () {
             },
             { 
                 data: 'created_at',
-                name: 'created_at'
+                render: (data, type, row) => `
+                    <div>${maskDateTimeBR(data)}</div>`
             },
             {
                 data: 'status',
