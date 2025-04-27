@@ -1297,7 +1297,7 @@ $(document).ready(function () {
         serverSide: true,
         ajax: "{{ route('drivers.data') }}",
         responsive: true,
-        order: [[1, 'asc']],
+        order: [[1, 'desc']],
         columns: [
             { className: 'dt-control', orderable: false, data: null, defaultContent: '' },
             { 
