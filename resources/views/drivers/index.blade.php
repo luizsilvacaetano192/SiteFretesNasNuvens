@@ -1346,9 +1346,11 @@ $(document).ready(function () {
                 `
             },
             { 
-                data: 'created_at',
-                render: (data, type, row) => `
-                    <div>${formatDateBR(data)}</div>`
+                data: 'created_at', 
+                name: 'created_at',
+                render: function(data) {
+                    return data ? new Date(data).toLocaleDateString('pt-BR') : 'N/A';
+                }
             },
             {
                 data: 'status',
@@ -1359,7 +1361,7 @@ $(document).ready(function () {
             },
             {
                 data: null,
-                orderable: false,
+                orderable: true,
                 searchable: false,
                 className: 'text-end',
                 render: (data, type, row) => `
