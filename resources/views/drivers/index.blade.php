@@ -1348,7 +1348,7 @@ $(document).ready(function () {
             { 
                 data: 'created_at',
                 render: (data, type, row) => `
-                    <div>${maskDateTimeBR(data)}</div>`
+                    <div>${formatDateBR(data)}</div>`
             },
             {
                 data: 'status',
