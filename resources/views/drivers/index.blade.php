@@ -1296,6 +1296,8 @@ $(document).ready(function () {
         processing: true,
         serverSide: true,
         ajax: "{{ route('drivers.data') }}",
+        responsive: true,
+        order: [[0, 'desc']],
         columns: [
             { className: 'dt-control', orderable: false, data: null, defaultContent: '' },
             { 
