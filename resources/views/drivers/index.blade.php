@@ -1215,10 +1215,11 @@ function showTrucksModal(driverId) {
                 }
             }
         },
+        order: [[5, 'desc']],
         columns: [
             { 
                 className: 'dt-control',
-                orderable: false,
+                orderable: true,
                 data: null,
                 defaultContent: ''
             },
@@ -1236,11 +1237,11 @@ function showTrucksModal(driverId) {
             },
             { 
                 data: 'vehicle_type',
-                render: (data) => formatDateBR(data) || 'N/A'
+                render: (data) => data || 'N/A'
             },
             { 
                 data: 'created_at',
-                render: (data) => data || 'Não informado'
+                render: (data) => formatDateBR(data) || 'Não informado'
             },
             { 
                 data: 'active',
