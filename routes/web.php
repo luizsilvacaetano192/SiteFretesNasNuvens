@@ -55,6 +55,7 @@ Route::get('/companies', [CompanyController::class, 'index'])->name('companies.i
 Route::get('/companies/data', [CompanyController::class, 'getData'])->name('companies.data');
 
 
+Route::delete('/drivers/{id}', [DriverController::class, 'destroy'])->name('drivers.destroy');
 Route::get('/drivers/{id}/analyze', [DriverAnalysisController::class, 'analyze']);
 
 Route::post('/drivers/store', [DriverController::class, 'store'])->name('drivers.store');
@@ -69,7 +70,7 @@ Route::get('/drivers/list', [DriverController::class, 'list'])->name('drivers.li
 Route::get('/drivers/send-push', [DriverController::class, 'showSendPushForm'])->name('drivers.pushForm');
 Route::get('/drivers/{id}', [DriverController::class, 'show'])->name('drivers.show');
 Route::post('/drivers/send-push', [DriverController::class, 'sendPush'])->name('drivers.sendPush');
-Route::delete('/drivers/{id}', [DriverController::class, 'destroy'])->name('drivers.destroy');
+
 
 Route::prefix('messages-push')->group(function () {
     Route::get('/', [MessagePushController::class, 'index'])->name('messages-push.index');
