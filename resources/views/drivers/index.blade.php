@@ -590,6 +590,7 @@ function activateDriver(id, status) {
                 success: function(response) {
                     toastr.clear();
                     console.log('fdfd', response)
+                    response = json_encode(response);
                     if (response.success) {
                         toastr.success('Enviado aviso de ativação por sms para o motorista...');
                        
