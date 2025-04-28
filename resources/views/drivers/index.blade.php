@@ -583,6 +583,9 @@ function activateDriver(id, status) {
                 url: '/SendSms',
                 type: 'POST',
                 contentType: 'application/json',
+                headers: {
+                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+                },
                 data: JSON.stringify(body),
                 success: function(response) {
                     toastr.clear();
