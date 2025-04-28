@@ -1384,7 +1384,7 @@ $(document).ready(function () {
                         <button onclick="openWhatsApp('${row.phone}')" class="btn btn-outline-success btn-sm" title="WhatsApp">
                             <i class="fab fa-whatsapp"></i>
                         </button>
-                        <button onclick="deleteDriver('{{ $row->id }}')" class="btn btn-outline-danger btn-sm" title="Deletar">
+                        <button onclick="deleteDriver('${row.id}')" class="btn btn-outline-danger btn-sm" title="Deletar">
                             <i class="fas fa-trash"></i>
                         </button>
 
