@@ -227,21 +227,8 @@ class DriverController extends Controller
             ->addColumn('face_photo', fn($driver) => $driver->face_photo_url)
             ->addColumn('address_proof', fn($driver) => $driver->address_proof_url)
             ->toJson();
-    ;
-
+            
         return DataTables::of($drivers)->make(true);
-    }
-
-    public function data(Request $request)
-    {
-        $query = Driver::query();
-
-        return DataTables::of($query)
-            ->addColumn('driver_license_front', fn($driver) => $driver->driver_license_front_url)
-            ->addColumn('driver_license_back', fn($driver) => $driver->driver_license_back_url)
-            ->addColumn('face_photo', fn($driver) => $driver->face_photo_url)
-            ->addColumn('address_proof', fn($driver) => $driver->address_proof_url)
-            ->toJson();
     }
 
     public function create()

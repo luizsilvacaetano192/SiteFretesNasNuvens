@@ -311,6 +311,11 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <style>
+ .btn:hover {
+        transform: scale(1.05);
+        transition: 0.2s ease;
+        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+    }
 .card {
     border-radius: 0.5rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
@@ -1365,30 +1370,32 @@ $(document).ready(function () {
                 searchable: false,
                 className: 'text-end',
                 render: (data, type, row) => `
-                    <div class="btn-group btn-group-sm">
-                        <button onclick="showBalanceModal(${row.id})" class="btn btn-outline-success btn-sm" title="Saldo">
+                    <div class="btn-group btn-group-sm d-flex flex-wrap gap-2">
+                        <button onclick="showBalanceModal(${row.id})" class="btn btn-success btn-sm" title="Saldo">
                             <i class="fas fa-wallet"></i>
                         </button>
-                        <button onclick="showFreightsModal(${row.id})" class="btn btn-outline-primary btn-sm" title="Fretes">
+                        <button onclick="showFreightsModal(${row.id})" class="btn btn-primary btn-sm" title="Fretes">
                             <i class="fas fa-truck"></i>
                         </button>
-                        <button onclick="showTrucksModal(${row.id})" class="btn btn-outline-dark btn-sm" title="Caminhões">
+                        <button onclick="showTrucksModal(${row.id})" class="btn btn-dark btn-sm" title="Caminhões">
                             <i class="fas fa-truck-pickup"></i>
                         </button>
-                        <button onclick="activateDriver(${row.id}, '${row.status}')" class="btn btn-sm ${row.status === 'active' ? 'btn-outline-danger' : 'btn-outline-warning'}" title="${row.status === 'active' ? 'Bloquear' : 'Ativar'}">
+                        <button onclick="activateDriver(${row.id}, '${row.status}')" 
+                            class="btn btn-sm ${row.status === 'active' ? 'btn-danger' : 'btn-warning'}" 
+                            title="${row.status === 'active' ? 'Bloquear' : 'Ativar'}">
                             <i class="fas ${row.status === 'active' ? 'fa-lock' : 'fa-check'}"></i>
                         </button>
-                        <button onclick="analyzeDriver(${row.id})" class="btn btn-outline-info btn-sm" title="Analisar">
+                        <button onclick="analyzeDriver(${row.id})" class="btn btn-info btn-sm" title="Analisar">
                             <i class="fas fa-search"></i>
                         </button>
-                        <button onclick="openWhatsApp('${row.phone}')" class="btn btn-outline-success btn-sm" title="WhatsApp">
+                        <button onclick="openWhatsApp('${row.phone}')" class="btn btn-success btn-sm" title="WhatsApp">
                             <i class="fab fa-whatsapp"></i>
                         </button>
-                        <button onclick="deleteDriver('${row.id}')" class="btn btn-outline-danger btn-sm" title="Deletar">
+                        <button onclick="deleteDriver('${row.id}')" class="btn btn-danger btn-sm" title="Deletar">
                             <i class="fas fa-trash"></i>
                         </button>
-
                     </div>
+
                 `
             }
         ],
