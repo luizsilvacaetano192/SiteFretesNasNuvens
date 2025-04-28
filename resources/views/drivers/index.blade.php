@@ -544,52 +544,53 @@ function activateDriver(id, status) {
             const apiData = {
                 driver_id: id,
                 name: driverData.name,
-                cpfCnpj: driverData.cpf.replace(/\D/g, '')
+                cpfCnpj: driverData.cpf.replace(/\D/g, ''),
+                phone: driverData.phone
             };
 
             toastr.info('Criando conta Asaas para o motorista...', 'Aguarde', {timeOut: 0});
            
             sendCreateAsaasAccount(apiData, id);
-
-            // envia sms avisando que ativou
-            const body = {
-                phone: driverData.phone,
-                message: 'Sr(a) ' + driverData.name + ' seu cadastro de motorista Fretes em nuves foi ativado já pode logar e usar para realizar fretes'
-            };
-
-            $.ajax({
-                url: '/SendSms',
-                type: 'POST',
-                contentType: 'application/json',
-                headers: {
-                    'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-                },
-                data: JSON.stringify(body),
-                success: function(response) {
-                    toastr.clear();
-                
-                    if (response.success) {
-                        toastr.success('Enviado aviso de ativação por sms para o motorista...');
-                       
-                    } else {
-                        toastr.error('Não foi possível enviar sms avisando o motorista ' + (response.message || 'Erro desconhecido'));
-                    }
-                },
-                error: function(xhr) {
-                    toastr.clear();
-                    let errorMsg = 'Erro ao conectar com o serviço de smss';
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        errorMsg = response.message || errorMsg;
-                    } catch (e) {}
-                    toastr.error(errorMsg);
-                }
-            });
+            
         }).fail(function() {
             toastr.error('Não foi possível obter os dados do motorista');
         });
     } else {
         updateDriverStatus(id, 'active');
+    }
+}
+
+async function sendSms(apiData) {
+    try {
+
+        // envia sms avisando que ativou
+        const body = {
+            phone: apiData.phone,
+            message: 'Sr(a) ' + apiData.name + ' seu cadastro de motorista Fretes em nuves foi ativado já pode logar e usar para realizar fretes'
+        };
+
+        const response = await fetch('/SendSms', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+            },
+            body: JSON.stringify(body)
+        });
+
+        const result = await response.json();
+
+        toastr.clear();
+
+        if (result.success) {
+            toastr.success('Enviado aviso de ativação por sms para o motorista...');
+        } else {
+            toastr.error('Não foi possível enviar sms avisando o motorista ' + (result.message || 'Erro desconhecido'));
+        }
+
+    } catch (error) {
+        toastr.clear();
+        toastr.error('Erro ao conectar com o serviço de sms');
     }
 }
 
@@ -610,6 +611,8 @@ async function sendCreateAsaasAccount(apiData, id) {
         if (result.success) {
             toastr.success('Conta Asaas criada com sucesso! Ativando motorista...');
             updateDriverStatus(id, 'active');
+            
+            sendSms(apiData);
         } else {
             toastr.error('Não foi possível criar a conta Asaas: ' + (result.message || 'Erro desconhecido'));
         }
