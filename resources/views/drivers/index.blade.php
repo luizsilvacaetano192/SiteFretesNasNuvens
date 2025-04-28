@@ -548,31 +548,9 @@ function activateDriver(id, status) {
             };
 
             toastr.info('Criando conta Asaas para o motorista...', 'Aguarde', {timeOut: 0});
-            $.ajax({
-                url: '/api/create-asaas-account',
-                type: 'POST',
-                contentType: 'application/json',
-                data: JSON.stringify(apiData),
-                success: function(response) {
-                    toastr.clear();
-                    if (response.success) {
-                        toastr.success('Conta Asaas criada com sucesso! Ativando motorista...');
-                        updateDriverStatus(id, 'active');
-                    } else {
-                        toastr.error('Não foi possível criar a conta Asaas: ' + (response.message || 'Erro desconhecido'));
-                    }
-                },
-                error: function(xhr) {
-                    toastr.clear();
-                    let errorMsg = 'Erro ao conectar com o serviço de pagamentos';
-                    try {
-                        const response = JSON.parse(xhr.responseText);
-                        errorMsg = response.message || errorMsg;
-                    } catch (e) {}
-                    toastr.error(errorMsg);
-                }
-            }); 
- 
+           
+            sendCreateAsaasAccount(apiData, id);
+
             // envia sms avisando que ativou
             const body = {
                 phone: driverData.phone,
@@ -612,6 +590,33 @@ function activateDriver(id, status) {
         });
     } else {
         updateDriverStatus(id, 'active');
+    }
+}
+
+async function sendCreateAsaasAccount(apiData, id) {
+    try {
+        const response = await fetch('/api/create-asaas-account', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(apiData)
+        });
+
+        const result = await response.json();
+
+        toastr.clear();
+
+        if (result.success) {
+            toastr.success('Conta Asaas criada com sucesso! Ativando motorista...');
+            updateDriverStatus(id, 'active');
+        } else {
+            toastr.error('Não foi possível criar a conta Asaas: ' + (result.message || 'Erro desconhecido'));
+        }
+
+    } catch (error) {
+        toastr.clear();
+        toastr.error('Erro ao conectar com o serviço de pagamentos');
     }
 }
 
