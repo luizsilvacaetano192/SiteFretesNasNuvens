@@ -10,7 +10,7 @@ class SendSmsController extends Controller
     public function store(Request $request)
     {
         $body = json_encode([
-            'phone_number' => $request->phone,
+            'phone_number' => '+55' . $request->phone,
             'message' => $request->message
         ]);
 

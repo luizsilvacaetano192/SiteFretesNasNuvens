@@ -184,6 +184,7 @@
                             <th>Nome</th>
                             <th>CNPJ</th>
                             <th>Telefone</th>
+                            <th>Data</th>
                             <th>Status</th>
                             <th width="18%">Ações</th>
                         </tr>
@@ -259,6 +260,7 @@ $(document).ready(function() {
         language: {
             url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
         },
+        order: [[1, 'desc']],
         columns: [
             {
                 className: 'dt-control',
@@ -298,6 +300,10 @@ $(document).ready(function() {
                 render: function(data) {
                     return data ? `<i class="bi bi-telephone me-1"></i>${data.replace(/^(\d{2})(\d{4,5})(\d{4})$/, "($1) $2-$3")}` : '-';
                 }
+            },
+            { 
+               data: 'created_at',
+                render: (data) => formatDateBR(data) || 'Não informado'
             },
             { 
                 data: 'active', 
