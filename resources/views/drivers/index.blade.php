@@ -515,6 +515,7 @@ function getStatusLabel(status) {
 let selectedDriverId = null;
 
 function updateDriverStatus(id, status) {
+    console.log('vai atualizar o status do motorista')
     const reason = $('#blockReason').val().trim();
 
     if ((status === 'block' || status === 'transfer_block') && !reason) {
