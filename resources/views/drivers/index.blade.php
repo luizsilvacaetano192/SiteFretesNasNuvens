@@ -1384,6 +1384,10 @@ $(document).ready(function () {
                         <button onclick="openWhatsApp('${row.phone}')" class="btn btn-outline-success btn-sm" title="WhatsApp">
                             <i class="fab fa-whatsapp"></i>
                         </button>
+                        <button onclick="deleteDriver('{{ $row->id }}')" class="btn btn-outline-danger btn-sm" title="Deletar">
+                            <i class="fas fa-trash"></i>
+                        </button>
+
                     </div>
                 `
             }
@@ -1415,5 +1419,31 @@ $(document).ready(function () {
     $('#blockTransferBtn').click(() => updateDriverStatus(selectedDriverId, 'transfer_block'));
     $('#submitTransfer').click(submitTransfer);
 });
+
+function deleteDriver(id) {
+    if (confirm('Tem certeza que deseja deletar este motorista?')) {
+        fetch(`/drivers/${id}`, {
+            method: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => {
+            if (response.ok) {
+                toastr.success(`Motorista deletado com sucesso`);
+                $('#drivers-table').DataTable().ajax.reload(null, false);
+            } else {
+                return response.json().then(error => {
+                    throw new Error(error.message || 'Erro ao deletar.');
+                });
+            }
+        })
+        .catch(error => {
+            alert('Erro: ' + error.message);
+        });
+    }
+}
 </script>
 @endsection
