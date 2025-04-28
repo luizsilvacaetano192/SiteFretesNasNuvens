@@ -1236,7 +1236,7 @@ function showTrucksModal(driverId) {
             },
             { 
                 data: 'vehicle_type',
-                render: (data) => data || 'N/A'
+                render: (data) => formatDateBR(data) || 'N/A'
             },
             { 
                 data: 'created_at',
