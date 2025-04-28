@@ -3,7 +3,7 @@
 @section('content')
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold mb-0">Gestão de Motoristas</h1>
+    <h2 class="mb-0"><i class="bi bi-buildings me-2"></i>Gestão de motoristas</h2>
     </div>
 
     <div class="card border-0 shadow-sm">
@@ -283,6 +283,7 @@
                 <th>Marca/Modelo</th>
                 <th>Ano</th>
                 <th>Tipo</th>
+                <th>Data</th>
                 <th>Status</th>
               </tr>
             </thead>
@@ -1235,6 +1236,10 @@ function showTrucksModal(driverId) {
             },
             { 
                 data: 'vehicle_type',
+                render: (data) => data || 'N/A'
+            },
+            { 
+                data: 'created_at',
                 render: (data) => data || 'Não informado'
             },
             { 
