@@ -64,7 +64,7 @@ Route::get('/drivers/data', [DriverController::class, 'getData'])->name('drivers
 Route::post('/transfer/{driver}', [TransferController::class, 'transfer'])
     ->name('transfer');
 
-Route::post('/SendSms', [SendSmsController::class, 'sendSms'])
+Route::post('/SendSms', [SendSmsController::class, 'store'])
 ->name('sendSms.store');
 
 Route::get('/drivers/list', [DriverController::class, 'list'])->name('drivers.list');
