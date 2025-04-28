@@ -53,8 +53,8 @@
                             <th>Empresa</th>
                             <th>Peso</th>
                             <th>Tipo de Carga</th>
-                            <th>Data</th>
                             <th>Status</th>
+                            <th>Data</th>
                             <th class="text-end pe-4">Ações</th>
                         </tr>
                     </thead>
@@ -316,7 +316,7 @@ $(document).ready(function() {
                 console.error("Erro ao carregar dados:", error);
             }
         },
-        order: [[0, 'desc']],
+        order: [[1, 'desc']],
         columns: [
             {
                 className: 'dt-control',
@@ -327,7 +327,8 @@ $(document).ready(function() {
             },
             { 
                 data: 'id',
-                className: 'ps-4 fw-semibold'
+                className: 'ps-4 fw-semibold',
+                orderable: true,
             },
             { 
                 data: 'freight.id',
