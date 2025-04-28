@@ -16,7 +16,7 @@ class SendSmsController extends Controller
         $response = Http::withHeaders([
             'Content-Type' => 'application/json',
             'Accept' => 'application/json'
-        ])->post('https://2saeuklnwb.execute-api.us-east-1.amazonaws.com/teste/', $body);
+        ])->post('https://2saeuklnwb.execute-api.us-east-1.amazonaws.com/teste/', json_encode($body));
 
         if ($response->successful()) {
             return response()->json($response->json());
