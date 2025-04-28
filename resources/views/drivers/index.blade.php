@@ -547,8 +547,7 @@ function activateDriver(id, status) {
             };
 
             toastr.info('Criando conta Asaas para o motorista...', 'Aguarde', {timeOut: 0});
-
-          /*   $.ajax({
+            $.ajax({
                 url: '/api/create-asaas-account',
                 type: 'POST',
                 contentType: 'application/json',
@@ -571,8 +570,8 @@ function activateDriver(id, status) {
                     } catch (e) {}
                     toastr.error(errorMsg);
                 }
-            }); */
-
+            }); 
+ 
             // envia sms avisando que ativou
             const body = {
                 phone: driverData.phone,
