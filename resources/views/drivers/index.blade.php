@@ -548,7 +548,30 @@ function activateDriver(id, status) {
 
             toastr.info('Criando conta Asaas para o motorista...', 'Aguarde', {timeOut: 0});
 
-          
+          /*   $.ajax({
+                url: '/api/create-asaas-account',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(apiData),
+                success: function(response) {
+                    toastr.clear();
+                    if (response.success) {
+                        toastr.success('Conta Asaas criada com sucesso! Ativando motorista...');
+                        updateDriverStatus(id, 'active');
+                    } else {
+                        toastr.error('Não foi possível criar a conta Asaas: ' + (response.message || 'Erro desconhecido'));
+                    }
+                },
+                error: function(xhr) {
+                    toastr.clear();
+                    let errorMsg = 'Erro ao conectar com o serviço de pagamentos';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMsg = response.message || errorMsg;
+                    } catch (e) {}
+                    toastr.error(errorMsg);
+                }
+            }); */
 
             // envia sms avisando que ativou
             const body = {
