@@ -53,6 +53,7 @@
                             <th>Empresa</th>
                             <th>Peso</th>
                             <th>Tipo de Carga</th>
+                            <th>Data</th>
                             <th>Status</th>
                             <th class="text-end pe-4">Ações</th>
                         </tr>
@@ -186,6 +187,13 @@ tr.shown div.row {
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
 <script>
+
+function formatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR');
+}
+
 $(document).ready(function() {
     // Verifica se a tabela já foi inicializada e destrói se necessário
     if ($.fn.DataTable.isDataTable('#shipments-table')) {
@@ -308,6 +316,7 @@ $(document).ready(function() {
                 console.error("Erro ao carregar dados:", error);
             }
         },
+        order: [[0, 'desc']],
         columns: [
             {
                 className: 'dt-control',
@@ -344,6 +353,10 @@ $(document).ready(function() {
                 data: 'status_badge',
                 orderable: false,
                 searchable: false
+            },
+            { 
+                data: 'created_at',
+                render: (data) => formatDateBR(data) || 'Não informado'
             },
             { 
                 data: 'action',
