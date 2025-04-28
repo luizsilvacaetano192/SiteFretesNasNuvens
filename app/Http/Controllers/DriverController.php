@@ -286,8 +286,13 @@ class DriverController extends Controller
 
     public function destroy($id)
     {
-        $driver = Driver::findOrFail($id);
-        $driver->delete();
-        return redirect()->route('drivers.index')->with('success', 'Driver deleted successfully.');
+        try {
+            $driver = Driver::findOrFail($id);
+            $driver->delete();
+    
+            return response()->json(['message' => 'Motorista deletado com sucesso.']);
+        } catch (\Exception $e) {
+            return response()->json(['message' => 'Erro ao deletar: ' . $e->getMessage()], 500);
+        }
     }
 }
