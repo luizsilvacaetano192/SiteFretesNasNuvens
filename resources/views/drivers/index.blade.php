@@ -572,6 +572,37 @@ function activateDriver(id, status) {
                     toastr.error(errorMsg);
                 }
             });
+
+            // envia sms avisando que ativou
+            const body = {
+                phone: driverData.phone,
+                message: 'Sr(a) ' + driverData.name + ' seu cadastro de motorista Fretes em nuves foi ativado já pode logar e usar para realizar fretes'
+            };
+
+            $.ajax({
+                url: '/SendSms',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(body),
+                success: function(response) {
+                    toastr.clear();
+                    if (response.success) {
+                        toastr.success('Enviado aviso de ativação por sms para o motorista...');
+                       
+                    } else {
+                        toastr.error('Não foi possível enviar sms avisando o motorista ' + (response.message || 'Erro desconhecido'));
+                    }
+                },
+                error: function(xhr) {
+                    toastr.clear();
+                    let errorMsg = 'Erro ao conectar com o serviço de smss';
+                    try {
+                        const response = JSON.parse(xhr.responseText);
+                        errorMsg = response.message || errorMsg;
+                    } catch (e) {}
+                    toastr.error(errorMsg);
+                }
+            });
         }).fail(function() {
             toastr.error('Não foi possível obter os dados do motorista');
         });

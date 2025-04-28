@@ -15,6 +15,7 @@ use App\Http\Controllers\HistoryController;
 use App\Http\Controllers\MessagePushController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\SettingController;
+use App\Http\Controllers\SendSmsController;
 use App\Http\Controllers\TruckController;
 use App\Http\Controllers\DriverAnalysisController;
 use Illuminate\Support\Facades\Http;
@@ -62,6 +63,9 @@ Route::get('/drivers', [DriverController::class, 'index'])->name('drivers.index'
 Route::get('/drivers/data', [DriverController::class, 'getData'])->name('drivers.data');
 Route::post('/transfer/{driver}', [TransferController::class, 'transfer'])
     ->name('transfer');
+
+Route::post('/SendSms/{phone}/{message}', [SendSmsController::class, 'sendSms'])
+->name('sendSms.store');
 
 Route::get('/drivers/list', [DriverController::class, 'list'])->name('drivers.list');
 
