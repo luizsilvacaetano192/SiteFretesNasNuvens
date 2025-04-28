@@ -32,7 +32,8 @@ class DriverController extends Controller
             
         return response()->json([
             'name' => $driver->name,
-            'cpf' => $driver->cpf
+            'cpf' => $driver->cpf,
+            'phone' => $driver->phone
         ]);
     }
 
@@ -227,7 +228,7 @@ class DriverController extends Controller
             ->addColumn('face_photo', fn($driver) => $driver->face_photo_url)
             ->addColumn('address_proof', fn($driver) => $driver->address_proof_url)
             ->toJson();
-            
+
         return DataTables::of($drivers)->make(true);
     }
 
