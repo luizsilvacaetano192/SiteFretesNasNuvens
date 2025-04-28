@@ -1332,7 +1332,7 @@ $(document).ready(function () {
         serverSide: true,
         ajax: "{{ route('drivers.data') }}",
         responsive: true,
-        order: [[4, 'asc']],
+        order: [[4, 'desc']],
         columns: [
             { className: 'dt-control', orderable: false, data: null, defaultContent: '' },
             { 
@@ -1361,7 +1361,8 @@ $(document).ready(function () {
                 name: 'created_at',
                 render: function(data) {
                     return data ? new Date(data).toLocaleDateString('pt-BR') : 'N/A';
-                }
+                },
+                orderable: true,
             },
             {
                 data: 'status',
