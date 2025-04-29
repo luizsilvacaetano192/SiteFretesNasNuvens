@@ -722,7 +722,7 @@ function calculateFreightValue(distanceInKm, truckType) {
                         timer: 3000,
                         timerProgressBar: true,
                         willClose: () => {
-                            window.location.href = '{{ route("freights") }}';
+                            window.location.href = '{{ route("freights.index") }}';
                         }
                     });
                 } else {
