@@ -163,6 +163,7 @@ class FreightController extends Controller
             'freight_value' => 'required|numeric|min:0',
             'distance' => 'required|string',
             'duration' => 'required|string',
+            'driver_freight_value' => 'required|numeric|min:0'
         ]);
 
         try {

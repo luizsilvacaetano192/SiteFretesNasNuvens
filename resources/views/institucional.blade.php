@@ -22,7 +22,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
     
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://www.seusite.com" />
+    <link rel="canonical" href="http://www.fretesemnuvens.com.br" />
     
     <!-- CSS Inline -->
     <style>
@@ -197,7 +197,7 @@
 
         /* Hero Section */
         .hero {
-          padding: 150px 0 80px;
+          padding: 250px 0 80px;
           background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%);
         }
 
@@ -419,6 +419,49 @@
           opacity: 0.8;
         }
 
+        /* WhatsApp Widget */
+        .whatsapp-widget {
+          position: fixed;
+          bottom: 30px;
+          right: 30px;
+          z-index: 999;
+          animation: pulse 2s infinite;
+        }
+
+        .whatsapp-link {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 60px;
+          height: 60px;
+          background-color: #25D366;
+          border-radius: 50%;
+          box-shadow: 0 4px 12px rgba(37, 211, 102, 0.3);
+          transition: all 0.3s ease;
+        }
+
+        .whatsapp-link:hover {
+          background-color: #128C7E;
+          transform: scale(1.1);
+        }
+
+        .whatsapp-link img {
+          width: 36px;
+          height: 36px;
+        }
+
+        @keyframes pulse {
+          0% {
+            box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+          }
+          70% {
+            box-shadow: 0 0 0 12px rgba(37, 211, 102, 0);
+          }
+          100% {
+            box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+          }
+        }
+
         /* Responsividade */
         @media (max-width: 992px) {
           .hero .container, 
@@ -494,6 +537,21 @@
           .btn {
             width: 100%;
           }
+
+          .whatsapp-widget {
+            bottom: 20px;
+            right: 20px;
+          }
+          
+          .whatsapp-link {
+            width: 50px;
+            height: 50px;
+          }
+          
+          .whatsapp-link img {
+            width: 30px;
+            height: 30px;
+          }
         }
 
         /* Animations */
@@ -513,7 +571,7 @@
         <div class="container">
             <div class="logo">
                 <a href="/">
-                    <img src="images/logo.svg" alt="Fretes em Nuvens - Plataforma de Fretes" width="180">
+                    <img src="{{ asset('images/logo_fretes2.png') }}" alt="Fretes em Nuvens - Plataforma de Fretes" width="180">
                 </a>
             </div>
             <nav class="main-nav">
@@ -720,6 +778,16 @@
             </div>
         </div>
     </section>
+
+    <!-- WhatsApp Widget -->
+    <div class="whatsapp-widget">
+      <a href="https://wa.me/5511999999999?text=Olá,%20gostaria%20de%20mais%20informações%20sobre%20a%20plataforma%20Fretes%20em%20Nuvens" 
+         class="whatsapp-link" 
+         target="_blank"
+         aria-label="Conversar pelo WhatsApp">
+        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNTEyIj48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTM4MC45IDk3LjFjLTQyLjQtNDIuNC05Mi43LTY5LjItMTQ4LjItNzkuMkMtMTc4LjQgMTIuOSA4MCA0MS44IDMyLjEgMTQwLjQtMTUuOCAyMzkgMTIuOSAzOTcuNCAxMDcuNiA0NDhjMTcuNC0yNS4yIDI3LjgtNTMuOSAzMC44LTgzLjEgNS4yLTU1LjUgMTcuNS0xMDcuNSAzNS44LTE1NC41IDkuNS0yNC4xIDIyLjItNDYuNSAzNy41LTY2OWwtMi4zLTIuM3ptLTI0NC41IDc2Yy0xNS43LTE1LjctMTUuNy00MS4yIDAtNTYuOSAxNS43LTE1LjcgNDEuMi0xNS43IDU2LjkgMGwxMS4zIDExLjMgMTEuMy0xMS4zYzE1LjctMTUuNyA0MS4yLTE1LjcgNTYuOSAwIDE1LjcgMTUuNyAxNS43IDQxLjIgMCA1Ni45bC0xMS4zIDExLjMgMTEuMyAxMS4zYzE1LjcgMTUuNyAxNS43IDQxLjIgMCA1Ni45LTE1LjcgMTUuNy00MS4yIDE1LjctNTYuOSAwbC0xMS4zLTExLjMtMTEuMyAxMS4zYy0xNS43IDE1LjctNDEuMiAxNS43LTU2LjkgMC0xNS43LTE1LjctMTUuNy00MS4yIDAtNTYuOWwxMS4zLTExLjMtMTEuMy0xMS4zeiIvPjwvc3ZnPg==" alt="WhatsApp"/>
+      </a>
+    </div>
 
     <!-- Rodapé -->
     <footer class="main-footer">
@@ -932,8 +1000,8 @@
           "@context": "https://schema.org",
           "@type": "Organization",
           "name": "Fretes em Nuvens",
-          "url": "https://www.seusite.com",
-          "logo": "https://www.seusite.com/images/logo.svg",
+          "url": "http://www.fretesemnuvens.com.br",
+          "logo": "http://www.fretesemnuvens.com.br/images/logo.svg",
           "description": "Plataforma digital que conecta empresas que precisam de fretes com motoristas qualificados",
           "sameAs": [
             "https://www.facebook.com/empresa",
