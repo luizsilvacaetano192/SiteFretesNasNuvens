@@ -17,9 +17,9 @@
         <input type="hidden" name="status_id" value="3">
         
         <!-- Campos hidden para dados da rota -->
-        <input id="driver_freight_value" name="driver_freight_value">
-        <input id="distance" name="distance">
-        <input  id="duration" name="duration">
+        <input type="hidden" id="driver_freight_value" name="driver_freight_value">
+        <input type="hidden" id="distance" name="distance">
+        <input type="hidden" id="duration" name="duration">
         <input type="hidden" id="distance_km" name="distance_km">
         <input type="hidden" id="duration_min" name="duration_min">
         <input type="hidden" id="current_position" name="current_position">
