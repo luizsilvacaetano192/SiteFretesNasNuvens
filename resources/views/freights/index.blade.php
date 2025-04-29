@@ -184,8 +184,8 @@
         
         <div class="card-body p-0">
             <div class="table-wrapper">
-                <div class="table-responsive">
-                    <table id="freights-table" class="table table-hover align-middle mb-0" style="width:100%">
+                <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
+                    <table id="freights-table" class="table table-hover align-middle mb-0" style="width:100%; margin:0;">
                         <thead class="table-light">
                             <tr>
                                 <th>ID</th>
@@ -222,30 +222,34 @@
 </div>
 @endsection
 
-
+@push('styles')
 <link href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.datatables.net/buttons/2.3.2/css/buttons.dataTables.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
-@push('styles')
 
 <style>
-
-:root {
-    --primary: #4e73df;
-    --secondary: #858796;
-    --success: #1cc88a;
-    --info: #36b9cc;
-    --warning: #f6c23e;
-    --danger: #e74a3b;
-    --light: #f8f9fc;
-    --dark: #5a5c69;
+/* CORREÇÕES PARA O SCROLL INDESEJADO */
+html {
+    overflow-y: auto;
 }
 
 body {
-    background-color: #f8f9fc;
+    overflow-x: hidden;
+    width: 100vw;
+    position: relative;
 }
 
+.container-fluid {
+    max-width: 100%;
+    padding-right: 15px;
+    padding-left: 15px;
+    margin-right: auto;
+    margin-left: auto;
+    overflow: hidden;
+}
+
+/* ESTILOS GERAIS */
 .card {
     border: none;
     box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
@@ -258,21 +262,27 @@ body {
     padding: 1rem 1.35rem;
 }
 
-/* Container da tabela */
+/* ESTILOS DA TABELA */
 .table-wrapper {
-    position: relative;
-    overflow: hidden;
-    border-radius: 0.35rem;
-}
-
-/* Estilos para a tabela responsiva */
-.table-responsive {
+    width: 100%;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    min-height: 0.01%;
+    margin: 0;
+    padding: 0;
 }
 
-/* Estilo para células com texto truncado */
+.table-responsive {
+    width: 100% !important;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+#freights-table {
+    width: 100% !important;
+    margin: 0;
+}
+
+/* ESTILOS PARA CÉLULAS COM TEXTO TRUNCADO */
 .text-truncate-container {
     max-width: 150px;
     white-space: nowrap;
@@ -282,7 +292,6 @@ body {
     vertical-align: middle;
 }
 
-/* Mostrar tooltip no hover para texto truncado */
 .text-truncate-container:hover {
     overflow: visible;
     white-space: normal;
@@ -293,28 +302,14 @@ body {
     box-shadow: 0 0 10px rgba(0,0,0,0.1);
 }
 
-/* Ajuste para telas menores */
-@media (max-width: 992px) {
-    #freights-table th, 
-    #freights-table td {
-        white-space: nowrap;
-    }
-    
-    .table-responsive {
-        width: 100%;
-        margin-bottom: 15px;
-        overflow-y: hidden;
-        -ms-overflow-style: -ms-autohiding-scrollbar;
-    }
-}
-
+/* ESTILOS DA TABELA */
 .table thead th {
     vertical-align: middle;
     padding: 1rem;
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: var(--secondary);
+    color: #858796;
     background-color: #f8f9fc;
     border-bottom: 1px solid #e3e6f0;
 }
@@ -328,12 +323,7 @@ body {
     background-color: rgba(78, 115, 223, 0.05);
 }
 
-.badge {
-    font-weight: 500;
-    padding: 0.35em 0.65em;
-    font-size: 0.75em;
-}
-
+/* BOTÕES E BADGES */
 .btn {
     font-weight: 500;
     padding: 0.375rem 0.75rem;
@@ -345,83 +335,22 @@ body {
     font-size: 0.85rem;
 }
 
-.toast-status-change {
-    line-height: 1.6;
-    font-size: 14px;
-    padding: 10px;
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
 }
 
-.toast-status-change i {
-    font-size: 16px;
-}
-
-.toast-status-change strong {
-    font-size: 15px;
-}
-
-.toast-status-change .mt-2 {
-    margin-top: 8px;
-    padding-top: 8px;
-    border-top: 1px solid rgba(255,255,255,0.2);
-}
-
-.toast-success .toast-status-change {
-    background-color: rgba(28, 200, 138, 0.1);
-}
-
-.toast-info .toast-status-change {
-    background-color: rgba(54, 185, 204, 0.1);
-}
-
-.toast-warning .toast-status-change {
-    background-color: rgba(246, 194, 62, 0.1);
-}
-
-.toast-icon {
-    margin-right: 10px;
-    font-size: 18px;
-}
-
-/* Estilos para as estatísticas no topo */
-.stats-card {
-    transition: all 0.3s ease;
-}
-
-.stats-card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
-}
-
-.stats-icon {
-    font-size: 1.5rem;
-}
-
-.input-group {
-    margin-right: 0.5rem;
-}
-
+/* RESPONSIVIDADE */
 @media (max-width: 992px) {
-    .modal-xl {
-        max-width: 95%;
-    }
-    
     .card-header {
         flex-direction: column;
         gap: 1rem;
     }
     
-    #freight-search {
+    .input-group {
         width: 100% !important;
-    }
-    
-    .stats-card .d-flex {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .stats-card .me-3 {
-        margin-right: 0 !important;
-        margin-bottom: 1rem;
+        margin-bottom: 0.5rem;
     }
 }
 
@@ -439,23 +368,14 @@ body {
         justify-content: flex-start;
     }
     
-    .input-group {
-        width: 100% !important;
-        margin-bottom: 0.5rem;
+    .stats-card .d-flex {
+        flex-direction: column;
+        text-align: center;
     }
     
-    #freights-table {
-        display: block;
-        width: 100%;
-    }
-    
-    #freights-table td:last-child {
-        position: static;
-        z-index: auto;
-    }
-    
-    .table-responsive {
-        border: none;
+    .stats-card .me-3 {
+        margin-right: 0 !important;
+        margin-bottom: 1rem;
     }
 }
 </style>
@@ -472,13 +392,6 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 
 <script>
-// Variáveis globais
-let freightTable;
-let refreshInterval = 10000; // 10 segundos
-let nextRefreshCountdown = refreshInterval / 1000;
-let countdownInterval;
-let lastData = null;
-
 // Configuração do Toastr
 toastr.options = {
     "closeButton": true,
@@ -503,7 +416,16 @@ $(document).ready(function() {
     
     // Atualiza o horário inicial
     updateLastUpdateTime();
+    
+    // Força a correção do layout
+    fixLayout();
+    $(window).on('resize', fixLayout);
 });
+
+function fixLayout() {
+    $('body').css('overflow-x', 'hidden');
+    $('.container-fluid').css('overflow', 'hidden');
+}
 
 function initializeDataTable() {
     freightTable = $('#freights-table').DataTable({
@@ -538,7 +460,7 @@ function initializeDataTable() {
                 render: function(data, type, row) {
                     if (!data) return 'N/A';
                     return `
-                        <div style="width:40px"  class="text-truncate-container" title="${data}">
+                        <div class="text-truncate-container" title="${data}">
                             <span class="fw-semibold">${data}</span>
                         </div>
                     `;
@@ -550,7 +472,7 @@ function initializeDataTable() {
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
-                        <div style="width:40px" class="text-truncate-container" title="${data}">
+                        <div class="text-truncate-container" title="${data}">
                             ${data}
                         </div>
                     `;
@@ -562,7 +484,7 @@ function initializeDataTable() {
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
-                        <div style="width:40px" class="text-truncate-container" title="${data}">
+                        <div class="text-truncate-container" title="${data}">
                             ${data}
                         </div>
                     `;
@@ -641,28 +563,15 @@ function initializeDataTable() {
             }
         ],
         initComplete: function() {
-            // Ativa tooltips para texto truncado
-            $('.text-truncate-container').tooltip({
-                placement: 'top',
-                trigger: 'hover'
-            });
+            loadStatusFilter();
+            loadCompanyFilter();
+            loadDriverFilter();
         },
         drawCallback: function(settings) {
             updateTableInfo();
             updateStats();
-            
-            // Reativa tooltips após redesenhar a tabela
-            $('.text-truncate-container').tooltip({
-                placement: 'top',
-                trigger: 'hover'
-            });
         }
     });
-
-    // Carrega os filtros dinâmicos
-    loadStatusFilter();
-    loadCompanyFilter();
-    loadDriverFilter();
 }
 
 function loadStatusFilter() {
@@ -708,258 +617,49 @@ function loadDriverFilter() {
 }
 
 function setupEventHandlers() {
-    // Botão de atualizar
     $('#refresh-table').click(function() {
         manualRefreshTable();
     });
 
-    // Botão de exportar
     $('#export-excel').click(function() {
         freightTable.button('.buttons-excel').trigger();
     });
 
-    // Botão de deletar todos
     $('#delete-all-freights').click(function() {
         confirmDeleteAll();
     });
 
-    // Excluir frete
     $(document).on('click', '.delete-freight', function(e) {
         e.preventDefault();
         const freightId = $(this).data('id');
         confirmDeleteFreight(freightId);
     });
 
-    // Filtros
     $(document).on('change', '#status-filter, #company-filter, #driver-filter, #start-date-filter, #end-date-filter', function() {
         freightTable.ajax.reload();
     });
 }
 
 function startAutoRefresh() {
-    // Atualiza imediatamente ao carregar
     updateTableWithNotifications();
-    
-    // Configura o intervalo para atualizações periódicas
-    setInterval(updateTableWithNotifications, refreshInterval);
-    
-    // Inicia o contador decrescente
-    countdownInterval = setInterval(updateCountdown, 1000);
+    setInterval(updateTableWithNotifications, 10000);
+    setInterval(updateCountdown, 1000);
 }
 
 function updateTableWithNotifications() {
     $.get(freightTable.ajax.url(), function(newData) {
-        if (lastData === null) {
-            lastData = newData.data || [];
-            freightTable.ajax.reload(null, false);
-            nextRefreshCountdown = refreshInterval / 1000;
-            updateCountdown();
-            return;
-        }
-
-        const hasChanges = compareDataAndNotify(lastData, newData.data || []);
-        
-        if (hasChanges) {
-            lastData = newData.data || [];
-            freightTable.ajax.reload(null, false);
-        }
-        
-        nextRefreshCountdown = refreshInterval / 1000;
-        updateCountdown();
+        freightTable.ajax.reload(null, false);
         updateLastUpdateTime();
     }).fail(function() {
         toastr.error('Erro ao atualizar dados. Tentando novamente...');
     });
 }
 
-function compareDataAndNotify(oldData, newData) {
-    if (!oldData || oldData.length === 0) {
-        console.log('Sem dados antigos para comparação');
-        return false;
-    }
-
-    console.log('Comparando dados:', {oldData, newData});
-    let hasChanges = false;
-
-    const oldDataMap = {};
-    oldData.forEach(item => {
-        oldDataMap[item.id] = {
-            id: item.id,
-            status_id: item.status_id,
-            status_name: item.status_name || getStatusNameById(item.status_id),
-            company_name: item.company_name,
-            driver_id: item.driver_id,
-            driver_name: item.driver_name,
-            driver_status: item.driver_status
-        };
-    });
-
-    newData.forEach(newItem => {
-        const oldItem = oldDataMap[newItem.id];
-        
-        if (!oldItem) {
-            showNewFreightNotification(newItem);
-            hasChanges = true;
-            return;
-        }
-
-        if (oldItem.status_id !== newItem.status_id) {
-            showStatusChangeNotification(oldItem, newItem);
-            hasChanges = true;
-        }
-
-        if ((!oldItem.driver_id && newItem.driver_id) || 
-            (oldItem.driver_id && newItem.driver_id && oldItem.driver_id !== newItem.driver_id)) {
-            showDriverAssignedNotification(oldItem, newItem);
-            hasChanges = true;
-        }
-
-        if (oldItem.driver_status !== newItem.driver_status && newItem.driver_id) {
-            showDriverStatusChangeNotification(oldItem, newItem);
-            hasChanges = true;
-        }
-    });
-
-    return hasChanges;
-}
-
-function showNewFreightNotification(item) {
-    const statusName = item.status_name || getStatusNameById(item.status_id);
-    
-    toastr.success(`
-        <div class="toast-status-change">
-            <i class="fas fa-truck-moving toast-icon"></i>
-            <div>
-                <strong>NOVO FRETE CADASTRADO</strong><br>
-                <div class="mt-2">
-                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${item.id}</span>
-                    ${item.company_name ? `<span class="me-3"><i class="fas fa-building me-1"></i>${item.company_name}</span>` : ''}
-                    <span><i class="fas fa-info-circle me-1"></i>${statusName}</span>
-                </div>
-            </div>
-        </div>
-    `, '', {
-        timeOut: 15000,
-        extendedTimeOut: 5000
-    });
-}
-
-function showStatusChangeNotification(oldItem, newItem) {
-    const newStatusName = newItem.status_name || getStatusNameById(newItem.status_id);
-    
-    toastr.info(`
-        <div class="toast-status-change">
-            <i class="fas fa-sync-alt toast-icon"></i>
-            <div>
-                <strong>STATUS ATUALIZADO</strong><br>
-                <div class="mt-2">
-                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${newItem.id}</span>
-                    ${newItem.company_name ? `<span class="me-3"><i class="fas fa-building me-1"></i>${newItem.company_name}</span>` : ''}
-                    <span><i class="fas fa-exchange-alt me-1"></i> ${oldItem.status_name} → ${newStatusName}</span>
-                </div>
-            </div>
-        </div>
-    `, '', {
-        timeOut: 15000,
-        extendedTimeOut: 5000
-    });
-}
-
-function showDriverAssignedNotification(oldItem, newItem) {
-    const oldDriverText = oldItem.driver_name ? oldItem.driver_name : 'Não atribuído';
-    const newDriverText = newItem.driver_name ? newItem.driver_name : 'Não atribuído';
-    
-    toastr.info(`
-        <div class="toast-status-change">
-            <i class="fas fa-user-edit toast-icon"></i>
-            <div>
-                <strong>MOTORISTA ATUALIZADO</strong><br>
-                <div class="mt-2">
-                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${newItem.id}</span>
-                    ${newItem.company_name ? `<span class="me-3"><i class="fas fa-building me-1"></i>${newItem.company_name}</span>` : ''}
-                    <span><i class="fas fa-exchange-alt me-1"></i> ${oldDriverText} → ${newDriverText}</span>
-                </div>
-            </div>
-        </div>
-    `, '', {
-        timeOut: 15000,
-        extendedTimeOut: 5000
-    });
-}
-
-function showDriverStatusChangeNotification(oldItem, newItem) {
-    const statusMap = {
-        'active': 'Disponível',
-        'inactive': 'Inativo',
-        'on_delivery': 'Em entrega',
-        'on_vacation': 'De férias'
-    };
-    
-    const oldStatus = statusMap[oldItem.driver_status] || oldItem.driver_status;
-    const newStatus = statusMap[newItem.driver_status] || newItem.driver_status;
-    
-    toastr.info(`
-        <div class="toast-status-change">
-            <i class="fas fa-user-cog toast-icon"></i>
-            <div>
-                <strong>STATUS DO MOTORISTA ATUALIZADO</strong><br>
-                <div class="mt-2">
-                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${newItem.id}</span>
-                    <span class="me-3"><i class="fas fa-user me-1"></i>${newItem.driver_name}</span>
-                    <span><i class="fas fa-exchange-alt me-1"></i> ${oldStatus} → ${newStatus}</span>
-                </div>
-            </div>
-        </div>
-    `, '', {
-        timeOut: 15000,
-        extendedTimeOut: 5000
-    });
-}
-
-function showFreightRemovedNotification(item) {
-    toastr.warning(`
-        <div class="toast-status-change">
-            <i class="fas fa-trash-alt toast-icon"></i>
-            <div>
-                <strong>FRETE REMOVIDO</strong><br>
-                <div class="mt-2">
-                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${item.id}</span>
-                    ${item.company_name ? `<span><i class="fas fa-building me-1"></i>${item.company_name}</span>` : ''}
-                </div>
-            </div>
-        </div>
-    `, '', {
-        timeOut: 15000,
-        extendedTimeOut: 5000
-    });
-}
-
-function getStatusNameById(statusId) {
-    const statusMap = {
-        1: 'Carga cadastrada',
-        2: 'Frete Solicitado',
-        3: 'Aguardando pagamento',
-        4: 'Aguardando motorista',
-        5: 'Aguardando retirada',
-        6: 'Indo retirar carga',
-        7: 'Em processo de entrega',
-        8: 'Carga entregue',
-        9: 'Aguardando Aprovação empresa'
-    };
-    return statusMap[statusId] || 'Desconhecido';
-}
-
 function updateCountdown() {
-    nextRefreshCountdown--;
-    
-    $('#refresh-table').html(`
-        <i class="fas fa-sync-alt me-1"></i>
-        Atualizar (${nextRefreshCountdown}s)
-    `);
-    
-    if (nextRefreshCountdown <= 0) {
-        nextRefreshCountdown = refreshInterval / 1000;
-    }
+    const refreshBtn = $('#refresh-table');
+    let countdown = parseInt(refreshBtn.text().match(/\d+/)) || 10;
+    countdown = countdown <= 1 ? 10 : countdown - 1;
+    refreshBtn.html(`<i class="fas fa-sync-alt me-1"></i>Atualizar (${countdown}s)`);
 }
 
 function updateLastUpdateTime() {
@@ -1010,7 +710,6 @@ function deleteAllFreights() {
             if(response.success) {
                 toastr.success(response.message);
                 freightTable.ajax.reload();
-                lastData = [];
             } else {
                 toastr.error(response.message);
             }
@@ -1049,10 +748,6 @@ function deleteFreight(freightId) {
             if(response.success) {
                 toastr.success(response.message);
                 freightTable.ajax.reload();
-                
-                if (lastData) {
-                    lastData = lastData.filter(item => item.id !== freightId);
-                }
             } else {
                 toastr.error(response.message);
             }
@@ -1081,14 +776,8 @@ function updateStats() {
         $('#delivered-count').text(response['Carga entregue'] || 0);
         $('#cancelled-count').text(response['Cancelado'] || 0);
         $('#total-count').text(response['total'] || 0);
-        
-        const info = freightTable.page.info();
-        $('#table-info').html(
-            `Mostrando ${info.start + 1} a ${info.end} de ${info.recordsDisplay} registros (Total: ${response.total || 0})`
-        );
     }).fail(function() {
         console.error('Erro ao carregar estatísticas');
-        toastr.error('Erro ao carregar estatísticas dos fretes');
     });
 }
 </script>
