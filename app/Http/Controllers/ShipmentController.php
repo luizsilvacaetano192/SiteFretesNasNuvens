@@ -134,9 +134,9 @@ class ShipmentController extends Controller
             'description' => 'nullable|string|max:500',
             
             // Flags
-            'is_fragile' => 'sometimes|boolean',
-            'is_hazardous' => 'sometimes|boolean',
-            'requires_temperature_control' => 'sometimes|boolean',
+            'is_fragile' => 'boolean',
+            'is_hazardous' => 'boolean',
+            'requires_temperature_control' => 'boolean',
             
             // Temperature control fields (required only if temperature control is needed)
             'min_temperature' => 'required_if:requires_temperature_control,true|numeric|nullable',
