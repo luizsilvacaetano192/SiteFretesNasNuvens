@@ -203,9 +203,7 @@
                                                 'Tokio Marine Carga',
                                                 'Yousure Carga',
                                                 'Zurich Carga',
-                                              
-                                                    ]
-                                                    as $insurer)
+                                            ] as $insurer)
                                             <div class="form-check">
                                                 <input class="form-check-input" type="checkbox" name="insurance_carriers[]" 
                                                        value="{{ strtolower(str_replace(' ', '_', $insurer)) }}" 
@@ -459,65 +457,64 @@
     }
 
     function getSafeSetting(settingName, defaultValue = 0) {
-    // Mapear todas as configurações disponíveis
-    const settings = {
-        small_truck_rate: {{ $settings->small_truck_rate ?? 0 }},
-        medium_truck_rate: {{ $settings->medium_truck_rate ?? 0 }},
-        large_truck_rate: {{ $settings->large_truck_rate ?? 0 }},
-        small_refrigerated_rate: {{ $settings->small_refrigerated_rate ?? 0 }},
-        medium_refrigerated_rate: {{ $settings->medium_refrigerated_rate ?? 0 }},
-        large_refrigerated_rate: {{ $settings->large_refrigerated_rate ?? 0 }},
-        small_tanker_rate: {{ $settings->small_tanker_rate ?? 0 }},
-        large_tanker_rate: {{ $settings->large_tanker_rate ?? 0 }},
-        cloud_percentage: {{ $settings->cloud_percentage ?? 0 }},
-        minimum_freight_value: {{ $settings->minimum_freight_value ?? 0 }},
-        weight_surcharge_5000: {{ $settings->weight_surcharge_5000 ?? 1 }},
-        weight_surcharge_3000: {{ $settings->weight_surcharge_3000 ?? 1 }},
-        fragile_surcharge: {{ $settings->fragile_surcharge ?? 1 }},
-        hazardous_surcharge: {{ $settings->hazardous_surcharge ?? 1 }}
-    };
+        // Mapear todas as configurações disponíveis
+        const settings = {
+            small_truck_rate: {{ $settings->small_truck_rate ?? 0 }},
+            medium_truck_rate: {{ $settings->medium_truck_rate ?? 0 }},
+            large_truck_rate: {{ $settings->large_truck_rate ?? 0 }},
+            small_refrigerated_rate: {{ $settings->small_refrigerated_rate ?? 0 }},
+            medium_refrigerated_rate: {{ $settings->medium_refrigerated_rate ?? 0 }},
+            large_refrigerated_rate: {{ $settings->large_refrigerated_rate ?? 0 }},
+            small_tanker_rate: {{ $settings->small_tanker_rate ?? 0 }},
+            large_tanker_rate: {{ $settings->large_tanker_rate ?? 0 }},
+            cloud_percentage: {{ $settings->cloud_percentage ?? 0 }},
+            minimum_freight_value: {{ $settings->minimum_freight_value ?? 0 }},
+            weight_surcharge_5000: {{ $settings->weight_surcharge_5000 ?? 1 }},
+            weight_surcharge_3000: {{ $settings->weight_surcharge_3000 ?? 1 }},
+            fragile_surcharge: {{ $settings->fragile_surcharge ?? 1 }},
+            hazardous_surcharge: {{ $settings->hazardous_surcharge ?? 1 }}
+        };
 
-    // Obter o valor da configuração ou usar o padrão
-    const value = settings[settingName] !== undefined ? settings[settingName] : defaultValue;
-    const num = parseFloat(value);
-    
-    return isNaN(num) ? defaultValue : num;
-}
+        // Obter o valor da configuração ou usar o padrão
+        const value = settings[settingName] !== undefined ? settings[settingName] : defaultValue;
+        const num = parseFloat(value);
+        
+        return isNaN(num) ? defaultValue : num;
+    }
 
-function calculateFreightValue(distanceInKm, truckType) {
-    const rates = {
-        'pequeno': getSafeSetting('small_truck_rate'),
-        'medio': getSafeSetting('medium_truck_rate'),
-        'grande': getSafeSetting('large_truck_rate'),
-        'refrigerado_pequeno': getSafeSetting('small_refrigerated_rate'),
-        'refrigerado_medio': getSafeSetting('medium_refrigerated_rate'),
-        'refrigerado_grande': getSafeSetting('large_refrigerated_rate'),
-        'tanque_pequeno': getSafeSetting('small_tanker_rate'),
-        'tanque_grande': getSafeSetting('large_tanker_rate')
-    };
-    
-    
-    const platformPercentage = {{ $settings->cloud_percentage }};
-    
-    let value = distanceInKm * rates[truckType];
-    value = Math.max(value, {{ $settings->minimum_freight_value }});
-    
-    // Aplicar fatores adicionais
-    const weight = parseFloat("{{ $shipment->weight }}");
-    if (weight > 5000) value *= {{ $settings->weight_surcharge_5000 }};
-    else if (weight > 3000) value *= {{ $settings->weight_surcharge_3000 }};
-    
-    if ("{{ $shipment->is_fragile }}" === "1") value *= {{ $settings->fragile_surcharge }};
-    if ("{{ $shipment->is_hazardous }}" === "1") value *= {{ $settings->hazardous_surcharge }};
-    
-    const platformFee = value * (platformPercentage / 100);
-    const driverValue = value - platformFee;
-    
-    return {
-        total: Math.round(value * 100) / 100,
-        platformFee: Math.round(platformFee * 100) / 100,
-        driverValue: Math.round(driverValue * 100) / 100
-    };
+    function calculateFreightValue(distanceInKm, truckType) {
+        const rates = {
+            'pequeno': getSafeSetting('small_truck_rate'),
+            'medio': getSafeSetting('medium_truck_rate'),
+            'grande': getSafeSetting('large_truck_rate'),
+            'refrigerado_pequeno': getSafeSetting('small_refrigerated_rate'),
+            'refrigerado_medio': getSafeSetting('medium_refrigerated_rate'),
+            'refrigerado_grande': getSafeSetting('large_refrigerated_rate'),
+            'tanque_pequeno': getSafeSetting('small_tanker_rate'),
+            'tanque_grande': getSafeSetting('large_tanker_rate')
+        };
+        
+        const platformPercentage = getSafeSetting('cloud_percentage');
+        
+        let value = distanceInKm * rates[truckType];
+        value = Math.max(value, getSafeSetting('minimum_freight_value'));
+        
+        // Aplicar fatores adicionais
+        const weight = parseFloat("{{ $shipment->weight }}");
+        if (weight > 5000) value *= getSafeSetting('weight_surcharge_5000');
+        else if (weight > 3000) value *= getSafeSetting('weight_surcharge_3000');
+        
+        if ("{{ $shipment->is_fragile }}" === "1") value *= getSafeSetting('fragile_surcharge');
+        if ("{{ $shipment->is_hazardous }}" === "1") value *= getSafeSetting('hazardous_surcharge');
+        
+        const platformFee = value * (platformPercentage / 100);
+        const driverValue = value - platformFee;
+        
+        return {
+            total: Math.round(value * 100) / 100,
+            platformFee: Math.round(platformFee * 100) / 100,
+            driverValue: Math.round(driverValue * 100) / 100
+        };
     }
 
     // Função para formatar valores monetários
@@ -619,6 +616,79 @@ function calculateFreightValue(distanceInKm, truckType) {
         });
     }
 
+    // Função para atualizar o valor do frete quando o usuário modificar manualmente
+    $('#freight_value').on('input', function() {
+        const manualValue = parseFloat($(this).val()) || 0;
+        const platformPercentage = getSafeSetting('cloud_percentage');
+        const platformFee = manualValue * (platformPercentage / 100);
+        const driverValue = manualValue - platformFee;
+        
+        // Atualizar os valores financeiros
+        $('#base_freight_value').text(formatCurrency(manualValue));
+        $('#platform_fee_value').text('- ' + formatCurrency(platformFee));
+        $('#final_value').text(formatCurrency(manualValue));
+        $('#driver_value').text(formatCurrency(driverValue));
+        $('#driver_freight_value').val(driverValue.toFixed(2));
+        
+        // Atualizar o valor sugerido para refletir a mudança
+        $('#suggested_value').text(formatCurrency(manualValue));
+        
+        // Validar o valor mínimo
+        const minimumValue = getSafeSetting('minimum_freight_value');
+        if (manualValue < minimumValue) {
+            $(this).addClass('is-invalid');
+            $(this).next('.invalid-feedback').text(`O valor mínimo do frete é ${formatCurrency(minimumValue)}`);
+        } else {
+            $(this).removeClass('is-invalid');
+        }
+    });
+
+    // Função para validar todos os campos antes do envio
+    function validateForm() {
+        let isValid = true;
+        
+        // Validar campos obrigatórios
+        const requiredFields = [
+            'start_address', 
+            'destination_address',
+            'pickup_date',
+            'delivery_date',
+            'truck_type',
+            'freight_value'
+        ];
+
+        requiredFields.forEach(field => {
+            const element = $(`#${field}`);
+            if (!element.val()) {
+                element.addClass('is-invalid');
+                isValid = false;
+            } else {
+                element.removeClass('is-invalid');
+            }
+        });
+        
+        // Validar valor mínimo do frete
+        const freightValue = parseFloat($('#freight_value').val()) || 0;
+        const minimumValue = getSafeSetting('minimum_freight_value');
+        if (freightValue < minimumValue) {
+            $('#freight_value').addClass('is-invalid');
+            $('#freight_value').next('.invalid-feedback').text(`O valor mínimo do frete é ${formatCurrency(minimumValue)}`);
+            isValid = false;
+        }
+        
+        // Validar se a rota foi calculada
+        if (!$('#distance_km').val()) {
+            Swal.fire({
+                icon: 'error',
+                title: 'Rota não calculada',
+                text: 'Por favor, calcule a rota antes de enviar o formulário.',
+            });
+            isValid = false;
+        }
+        
+        return isValid;
+    }
+
     // Quando o documento estiver pronto
     $(document).ready(function() {
         // Inicializar validação do formulário
@@ -651,34 +721,11 @@ function calculateFreightValue(distanceInKm, truckType) {
         $('#freightRequestForm').on('submit', function(e) {
             e.preventDefault();
             
-            // Validar campos obrigatórios
-            const requiredFields = [
-                'start_address', 
-                'destination_address',
-                'pickup_date',
-                'delivery_date',
-                'truck_type',
-                'freight_value',
-                'distance_km',
-                'duration_min'
-            ];
-
-            let isValid = true;
-            requiredFields.forEach(field => {
-                if (!$(`#${field}`).val()) {
-                    $(`#${field}`).addClass('is-invalid');
-                    isValid = false;
-                } else {
-                    $(`#${field}`).removeClass('is-invalid');
-                }
-            });
-
-            if (!isValid) {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Campos obrigatórios',
-                    text: 'Por favor, preencha todos os campos obrigatórios e calcule a rota.',
-                });
+            if (!validateForm()) {
+                // Rolar até o primeiro erro
+                $('html, body').animate({
+                    scrollTop: $('.is-invalid').first().offset().top - 100
+                }, 500);
                 return;
             }
 
@@ -726,7 +773,6 @@ function calculateFreightValue(distanceInKm, truckType) {
                         }
                     });
                 } else {
-                    // Exibir mensagem de erro
                     $('#submitBtn').prop('disabled', false).html('<i class="fas fa-qrcode me-2"></i> Confirmar e Pagar via PIX');
                     Swal.fire({
                         icon: 'error',
@@ -744,6 +790,20 @@ function calculateFreightValue(distanceInKm, truckType) {
                     text: 'Ocorreu um erro ao enviar o formulário',
                 });
             });
+        });
+
+        // Adicionar validação em tempo real para os campos
+        $('input, select').on('change input', function() {
+            if ($(this).val()) {
+                $(this).removeClass('is-invalid');
+            }
+        });
+
+        // Garantir que o mapa seja recalculado quando os endereços mudarem
+        $('#start_address, #destination_address').on('change', function() {
+            if (autocompleteStart?.getPlace() && autocompleteDestination?.getPlace()) {
+                calculateRoute();
+            }
         });
     });
 </script>
