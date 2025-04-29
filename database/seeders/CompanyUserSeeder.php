@@ -19,10 +19,11 @@ class CompanyUserSeeder extends Seeder
 
             User::create([
                 'name' => 'Fretes em Nuvens',
+                'cnpj' => '40355961000133',
                 'email' => 'sebastiao.carlos.pugas@gmail.com',
                 'password' => Hash::make('Cadmus@192'), // Defina a senha padrão
                 'role' => 'Admin',
-                'company_id' => 2 // Se tiver relação
+                'company_id' => 1 // Se tiver relação
             ]);
         
     }

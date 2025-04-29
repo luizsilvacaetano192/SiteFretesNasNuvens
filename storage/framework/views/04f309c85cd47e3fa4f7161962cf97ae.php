@@ -1,6 +1,4 @@
-@extends('layouts.app')
-
-@push('styles')
+<?php $__env->startPush('styles'); ?>
 <!-- Bootstrap Icons -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <!-- DataTables CSS -->
@@ -154,9 +152,9 @@
         color: #dc3545 !important;
     }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -168,7 +166,7 @@
                 </ol>
             </nav>
         </div>
-        <a href="{{ route('companies.create') }}" class="btn btn-primary">
+        <a href="<?php echo e(route('companies.create')); ?>" class="btn btn-primary">
             <i class="bi bi-plus-lg me-1"></i> Nova Empresa
         </a>
     </div>
@@ -194,9 +192,9 @@
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <!-- DataTables & Plugins -->
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -263,7 +261,7 @@ $(document).ready(function() {
     var table = $('#companies-table').DataTable({
         processing: true,
         serverSide: true,
-        ajax: "{{ route('companies.data') }}",
+        ajax: "<?php echo e(route('companies.data')); ?>",
         language: {
             url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
         },
@@ -380,7 +378,7 @@ $(document).ready(function() {
                 url: `/companies/${id}`,
                 type: 'DELETE',
                 data: {
-                    _token: '{{ csrf_token() }}'
+                    _token: '<?php echo e(csrf_token()); ?>'
                 },
                 success: function(response) {
                     table.ajax.reload();
@@ -402,7 +400,7 @@ $(document).ready(function() {
             url: `/companies/${id}/toggle-status`,
             type: 'PATCH',
             data: {
-                _token: '{{ csrf_token() }}'
+                _token: '<?php echo e(csrf_token()); ?>'
             },
             beforeSend: function() {
                 btn.prop('disabled', true);
@@ -429,4 +427,5 @@ $(document).ready(function() {
     }
 });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /home/luiz/SiteFretesNasNuvens/resources/views/companies/index.blade.php ENDPATH**/ ?>

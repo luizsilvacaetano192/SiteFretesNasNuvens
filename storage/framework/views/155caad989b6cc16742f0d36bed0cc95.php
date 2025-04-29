@@ -3,12 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <title>@yield('title', 'Gestão de Fretes')</title>
+    <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+    <title><?php echo $__env->yieldContent('title', 'Gestão de Fretes'); ?></title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    @stack('styles')
+    <?php echo $__env->yieldPushContent('styles'); ?>
     <style>
         :root {
             --primary: #4e73df;
@@ -254,7 +254,7 @@
             }
         }
     </style>
-    @stack('styles')
+    <?php echo $__env->yieldPushContent('styles'); ?>
     <div id="toast-container" style="position: fixed; top: 20px; right: 20px; z-index: 9999;"></div>
 </head>
 <body>
@@ -262,7 +262,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('images/logo_fretes_nas_nuvens.png') }}" alt="Logo">
+            <img src="<?php echo e(asset('images/logo_fretes_nas_nuvens.png')); ?>" alt="Logo">
         </div>
         
         <nav class="sidebar-nav">
@@ -328,7 +328,7 @@
                 <div class="user-avatar">
                     <i class="fas fa-user"></i>
                 </div>
-                <span>{{ Auth::user()->name ?? 'Usuário' }}</span>
+                <span><?php echo e(Auth::user()->name ?? 'Usuário'); ?></span>
                 <i class="fas fa-chevron-down" style="margin-left: 8px; font-size: 0.8rem;"></i>
             </button>
             <div class="user-dropdown-content">
@@ -348,7 +348,7 @@
 
     <!-- Conteúdo Principal -->
     <main class="main-content">
-        @yield('content')
+        <?php echo $__env->yieldContent('content'); ?>
     </main>
    
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
@@ -438,7 +438,7 @@
                             method: 'POST',
                             headers: {
                                 'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                'X-CSRF-TOKEN': '<?php echo e(csrf_token()); ?>'
                             }
                         });
 
@@ -452,6 +452,6 @@
             setInterval(checkPendingTasks, 10 * 60 * 1000);
         });
     </script>
-    @stack('scripts')
+    <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>
-</html>
+</html><?php /**PATH /home/luiz/SiteFretesNasNuvens/resources/views/layouts/app.blade.php ENDPATH**/ ?>

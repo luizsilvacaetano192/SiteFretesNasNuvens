@@ -1,0 +1,1094 @@
+<?php $__env->startSection('title', 'Gestão de Fretes'); ?>
+
+<?php $__env->startSection('content'); ?>
+<div class="container-fluid px-4 py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="h3 mb-0 text-gray-800">
+                <i class="fas fa-truck-moving me-2"></i>Gestão de Fretes
+            </h1>
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="<?php echo e(route('dashboard')); ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item active" aria-current="page">Fretes</li>
+                </ol>
+            </nav>
+        </div>
+        <div>
+            <button id="refresh-table" class="btn btn-outline-primary me-2">
+                <i class="fas fa-sync-alt me-1"></i>Atualizar (10s)
+            </button>
+            <button id="export-excel" class="btn btn-success me-2">
+                <i class="fas fa-file-excel me-1"></i>Exportar
+            </button>
+            <button id="delete-all-freights" class="btn btn-danger">
+                <i class="fas fa-trash-alt me-1"></i>Limpar Tudo
+            </button>
+        </div>
+    </div>
+
+    <!-- Estatísticas no topo -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body py-3">
+            <div class="row">
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-clock fa-lg text-warning"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Aguardando Pagamento</div>
+                            <div class="h5 mb-0 text-warning" id="waiting-payment-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-info bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-user-clock fa-lg text-info"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Aguardando Motorista</div>
+                            <div class="h5 mb-0 text-info" id="waiting-driver-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-secondary bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-building fa-lg text-secondary"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Aguardando Aprovação</div>
+                            <div class="h5 mb-0 text-secondary" id="waiting-approval-count">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-primary bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-truck-loading fa-lg text-primary"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Aguardando Retirada</div>
+                            <div class="h5 mb-0 text-primary" id="waiting-pickup-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-warning bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-truck-moving fa-lg text-warning"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Indo Retirar Carga</div>
+                            <div class="h5 mb-0 text-warning" id="going-pickup-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-info bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-shipping-fast fa-lg text-info"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Em Processo</div>
+                            <div class="h5 mb-0 text-info" id="in-progress-count">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-success bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-check-circle fa-lg text-success"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Carga Entregue</div>
+                            <div class="h5 mb-0 text-success" id="delivered-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-danger bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-times-circle fa-lg text-danger"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Cancelados</div>
+                            <div class="h5 mb-0 text-danger" id="cancelled-count">0</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 col-6">
+                    <div class="d-flex align-items-center">
+                        <div class="bg-dark bg-opacity-10 p-3 rounded me-3">
+                            <i class="fas fa-file-invoice-dollar fa-lg text-dark"></i>
+                        </div>
+                        <div>
+                            <div class="text-muted small">Total Fretes</div>
+                            <div class="h5 mb-0 text-dark" id="total-count">0</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm border-0 rounded-lg">
+        <div class="card-header bg-white py-3 d-flex flex-column flex-md-row justify-content-between align-items-center">
+            <div class="d-flex flex-column flex-md-row gap-3 w-100 w-md-auto">
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-filter"></i>
+                    </span>
+                    <select id="status-filter" class="form-select">
+                        <option value="">Todos Status</option>
+                    </select>
+                </div>
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-building"></i>
+                    </span>
+                    <select id="company-filter" class="form-select">
+                        <option value="">Todas Empresas</option>
+                    </select>
+                </div>
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-truck"></i>
+                    </span>
+                    <select id="driver-filter" class="form-select">
+                        <option value="">Todos Motoristas</option>
+                    </select>
+                </div>
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-calendar"></i>
+                    </span>
+                    <input type="date" id="start-date-filter" class="form-control" placeholder="Data inicial">
+                </div>
+                <div class="input-group" style="width: 200px;">
+                    <span class="input-group-text bg-transparent">
+                        <i class="fas fa-calendar"></i>
+                    </span>
+                    <input type="date" id="end-date-filter" class="form-control" placeholder="Data final">
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-body p-0">
+            <div class="table-wrapper">
+                <div class="table-responsive">
+                    <table id="freights-table" class="table table-hover align-middle mb-0" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Empresa</th>
+                                <th style="width:10px">Origem</th>
+                                <th>Destino</th>
+                                <th>Motorista</th>
+                                <th>Status</th>
+                                <th>Valor</th>
+                                <th>Pagamento</th>
+                                <th>Criado em</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Dados carregados via AJAX -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card-footer bg-white py-3">
+            <div class="d-flex justify-content-between align-items-center">
+                <div class="text-muted small">
+                    <span id="table-info"></span>
+                </div>
+                <div class="text-muted small">
+                    Atualizado em: <span id="last-update-time"><?php echo e(now()->format('d/m/Y H:i:s')); ?></span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php $__env->stopSection(); ?>
+
+
+<link href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
+<link href="https://cdn.datatables.net/buttons/2.3.2/css/buttons.dataTables.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+<?php $__env->startPush('styles'); ?>
+
+<style>
+
+:root {
+    --primary: #4e73df;
+    --secondary: #858796;
+    --success: #1cc88a;
+    --info: #36b9cc;
+    --warning: #f6c23e;
+    --danger: #e74a3b;
+    --light: #f8f9fc;
+    --dark: #5a5c69;
+}
+
+body {
+    background-color: #f8f9fc;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
+    margin-bottom: 1.5rem;
+}
+
+.card-header {
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+    padding: 1rem 1.35rem;
+}
+
+/* Container da tabela */
+.table-wrapper {
+    position: relative;
+    overflow: hidden;
+    border-radius: 0.35rem;
+}
+
+/* Estilos para a tabela responsiva */
+.table-responsive {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    min-height: 0.01%;
+}
+
+/* Estilo para células com texto truncado */
+.text-truncate-container {
+    max-width: 150px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+/* Mostrar tooltip no hover para texto truncado */
+.text-truncate-container:hover {
+    overflow: visible;
+    white-space: normal;
+    word-break: break-all;
+    background-color: white;
+    z-index: 10;
+    position: relative;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+}
+
+/* Ajuste para telas menores */
+@media (max-width: 992px) {
+    #freights-table th, 
+    #freights-table td {
+        white-space: nowrap;
+    }
+    
+    .table-responsive {
+        width: 100%;
+        margin-bottom: 15px;
+        overflow-y: hidden;
+        -ms-overflow-style: -ms-autohiding-scrollbar;
+    }
+}
+
+.table thead th {
+    vertical-align: middle;
+    padding: 1rem;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--secondary);
+    background-color: #f8f9fc;
+    border-bottom: 1px solid #e3e6f0;
+}
+
+.table tbody td {
+    vertical-align: middle;
+    padding: 1rem;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(78, 115, 223, 0.05);
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.35em 0.65em;
+    font-size: 0.75em;
+}
+
+.btn {
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+    border-radius: 0.35rem;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.85rem;
+}
+
+.toast-status-change {
+    line-height: 1.6;
+    font-size: 14px;
+    padding: 10px;
+}
+
+.toast-status-change i {
+    font-size: 16px;
+}
+
+.toast-status-change strong {
+    font-size: 15px;
+}
+
+.toast-status-change .mt-2 {
+    margin-top: 8px;
+    padding-top: 8px;
+    border-top: 1px solid rgba(255,255,255,0.2);
+}
+
+.toast-success .toast-status-change {
+    background-color: rgba(28, 200, 138, 0.1);
+}
+
+.toast-info .toast-status-change {
+    background-color: rgba(54, 185, 204, 0.1);
+}
+
+.toast-warning .toast-status-change {
+    background-color: rgba(246, 194, 62, 0.1);
+}
+
+.toast-icon {
+    margin-right: 10px;
+    font-size: 18px;
+}
+
+/* Estilos para as estatísticas no topo */
+.stats-card {
+    transition: all 0.3s ease;
+}
+
+.stats-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.15);
+}
+
+.stats-icon {
+    font-size: 1.5rem;
+}
+
+.input-group {
+    margin-right: 0.5rem;
+}
+
+@media (max-width: 992px) {
+    .modal-xl {
+        max-width: 95%;
+    }
+    
+    .card-header {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    #freight-search {
+        width: 100% !important;
+    }
+    
+    .stats-card .d-flex {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .stats-card .me-3 {
+        margin-right: 0 !important;
+        margin-bottom: 1rem;
+    }
+}
+
+@media (max-width: 768px) {
+    .d-flex.justify-content-between.align-items-center.mb-4 {
+        flex-direction: column;
+        gap: 1rem;
+    }
+    
+    .d-flex.justify-content-between.align-items-center.mb-4 > div {
+        width: 100%;
+    }
+    
+    .d-flex.justify-content-between.align-items-center.mb-4 > div:last-child {
+        justify-content: flex-start;
+    }
+    
+    .input-group {
+        width: 100% !important;
+        margin-bottom: 0.5rem;
+    }
+    
+    #freights-table {
+        display: block;
+        width: 100%;
+    }
+    
+    #freights-table td:last-child {
+        position: static;
+        z-index: auto;
+    }
+    
+    .table-responsive {
+        border: none;
+    }
+}
+</style>
+<?php $__env->stopPush(); ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.2/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.2/js/buttons.html5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+
+<script>
+// Variáveis globais
+let freightTable;
+let refreshInterval = 10000; // 10 segundos
+let nextRefreshCountdown = refreshInterval / 1000;
+let countdownInterval;
+let lastData = null;
+
+// Configuração do Toastr
+toastr.options = {
+    "closeButton": true,
+    "progressBar": true,
+    "positionClass": "toast-top-right",
+    "timeOut": 15000,
+    "extendedTimeOut": 5000,
+    "newestOnTop": true,
+    "preventDuplicates": false,
+    "tapToDismiss": false
+};
+
+$(document).ready(function() {
+    // Inicializa a tabela
+    initializeDataTable();
+    
+    // Inicia a atualização automática
+    startAutoRefresh();
+    
+    // Configura os eventos
+    setupEventHandlers();
+    
+    // Atualiza o horário inicial
+    updateLastUpdateTime();
+});
+
+function initializeDataTable() {
+    freightTable = $('#freights-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: '<?php echo e(route('freights.data')); ?>',
+            type: 'GET',
+            data: function(d) {
+                d.status_filter = $('#status-filter').val();
+                d.company_filter = $('#company-filter').val();
+                d.driver_filter = $('#driver-filter').val();
+                d.start_date = $('#start-date-filter').val();
+                d.end_date = $('#end-date-filter').val();
+            },
+            error: function(xhr, error, thrown) {
+                console.error('Erro ao carregar dados:', xhr.responseText);
+                toastr.error('Erro ao carregar dados da tabela');
+            }
+        },
+        responsive: true,
+        order: [[0, 'desc']],
+        columns: [
+            { 
+                data: 'id', 
+                name: 'id',
+                className: 'fw-semibold'
+            },
+            { 
+                data: 'company_name', 
+                name: 'company.name',
+                render: function(data, type, row) {
+                    if (!data) return 'N/A';
+                    return `
+                        <div style="width:40px"  class="text-truncate-container" title="${data}">
+                            <span class="fw-semibold">${data}</span>
+                        </div>
+                    `;
+                }
+            },
+            { 
+                data: 'start_address', 
+                name: 'start_address',
+                render: function(data) {
+                    if (!data) return 'N/A';
+                    return `
+                        <div style="width:40px" class="text-truncate-container" title="${data}">
+                            ${data}
+                        </div>
+                    `;
+                }
+            },
+            { 
+                data: 'destination_address', 
+                name: 'destination_address',
+                render: function(data) {
+                    if (!data) return 'N/A';
+                    return `
+                        <div style="width:40px" class="text-truncate-container" title="${data}">
+                            ${data}
+                        </div>
+                    `;
+                }
+            },
+            { 
+                data: 'driver_name', 
+                name: 'driver.name',
+                render: function(data, type, row) {
+                    if (!data) return '<span class="text-muted">Não atribuído</span>';
+                    
+                    let badgeClass = 'bg-primary';
+                    if (row.driver_status === 'inactive') badgeClass = 'bg-secondary';
+                    if (row.driver_status === 'on_delivery') badgeClass = 'bg-warning';
+                    
+                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                }
+            },
+            { 
+                data: 'status_badge', 
+                name: 'status.name',
+                orderable: false,
+                searchable: false
+            },
+            { 
+                data: 'formatted_value', 
+                name: 'freight_value',
+                orderable: true,
+                searchable: false,
+                className: 'text-end'
+            },
+            { 
+                data: 'payment_button', 
+                name: 'payment_button',
+                orderable: false,
+                searchable: false,
+                className: 'text-center'
+            },
+            { 
+                data: 'created_at', 
+                name: 'created_at',
+                render: function(data) {
+                    return data ? new Date(data).toLocaleDateString('pt-BR') : 'N/A';
+                }
+            },
+            { 
+                data: 'actions', 
+                name: 'actions',
+                orderable: false,
+                searchable: false,
+                className: 'text-center',
+                render: function(data, type, row) {
+                    return `
+                    <div class="d-flex gap-2">
+                        <a href="/freights/${row.id}" class="btn btn-sm btn-primary view-freight" data-id="${row.id}" title="Visualizar">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        <button class="btn btn-sm btn-danger delete-freight" data-id="${row.id}" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                    `;
+                }
+            }
+        ],
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
+        },
+        dom: '<"top"f>rt<"bottom"lip><"clear">',
+        buttons: [
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel me-1"></i>Exportar',
+                className: 'btn btn-success',
+                title: 'Fretes'
+            }
+        ],
+        initComplete: function() {
+            // Ativa tooltips para texto truncado
+            $('.text-truncate-container').tooltip({
+                placement: 'top',
+                trigger: 'hover'
+            });
+        },
+        drawCallback: function(settings) {
+            updateTableInfo();
+            updateStats();
+            
+            // Reativa tooltips após redesenhar a tabela
+            $('.text-truncate-container').tooltip({
+                placement: 'top',
+                trigger: 'hover'
+            });
+        }
+    });
+
+    // Carrega os filtros dinâmicos
+    loadStatusFilter();
+    loadCompanyFilter();
+    loadDriverFilter();
+}
+
+function loadStatusFilter() {
+    $.get('<?php echo e(route('freights.statuses')); ?>', function(response) {
+        const select = $('#status-filter');
+        select.empty();
+        select.append('<option value="">Todos Status</option>');
+        
+        response.forEach(status => {
+            select.append(`<option value="${status.id}">${status.name}</option>`);
+        });
+    }).fail(function() {
+        toastr.error('Erro ao carregar filtro de status');
+    });
+}
+
+function loadCompanyFilter() {
+    $.get('<?php echo e(route('companies.list')); ?>', function(response) {
+        const select = $('#company-filter');
+        select.empty();
+        select.append('<option value="">Todas Empresas</option>');
+        
+        response.forEach(company => {
+            select.append(`<option value="${company.id}">${company.name}</option>`);
+        });
+    }).fail(function() {
+        toastr.error('Erro ao carregar filtro de empresas');
+    });
+}
+
+function loadDriverFilter() {
+    $.get('<?php echo e(route('drivers.list')); ?>', function(response) {
+        const select = $('#driver-filter');
+        select.empty();
+        select.append('<option value="">Todos Motoristas</option>');
+        
+        response.forEach(driver => {
+            select.append(`<option value="${driver.id}">${driver.name}</option>`);
+        });
+    }).fail(function() {
+        toastr.error('Erro ao carregar filtro de motoristas');
+    });
+}
+
+function setupEventHandlers() {
+    // Botão de atualizar
+    $('#refresh-table').click(function() {
+        manualRefreshTable();
+    });
+
+    // Botão de exportar
+    $('#export-excel').click(function() {
+        freightTable.button('.buttons-excel').trigger();
+    });
+
+    // Botão de deletar todos
+    $('#delete-all-freights').click(function() {
+        confirmDeleteAll();
+    });
+
+    // Excluir frete
+    $(document).on('click', '.delete-freight', function(e) {
+        e.preventDefault();
+        const freightId = $(this).data('id');
+        confirmDeleteFreight(freightId);
+    });
+
+    // Filtros
+    $(document).on('change', '#status-filter, #company-filter, #driver-filter, #start-date-filter, #end-date-filter', function() {
+        freightTable.ajax.reload();
+    });
+}
+
+function startAutoRefresh() {
+    // Atualiza imediatamente ao carregar
+    updateTableWithNotifications();
+    
+    // Configura o intervalo para atualizações periódicas
+    setInterval(updateTableWithNotifications, refreshInterval);
+    
+    // Inicia o contador decrescente
+    countdownInterval = setInterval(updateCountdown, 1000);
+}
+
+function updateTableWithNotifications() {
+    $.get(freightTable.ajax.url(), function(newData) {
+        if (lastData === null) {
+            lastData = newData.data || [];
+            freightTable.ajax.reload(null, false);
+            nextRefreshCountdown = refreshInterval / 1000;
+            updateCountdown();
+            return;
+        }
+
+        const hasChanges = compareDataAndNotify(lastData, newData.data || []);
+        
+        if (hasChanges) {
+            lastData = newData.data || [];
+            freightTable.ajax.reload(null, false);
+        }
+        
+        nextRefreshCountdown = refreshInterval / 1000;
+        updateCountdown();
+        updateLastUpdateTime();
+    }).fail(function() {
+        toastr.error('Erro ao atualizar dados. Tentando novamente...');
+    });
+}
+
+function compareDataAndNotify(oldData, newData) {
+    if (!oldData || oldData.length === 0) {
+        console.log('Sem dados antigos para comparação');
+        return false;
+    }
+
+    console.log('Comparando dados:', {oldData, newData});
+    let hasChanges = false;
+
+    const oldDataMap = {};
+    oldData.forEach(item => {
+        oldDataMap[item.id] = {
+            id: item.id,
+            status_id: item.status_id,
+            status_name: item.status_name || getStatusNameById(item.status_id),
+            company_name: item.company_name,
+            driver_id: item.driver_id,
+            driver_name: item.driver_name,
+            driver_status: item.driver_status
+        };
+    });
+
+    newData.forEach(newItem => {
+        const oldItem = oldDataMap[newItem.id];
+        
+        if (!oldItem) {
+            showNewFreightNotification(newItem);
+            hasChanges = true;
+            return;
+        }
+
+        if (oldItem.status_id !== newItem.status_id) {
+            showStatusChangeNotification(oldItem, newItem);
+            hasChanges = true;
+        }
+
+        if ((!oldItem.driver_id && newItem.driver_id) || 
+            (oldItem.driver_id && newItem.driver_id && oldItem.driver_id !== newItem.driver_id)) {
+            showDriverAssignedNotification(oldItem, newItem);
+            hasChanges = true;
+        }
+
+        if (oldItem.driver_status !== newItem.driver_status && newItem.driver_id) {
+            showDriverStatusChangeNotification(oldItem, newItem);
+            hasChanges = true;
+        }
+    });
+
+    return hasChanges;
+}
+
+function showNewFreightNotification(item) {
+    const statusName = item.status_name || getStatusNameById(item.status_id);
+    
+    toastr.success(`
+        <div class="toast-status-change">
+            <i class="fas fa-truck-moving toast-icon"></i>
+            <div>
+                <strong>NOVO FRETE CADASTRADO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${item.id}</span>
+                    ${item.company_name ? `<span class="me-3"><i class="fas fa-building me-1"></i>${item.company_name}</span>` : ''}
+                    <span><i class="fas fa-info-circle me-1"></i>${statusName}</span>
+                </div>
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
+    });
+}
+
+function showStatusChangeNotification(oldItem, newItem) {
+    const newStatusName = newItem.status_name || getStatusNameById(newItem.status_id);
+    
+    toastr.info(`
+        <div class="toast-status-change">
+            <i class="fas fa-sync-alt toast-icon"></i>
+            <div>
+                <strong>STATUS ATUALIZADO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${newItem.id}</span>
+                    ${newItem.company_name ? `<span class="me-3"><i class="fas fa-building me-1"></i>${newItem.company_name}</span>` : ''}
+                    <span><i class="fas fa-exchange-alt me-1"></i> ${oldItem.status_name} → ${newStatusName}</span>
+                </div>
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
+    });
+}
+
+function showDriverAssignedNotification(oldItem, newItem) {
+    const oldDriverText = oldItem.driver_name ? oldItem.driver_name : 'Não atribuído';
+    const newDriverText = newItem.driver_name ? newItem.driver_name : 'Não atribuído';
+    
+    toastr.info(`
+        <div class="toast-status-change">
+            <i class="fas fa-user-edit toast-icon"></i>
+            <div>
+                <strong>MOTORISTA ATUALIZADO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${newItem.id}</span>
+                    ${newItem.company_name ? `<span class="me-3"><i class="fas fa-building me-1"></i>${newItem.company_name}</span>` : ''}
+                    <span><i class="fas fa-exchange-alt me-1"></i> ${oldDriverText} → ${newDriverText}</span>
+                </div>
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
+    });
+}
+
+function showDriverStatusChangeNotification(oldItem, newItem) {
+    const statusMap = {
+        'active': 'Disponível',
+        'inactive': 'Inativo',
+        'on_delivery': 'Em entrega',
+        'on_vacation': 'De férias'
+    };
+    
+    const oldStatus = statusMap[oldItem.driver_status] || oldItem.driver_status;
+    const newStatus = statusMap[newItem.driver_status] || newItem.driver_status;
+    
+    toastr.info(`
+        <div class="toast-status-change">
+            <i class="fas fa-user-cog toast-icon"></i>
+            <div>
+                <strong>STATUS DO MOTORISTA ATUALIZADO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${newItem.id}</span>
+                    <span class="me-3"><i class="fas fa-user me-1"></i>${newItem.driver_name}</span>
+                    <span><i class="fas fa-exchange-alt me-1"></i> ${oldStatus} → ${newStatus}</span>
+                </div>
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
+    });
+}
+
+function showFreightRemovedNotification(item) {
+    toastr.warning(`
+        <div class="toast-status-change">
+            <i class="fas fa-trash-alt toast-icon"></i>
+            <div>
+                <strong>FRETE REMOVIDO</strong><br>
+                <div class="mt-2">
+                    <span class="me-3"><i class="fas fa-hashtag me-1"></i>${item.id}</span>
+                    ${item.company_name ? `<span><i class="fas fa-building me-1"></i>${item.company_name}</span>` : ''}
+                </div>
+            </div>
+        </div>
+    `, '', {
+        timeOut: 15000,
+        extendedTimeOut: 5000
+    });
+}
+
+function getStatusNameById(statusId) {
+    const statusMap = {
+        1: 'Carga cadastrada',
+        2: 'Frete Solicitado',
+        3: 'Aguardando pagamento',
+        4: 'Aguardando motorista',
+        5: 'Aguardando retirada',
+        6: 'Indo retirar carga',
+        7: 'Em processo de entrega',
+        8: 'Carga entregue',
+        9: 'Aguardando Aprovação empresa'
+    };
+    return statusMap[statusId] || 'Desconhecido';
+}
+
+function updateCountdown() {
+    nextRefreshCountdown--;
+    
+    $('#refresh-table').html(`
+        <i class="fas fa-sync-alt me-1"></i>
+        Atualizar (${nextRefreshCountdown}s)
+    `);
+    
+    if (nextRefreshCountdown <= 0) {
+        nextRefreshCountdown = refreshInterval / 1000;
+    }
+}
+
+function updateLastUpdateTime() {
+    const now = new Date();
+    const formattedTime = now.toLocaleString('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit'
+    });
+    $('#last-update-time').text(formattedTime);
+}
+
+function manualRefreshTable() {
+    clearInterval(countdownInterval);
+    updateTableWithNotifications();
+    countdownInterval = setInterval(updateCountdown, 1000);
+    toastr.success('Tabela atualizada com sucesso!');
+}
+
+function confirmDeleteAll() {
+    Swal.fire({
+        title: 'Tem certeza?',
+        text: "Todos os fretes serão excluídos permanentemente!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, excluir tudo!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            deleteAllFreights();
+        }
+    });
+}
+
+function deleteAllFreights() {
+    $.ajax({
+        url: '<?php echo e(route('freights.deleteAll')); ?>',
+        type: 'DELETE',
+        data: {
+            _token: '<?php echo e(csrf_token()); ?>'
+        },
+        success: function(response) {
+            if(response.success) {
+                toastr.success(response.message);
+                freightTable.ajax.reload();
+                lastData = [];
+            } else {
+                toastr.error(response.message);
+            }
+        },
+        error: function(xhr) {
+            toastr.error('Erro ao excluir fretes: ' + xhr.responseText);
+        }
+    });
+}
+
+function confirmDeleteFreight(freightId) {
+    Swal.fire({
+        title: 'Tem certeza?',
+        text: "Você não poderá reverter isso!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, excluir!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            deleteFreight(freightId);
+        }
+    });
+}
+
+function deleteFreight(freightId) {
+    $.ajax({
+        url: `/freights/${freightId}`,
+        type: 'DELETE',
+        data: {
+            _token: '<?php echo e(csrf_token()); ?>'
+        },
+        success: function(response) {
+            if(response.success) {
+                toastr.success(response.message);
+                freightTable.ajax.reload();
+                
+                if (lastData) {
+                    lastData = lastData.filter(item => item.id !== freightId);
+                }
+            } else {
+                toastr.error(response.message);
+            }
+        },
+        error: function(xhr) {
+            toastr.error('Erro ao excluir frete: ' + xhr.responseText);
+        }
+    });
+}
+
+function updateTableInfo() {
+    const info = freightTable.page.info();
+    $('#table-info').html(
+        `Mostrando ${info.start + 1} a ${info.end} de ${info.recordsDisplay} registros`
+    );
+}
+
+function updateStats() {
+    $.get('<?php echo e(route('freights.stats')); ?>', function(response) {
+        $('#waiting-payment-count').text(response['Aguardando pagamento'] || 0);
+        $('#waiting-driver-count').text(response['Aguardando motorista'] || 0);
+        $('#waiting-approval-count').text(response['Aguardando Aprovação empresa'] || 0);
+        $('#waiting-pickup-count').text(response['Aguardando retirada'] || 0);
+        $('#going-pickup-count').text(response['Indo retirar carga'] || 0);
+        $('#in-progress-count').text(response['Em processo de entrega'] || 0);
+        $('#delivered-count').text(response['Carga entregue'] || 0);
+        $('#cancelled-count').text(response['Cancelado'] || 0);
+        $('#total-count').text(response['total'] || 0);
+        
+        const info = freightTable.page.info();
+        $('#table-info').html(
+            `Mostrando ${info.start + 1} a ${info.end} de ${info.recordsDisplay} registros (Total: ${response.total || 0})`
+        );
+    }).fail(function() {
+        console.error('Erro ao carregar estatísticas');
+        toastr.error('Erro ao carregar estatísticas dos fretes');
+    });
+}
+</script>
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /home/luiz/SiteFretesNasNuvens/resources/views/freights/index.blade.php ENDPATH**/ ?>
