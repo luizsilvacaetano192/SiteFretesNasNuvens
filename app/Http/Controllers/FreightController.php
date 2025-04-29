@@ -159,7 +159,7 @@ class FreightController extends Controller
             'destination_lng' => 'required|numeric',
             'current_lat' => 'required|numeric',
             'current_lng' => 'required|numeric',
-            'truck_type' => 'required|string|in:pequeno,medio,grande',
+            'truck_type' => 'required|string',
             'freight_value' => 'required|numeric|min:0',
             'distance' => 'required|string',
             'duration' => 'required|string',
