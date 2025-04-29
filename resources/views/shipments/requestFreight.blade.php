@@ -616,54 +616,30 @@
         });
     }
 
-    // Função para atualizar o valor do frete quando o usuário modificar manualmente
-    $('#freight_value').on('input', function() {
-        const manualValue = parseFloat($(this).val()) || 0;
-        const platformPercentage = getSafeSetting('cloud_percentage');
-        const platformFee = manualValue * (platformPercentage / 100);
-        const driverValue = manualValue - platformFee;
-        
-        // Atualizar os valores financeiros
-        $('#base_freight_value').text(formatCurrency(manualValue));
-        $('#platform_fee_value').text('- ' + formatCurrency(platformFee));
-        $('#final_value').text(formatCurrency(manualValue));
-        $('#driver_value').text(formatCurrency(driverValue));
-        $('#driver_freight_value').val(driverValue.toFixed(2));
-        
-        // Atualizar o valor sugerido para refletir a mudança
-        $('#suggested_value').text(formatCurrency(manualValue));
-        
-        // Validar o valor mínimo
-        const minimumValue = getSafeSetting('minimum_freight_value');
-        if (manualValue < minimumValue) {
-            $(this).addClass('is-invalid');
-            $(this).next('.invalid-feedback').text(`O valor mínimo do frete é ${formatCurrency(minimumValue)}`);
-        } else {
-            $(this).removeClass('is-invalid');
-        }
-    });
-
     // Função para validar todos os campos antes do envio
     function validateForm() {
         let isValid = true;
         
         // Validar campos obrigatórios
         const requiredFields = [
-            'start_address', 
-            'destination_address',
-            'pickup_date',
-            'delivery_date',
-            'truck_type',
-            'freight_value'
+            {id: 'start_address', message: 'Por favor, informe o endereço de origem.'},
+            {id: 'destination_address', message: 'Por favor, informe o endereço de destino.'},
+            {id: 'pickup_date', message: 'Por favor, informe a data de coleta.'},
+            {id: 'delivery_date', message: 'Por favor, informe a data estimada de entrega.'},
+            {id: 'truck_type', message: 'Por favor, selecione o tipo de veículo.'},
+            {id: 'freight_value', message: 'Por favor, informe o valor do frete.'}
         ];
 
         requiredFields.forEach(field => {
-            const element = $(`#${field}`);
+            const element = $(`#${field.id}`);
             if (!element.val()) {
                 element.addClass('is-invalid');
+                // Adicionar mensagem de erro específica
+                element.next('.invalid-feedback').text(field.message);
                 isValid = false;
             } else {
                 element.removeClass('is-invalid');
+                element.next('.invalid-feedback').text('');
             }
         });
         
@@ -678,12 +654,31 @@
         
         // Validar se a rota foi calculada
         if (!$('#distance_km').val()) {
+            // Destacar ambos os campos de endereço
+            $('#start_address').addClass('is-invalid');
+            $('#destination_address').addClass('is-invalid');
+            $('#start_address').next('.invalid-feedback').text('Por favor, calcule a rota antes de enviar.');
+            $('#destination_address').next('.invalid-feedback').text('Por favor, calcule a rota antes de enviar.');
+            
             Swal.fire({
                 icon: 'error',
                 title: 'Rota não calculada',
                 text: 'Por favor, calcule a rota antes de enviar o formulário.',
             });
             isValid = false;
+        }
+        
+        // Se não for válido, rolar até o primeiro erro
+        if (!isValid) {
+            const firstInvalid = $('.is-invalid').first();
+            if (firstInvalid.length) {
+                $('html, body').animate({
+                    scrollTop: firstInvalid.offset().top - 100
+                }, 500);
+                
+                // Dar foco no primeiro campo inválido
+                firstInvalid.focus();
+            }
         }
         
         return isValid;
@@ -721,11 +716,11 @@
         $('#freightRequestForm').on('submit', function(e) {
             e.preventDefault();
             
+            // Remover todas as marcações de erro antes de validar novamente
+            $('.is-invalid').removeClass('is-invalid');
+            $('.invalid-feedback').text('');
+            
             if (!validateForm()) {
-                // Rolar até o primeiro erro
-                $('html, body').animate({
-                    scrollTop: $('.is-invalid').first().offset().top - 100
-                }, 500);
                 return;
             }
 
@@ -792,10 +787,11 @@
             });
         });
 
-        // Adicionar validação em tempo real para os campos
-        $('input, select').on('change input', function() {
+        // Limpar erros quando o usuário começa a digitar/selecionar
+        $('input, select').on('input change', function() {
             if ($(this).val()) {
                 $(this).removeClass('is-invalid');
+                $(this).next('.invalid-feedback').text('');
             }
         });
 
