@@ -1,25 +1,24 @@
-@extends('layouts.app')
+<?php $__env->startSection('title', 'Detalhes do Frete'); ?>
 
-@section('title', 'Detalhes do Frete')
-
-@section('content')
+<?php $__env->startSection('content'); ?>
 <div class="container-fluid px-4">
     <!-- Botão Voltar no Topo -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800">
-                <i class="fas fa-truck-moving me-2"></i>Detalhes do Frete #{{ $freight->id }}
+                <i class="fas fa-truck-moving me-2"></i>Detalhes do Frete #<?php echo e($freight->id); ?>
+
             </h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="{{ route('dashboard') }}">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('freights.index') }}">Fretes</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo e(route('dashboard')); ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo e(route('freights.index')); ?>">Fretes</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Detalhes</li>
                 </ol>
             </nav>
         </div>
         <div>
-            <a href="{{ route('freights.index') }}" class="btn btn-secondary me-2">
+            <a href="<?php echo e(route('freights.index')); ?>" class="btn btn-secondary me-2">
                 <i class="fas fa-arrow-left me-1"></i>Voltar para Fretes
             </a>
             <a href="#" class="btn btn-primary" onclick="window.print()">
@@ -37,25 +36,25 @@
                     <h6 class="mb-0">
                         <i class="fas fa-info-circle me-2"></i>Status do Frete
                     </h6>
-                    <span class="badge bg-{{ $statusBadgeClass }}">{{ $freight->freightStatus->name }}</span>
+                    <span class="badge bg-<?php echo e($statusBadgeClass); ?>"><?php echo e($freight->freightStatus->name); ?></span>
                 </div>
                 <div class="card-body">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <h6 class="text-muted mb-2">Informações Básicas</h6>
-                                <p class="mb-1"><strong>Empresa:</strong> {{ $freight->company->name }}</p>
-                                <p class="mb-1"><strong>Criado em:</strong> {{ $freight->created_at->format('d/m/Y H:i') }}</p>
-                                <p class="mb-1"><strong>Valor Total:</strong> R$ {{ number_format($freight->freight_value, 2, ',', '.') }}</p>
-                                <p class="mb-1"><strong>Valor Motorista:</strong> R$ {{ number_format($freight->driver_freight_value, 2, ',', '.') }}</p>
+                                <p class="mb-1"><strong>Empresa:</strong> <?php echo e($freight->company->name); ?></p>
+                                <p class="mb-1"><strong>Criado em:</strong> <?php echo e($freight->created_at->format('d/m/Y H:i')); ?></p>
+                                <p class="mb-1"><strong>Valor Total:</strong> R$ <?php echo e(number_format($freight->freight_value, 2, ',', '.')); ?></p>
+                                <p class="mb-1"><strong>Valor Motorista:</strong> R$ <?php echo e(number_format($freight->driver_freight_value, 2, ',', '.')); ?></p>
                             </div>
                         </div>
                         <div class="col-md-6">
                             <div class="mb-3">
                                 <h6 class="text-muted mb-2">Datas Importantes</h6>
-                                <p class="mb-1"><strong>Coleta:</strong> {{ $freight->pickup_date ? $freight->pickup_date->format('d/m/Y H:i') : 'N/A' }}</p>
-                                <p class="mb-1"><strong>Entrega:</strong> {{ $freight->delivery_date ? $freight->delivery_date->format('d/m/Y H:i') : 'N/A' }}</p>
-                                <p class="mb-1"><strong>Concluído em:</strong> {{ $freight->completed_at ? $freight->completed_at->format('d/m/Y H:i') : 'N/A' }}</p>
+                                <p class="mb-1"><strong>Coleta:</strong> <?php echo e($freight->pickup_date ? $freight->pickup_date->format('d/m/Y H:i') : 'N/A'); ?></p>
+                                <p class="mb-1"><strong>Entrega:</strong> <?php echo e($freight->delivery_date ? $freight->delivery_date->format('d/m/Y H:i') : 'N/A'); ?></p>
+                                <p class="mb-1"><strong>Concluído em:</strong> <?php echo e($freight->completed_at ? $freight->completed_at->format('d/m/Y H:i') : 'N/A'); ?></p>
                             </div>
                         </div>
                     </div>
@@ -75,11 +74,11 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <strong>📍 Posição atual:</strong> 
-                                    <span id="current-position">{{ $freight->current_position ?? 'Não disponível' }}</span>
+                                    <span id="current-position"><?php echo e($freight->current_position ?? 'Não disponível'); ?></span>
                                 </div>
                                 <div>
                                     <strong>🔄 Atualizado em:</strong> 
-                                    <span id="last-update">{{ now()->format('d/m/Y H:i:s') }}</span>
+                                    <span id="last-update"><?php echo e(now()->format('d/m/Y H:i:s')); ?></span>
                                 </div>
                             </div>
                         </div>
@@ -106,17 +105,17 @@
                                 </tr>
                             </thead>
                             <tbody id="activity-history">
-                                @forelse($freight->history as $activity)
+                                <?php $__empty_1 = true; $__currentLoopData = $freight->history; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $activity): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
                                 <tr>
-                                    <td>{{ $activity->created_at->format('d/m/Y H:i') }}</td>
-                                    <td>{{ $activity->event }}</td>
-                                    <td>{{ $activity->details }}</td>
+                                    <td><?php echo e($activity->created_at->format('d/m/Y H:i')); ?></td>
+                                    <td><?php echo e($activity->event); ?></td>
+                                    <td><?php echo e($activity->details); ?></td>
                                 </tr>
-                                @empty
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <tr>
                                     <td colspan="3" class="text-center">Nenhum histórico disponível</td>
                                 </tr>
-                                @endforelse
+                                <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
@@ -136,24 +135,25 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Informações Gerais</h6>
-                        <p class="mb-1"><strong>Tipo:</strong> {{ $freight->shipment->cargo_type }}</p>
-                        <p class="mb-1"><strong>Peso:</strong> {{ $freight->shipment->weight }} kg</p>
-                        <p class="mb-1"><strong>Dimensões:</strong> {{ $freight->shipment->dimensions }}</p>
-                        <p class="mb-1"><strong>Volume:</strong> {{ $freight->shipment->volume }}</p>
-                        <p class="mb-1"><strong>Descrição:</strong> {{ $freight->shipment->description ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>Tipo:</strong> <?php echo e($freight->shipment->cargo_type); ?></p>
+                        <p class="mb-1"><strong>Peso:</strong> <?php echo e($freight->shipment->weight); ?> kg</p>
+                        <p class="mb-1"><strong>Dimensões:</strong> <?php echo e($freight->shipment->dimensions); ?></p>
+                        <p class="mb-1"><strong>Volume:</strong> <?php echo e($freight->shipment->volume); ?></p>
+                        <p class="mb-1"><strong>Descrição:</strong> <?php echo e($freight->shipment->description ?? 'N/A'); ?></p>
                     </div>
                     
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Características</h6>
-                        <p class="mb-1"><strong>Frágil:</strong> {{ $freight->shipment->is_fragile ? 'Sim' : 'Não' }}</p>
-                        <p class="mb-1"><strong>Perigosa:</strong> {{ $freight->shipment->is_hazardous ? 'Sim' : 'Não' }}</p>
-                        <p class="mb-1"><strong>Controle de Temperatura:</strong> {{ $freight->shipment->requires_temperature_control ? 'Sim' : 'Não' }}</p>
-                        @if($freight->shipment->requires_temperature_control)
+                        <p class="mb-1"><strong>Frágil:</strong> <?php echo e($freight->shipment->is_fragile ? 'Sim' : 'Não'); ?></p>
+                        <p class="mb-1"><strong>Perigosa:</strong> <?php echo e($freight->shipment->is_hazardous ? 'Sim' : 'Não'); ?></p>
+                        <p class="mb-1"><strong>Controle de Temperatura:</strong> <?php echo e($freight->shipment->requires_temperature_control ? 'Sim' : 'Não'); ?></p>
+                        <?php if($freight->shipment->requires_temperature_control): ?>
                         <p class="mb-1"><strong>Faixa de Temperatura:</strong> 
-                            {{ $freight->shipment->min_temperature }}°{{ $freight->shipment->temperature_unit }} a 
-                            {{ $freight->shipment->max_temperature }}°{{ $freight->shipment->temperature_unit }}
+                            <?php echo e($freight->shipment->min_temperature); ?>°<?php echo e($freight->shipment->temperature_unit); ?> a 
+                            <?php echo e($freight->shipment->max_temperature); ?>°<?php echo e($freight->shipment->temperature_unit); ?>
+
                         </p>
-                        @endif
+                        <?php endif; ?>
                     </div>
                 </div>
             </div>
@@ -166,29 +166,29 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    @if($freight->driver)
+                    <?php if($freight->driver): ?>
                     <div class="d-flex align-items-center mb-3">
                         <div class="flex-shrink-0">
-                            <img src="{{ $freight->driver->photo_url ?? asset('img/default-driver.png') }}" 
+                            <img src="<?php echo e($freight->driver->photo_url ?? asset('img/default-driver.png')); ?>" 
                                  class="rounded-circle" width="50" height="50" alt="Foto do Motorista">
                         </div>
                         <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-0">{{ $freight->driver->name }}</h6>
-                            <small class="text-muted">{{ $freight->driver->phone }}</small>
+                            <h6 class="mb-0"><?php echo e($freight->driver->name); ?></h6>
+                            <small class="text-muted"><?php echo e($freight->driver->phone); ?></small>
                         </div>
                     </div>
                     
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Informações do Veículo</h6>
-                        <p class="mb-1"><strong>Tipo:</strong> {{ $freight->truck_type ? ucwords(str_replace('_', ' ', $freight->truck_type)) : 'N/A' }}</p>
-                        <p class="mb-1"><strong>Placa:</strong> {{ $freight->driver->truck_plate ?? 'N/A' }}</p>
-                        <p class="mb-1"><strong>Capacidade:</strong> {{ $freight->driver->truck_capacity ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>Tipo:</strong> <?php echo e($freight->truck_type ? ucwords(str_replace('_', ' ', $freight->truck_type)) : 'N/A'); ?></p>
+                        <p class="mb-1"><strong>Placa:</strong> <?php echo e($freight->driver->truck_plate ?? 'N/A'); ?></p>
+                        <p class="mb-1"><strong>Capacidade:</strong> <?php echo e($freight->driver->truck_capacity ?? 'N/A'); ?></p>
                     </div>
-                    @else
+                    <?php else: ?>
                     <div class="alert alert-warning mb-0">
                         <i class="fas fa-exclamation-circle me-2"></i>Nenhum motorista atribuído a este frete.
                     </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
 
@@ -202,16 +202,16 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <h6 class="text-muted mb-2">Origem</h6>
-                        <p class="mb-1"><strong>Endereço:</strong> {{ $freight->start_address }}</p>
-                        <p class="mb-1"><strong>Instruções:</strong> {{ $freight->loading_instructions ?? 'N/A' }}</p>
-                        <p class="mb-0"><strong>Contato:</strong> {{ $freight->start_contact ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>Endereço:</strong> <?php echo e($freight->start_address); ?></p>
+                        <p class="mb-1"><strong>Instruções:</strong> <?php echo e($freight->loading_instructions ?? 'N/A'); ?></p>
+                        <p class="mb-0"><strong>Contato:</strong> <?php echo e($freight->start_contact ?? 'N/A'); ?></p>
                     </div>
                     
                     <div class="mb-0">
                         <h6 class="text-muted mb-2">Destino</h6>
-                        <p class="mb-1"><strong>Endereço:</strong> {{ $freight->destination_address }}</p>
-                        <p class="mb-1"><strong>Instruções:</strong> {{ $freight->unloading_instructions ?? 'N/A' }}</p>
-                        <p class="mb-0"><strong>Contato:</strong> {{ $freight->destination_contact ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>Endereço:</strong> <?php echo e($freight->destination_address); ?></p>
+                        <p class="mb-1"><strong>Instruções:</strong> <?php echo e($freight->unloading_instructions ?? 'N/A'); ?></p>
+                        <p class="mb-0"><strong>Contato:</strong> <?php echo e($freight->destination_contact ?? 'N/A'); ?></p>
                     </div>
                 </div>
             </div>
@@ -226,50 +226,51 @@
                 <div class="card-body">
                     <div class="mb-3">
                         <p class="mb-1"><strong>Status:</strong> 
-                            <span class="badge bg-{{ $paymentBadgeClass }}">{{ $freight->payment_status }}</span>
+                            <span class="badge bg-<?php echo e($paymentBadgeClass); ?>"><?php echo e($freight->payment_status); ?></span>
                         </p>
-                        <p class="mb-1"><strong>Método:</strong> {{ $freight->payment_method ? strtoupper($freight->payment_method) : 'N/A' }}</p>
+                        <p class="mb-1"><strong>Método:</strong> <?php echo e($freight->payment_method ? strtoupper($freight->payment_method) : 'N/A'); ?></p>
                         <p class="mb-1"><strong>Seguradoras:</strong> 
-                            @if($freight->insurance_carriers && count($freight->insurance_carriers) > 0)
-                                {{ implode(', ', array_map(function($item) { return ucwords(str_replace('_', ' ', $item)); }, $freight->insurance_carriers)) }}
-                            @else
+                            <?php if($freight->insurance_carriers && count($freight->insurance_carriers) > 0): ?>
+                                <?php echo e(implode(', ', array_map(function($item) { return ucwords(str_replace('_', ' ', $item)); }, $freight->insurance_carriers))); ?>
+
+                            <?php else: ?>
                                 Nenhuma seguradora específica
-                            @endif
+                            <?php endif; ?>
                         </p>
                     </div>
                     
-                    @if($freight->charge)
+                    <?php if($freight->charge): ?>
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-2">Distância</h6>
-                            <p class="h5">{{ $freight->distance ?? 'N/A' }}</p>
+                            <p class="h5"><?php echo e($freight->distance ?? 'N/A'); ?></p>
                         </div>
                         <div>
                             <h6 class="text-muted mb-2">Tempo Estimado</h6>
-                            <p class="h5">{{ $freight->duration ?? 'N/A' }}</p>
+                            <p class="h5"><?php echo e($freight->duration ?? 'N/A'); ?></p>
                         </div>
                     </div>
                     
                     <div class="mt-3">
-                        @if($freight->payment_status === 'paid' && $freight->charge->receipt_url)
-                        <a href="{{ $freight->charge->receipt_url }}" class="btn btn-sm btn-info" target="_blank">
+                        <?php if($freight->payment_status === 'paid' && $freight->charge->receipt_url): ?>
+                        <a href="<?php echo e($freight->charge->receipt_url); ?>" class="btn btn-sm btn-info" target="_blank">
                             <i class="fas fa-file-invoice-dollar me-1"></i>Recibo
                         </a>
-                        @elseif($freight->charge->charge_url)
-                        <a href="{{ $freight->charge->charge_url }}" class="btn btn-sm btn-success" target="_blank">
+                        <?php elseif($freight->charge->charge_url): ?>
+                        <a href="<?php echo e($freight->charge->charge_url); ?>" class="btn btn-sm btn-success" target="_blank">
                             <i class="fas fa-credit-card me-1"></i>Pagar
                         </a>
-                        @endif
+                        <?php endif; ?>
                     </div>
-                    @endif
+                    <?php endif; ?>
                 </div>
             </div>
         </div>
     </div>
 </div>
-@endsection
+<?php $__env->stopSection(); ?>
 
-@push('styles')
+<?php $__env->startPush('styles'); ?>
 <style>
     .card {
         border: none;
@@ -339,9 +340,9 @@
         }
     }
 </style>
-@endpush
+<?php $__env->stopPush(); ?>
 
-@push('scripts')
+<?php $__env->startPush('scripts'); ?>
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initMap" async defer></script>
 <script>
     let map;
@@ -383,9 +384,9 @@
     function initRoute() {
         const directionsService = new google.maps.DirectionsService();
 
-        @if($freight->start_lat && $freight->start_lng && $freight->destination_lat && $freight->destination_lng)
-            const start = new google.maps.LatLng({{ $freight->start_lat }}, {{ $freight->start_lng }});
-            const end = new google.maps.LatLng({{ $freight->destination_lat }}, {{ $freight->destination_lng }});
+        <?php if($freight->start_lat && $freight->start_lng && $freight->destination_lat && $freight->destination_lng): ?>
+            const start = new google.maps.LatLng(<?php echo e($freight->start_lat); ?>, <?php echo e($freight->start_lng); ?>);
+            const end = new google.maps.LatLng(<?php echo e($freight->destination_lat); ?>, <?php echo e($freight->destination_lng); ?>);
 
             directionsService.route({
                 origin: start,
@@ -417,12 +418,12 @@
                         title: "Ponto de Destino"
                     });
 
-                    @if($freight->current_lat && $freight->current_lng)
-                        updateTruckPosition({{ $freight->current_lat }}, {{ $freight->current_lng }}, true);
-                    @endif
+                    <?php if($freight->current_lat && $freight->current_lng): ?>
+                        updateTruckPosition(<?php echo e($freight->current_lat); ?>, <?php echo e($freight->current_lng); ?>, true);
+                    <?php endif; ?>
                 }
             });
-        @endif
+        <?php endif; ?>
     }
 
     function updateTruckPosition(lat, lng, position, initialLoad = false) {
@@ -464,7 +465,7 @@
         }
         
         updateInterval = setInterval(() => {
-            fetch(`/freights/{{ $freight->id }}/position`)
+            fetch(`/freights/<?php echo e($freight->id); ?>/position`)
                 .then(response => response.json())
                 .then(data => {
                     if (data.current_lat && data.current_lng) {
@@ -508,4 +509,5 @@
         }
     });
 </script>
-@endpush
+<?php $__env->stopPush(); ?>
+<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /home/luiz/SiteFretesNasNuvens/resources/views/freights/map.blade.php ENDPATH**/ ?>

@@ -139,13 +139,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Freights
     Route::prefix('freights')->group(function () {
+        Route::get('/data', [FreightController::class, 'getDataTable'])->name('freights.data');
+
+        Route::get('/{id}', [FreightController::class, 'show'])->name('freights.show');
         Route::get('/stats', [FreightController::class, 'getStats'])->name('freights.stats');
         Route::get('/statuses', [FreightController::class, 'getStatuses'])->name('freights.statuses');
         Route::get('/', [FreightController::class, 'index'])->name('freights.index');
         Route::post('/store', [FreightController::class, 'store'])->name('freights.store');
         Route::get('/create', [FreightController::class, 'create'])->name('freights.create');
-        Route::get('/data', [FreightController::class, 'getDataTable'])->name('freights.data');
-        Route::get('/{id}', [FreightController::class, 'show'])->name('freights.show');
+   
         Route::delete('/delete-all', [FreightController::class, 'deleteAll'])->name('freights.deleteAll');
         Route::delete('/{id}', [FreightController::class, 'destroy'])->name('freights.destroy');
         Route::get('/mapa-frete-app', [FreightController::class, 'map'])->name('freights.map');
@@ -202,4 +204,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $shipments = Shipment::all();
         return view('shipments.index', compact('shipments'));
     });
+});
+
+Route::get('/institucional', function () {
+   
+    return view('institucional');
 });
