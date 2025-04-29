@@ -168,6 +168,10 @@
                         </div>
                         <div class="invalid-feedback">Por favor, informe o valor do frete.</div>
                         <small class="text-muted">Valor sugerido: <span id="suggested_value">R$ 0,00</span></small>
+                        <div id="minimum_value_warning" class="text-danger d-none mt-1">
+                            <i class="fas fa-exclamation-triangle me-1"></i>
+                            O valor informado está abaixo do mínimo recomendado de <span id="minimum_value_text"></span>
+                        </div>
                     </div>
                 </div>
                 
@@ -538,6 +542,32 @@
         return minutes;
     }
 
+    // Função para atualizar o resumo quando o valor é alterado manualmente
+    function updateFinancialSummaryFromInput() {
+        const freightValue = parseFloat($('#freight_value').val()) || 0;
+        const platformPercentage = getSafeSetting('cloud_percentage');
+        const platformFee = freightValue * (platformPercentage / 100);
+        const driverValue = freightValue - platformFee;
+        const minimumValue = getSafeSetting('minimum_freight_value');
+        
+        // Atualizar valores
+        $('#base_freight_value').text(formatCurrency(freightValue));
+        $('#platform_fee_value').text('- ' + formatCurrency(platformFee));
+        $('#final_value').text(formatCurrency(freightValue));
+        $('#driver_value').text(formatCurrency(driverValue));
+        $('#driver_freight_value').val(driverValue.toFixed(2));
+        
+        // Verificar e mostrar aviso do valor mínimo
+        if (freightValue < minimumValue) {
+            $('#freight_value').addClass('is-invalid');
+            $('#minimum_value_warning').removeClass('d-none');
+            $('#minimum_value_text').text(formatCurrency(minimumValue));
+        } else {
+            $('#freight_value').removeClass('is-invalid');
+            $('#minimum_value_warning').addClass('d-none');
+        }
+    }
+
     // Função para atualizar o resumo financeiro
     function updateFinancialSummary(freightData) {
         $('#base_freight_value').text(formatCurrency(freightData.total));
@@ -548,6 +578,17 @@
         $('#driver_freight_value').val(freightData.driverValue.toFixed(2));
         $('#calculated_value').text(formatCurrency(freightData.total));
         $('#suggested_value').text(formatCurrency(freightData.total));
+        
+        // Verificar valor mínimo também aqui
+        const minimumValue = getSafeSetting('minimum_freight_value');
+        if (freightData.total < minimumValue) {
+            $('#freight_value').addClass('is-invalid');
+            $('#minimum_value_warning').removeClass('d-none');
+            $('#minimum_value_text').text(formatCurrency(minimumValue));
+        } else {
+            $('#freight_value').removeClass('is-invalid');
+            $('#minimum_value_warning').addClass('d-none');
+        }
     }
 
     // Função principal para calcular a rota
@@ -710,6 +751,11 @@
             if (autocompleteStart?.getPlace() && autocompleteDestination?.getPlace()) {
                 calculateRoute();
             }
+        });
+
+        // Listener para alterações no valor do frete
+        $('#freight_value').on('input', function() {
+            updateFinancialSummaryFromInput();
         });
 
         // Listener para envio do formulário
@@ -912,6 +958,13 @@
     .required-field::after {
         content: " *";
         color: #dc3545;
+    }
+    #minimum_value_warning {
+        font-size: 0.85rem;
+        padding: 0.25rem 0.5rem;
+        background-color: #fff8f8;
+        border-radius: 4px;
+        border-left: 3px solid #dc3545;
     }
 </style>
 @endsection
