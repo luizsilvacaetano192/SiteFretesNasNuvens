@@ -26,6 +26,8 @@ class Freight extends Model
         'distance_value',
         'duration_value',
         'distance_km',
+        'distance',
+        'duration',
         'duration_min',
         'current_position',
         'current_lat',
