@@ -77,24 +77,21 @@
                 </div>
 
                 <div class="mb-3 form-check">
-                    <input type="checkbox" name="is_fragile" class="form-check-input" id="fragileCheck" value="1" {{ old('is_fragile', 0) == 1 ? 'checked' : '' }}>
-                    <input type="hidden" name="is_fragile" value="0">
+                    <input type="checkbox" name="is_fragile" class="form-check-input" id="fragileCheck" value="1" {{ old('is_fragile') ? 'checked' : '' }}>
                     <label class="form-check-label" for="fragileCheck">Carga frágil</label>
                 </div>
 
                 <div class="mb-3 form-check">
-                    <input type="checkbox" name="is_hazardous" class="form-check-input" id="hazardousCheck" value="1" {{ old('is_hazardous', 0) == 1 ? 'checked' : '' }}>
-                    <input type="hidden" name="is_hazardous" value="0">
+                    <input type="checkbox" name="is_hazardous" class="form-check-input" id="hazardousCheck" value="1" {{ old('is_hazardous') ? 'checked' : '' }}>
                     <label class="form-check-label" for="hazardousCheck">Material perigoso</label>
                 </div>
 
                 <div class="mb-3 form-check">
-                    <input type="checkbox" name="requires_temperature_control" class="form-check-input" id="tempCheck" value="1" {{ old('requires_temperature_control', 0) == 1 ? 'checked' : '' }}>
-                    <input type="hidden" name="requires_temperature_control" value="0">
+                    <input type="checkbox" name="requires_temperature_control" class="form-check-input" id="tempCheck" value="1" {{ old('requires_temperature_control') ? 'checked' : '' }}>
                     <label class="form-check-label" for="tempCheck">Controle de temperatura necessário</label>
                 </div>
 
-                <div id="temperatureFields" style="display: {{ old('requires_temperature_control', 0) == 1 ? 'block' : 'none' }};">
+                <div id="temperatureFields" style="display: {{ old('requires_temperature_control') ? 'block' : 'none' }};">
                     <div class="card mb-3">
                         <div class="card-header bg-light">
                             <h6>Especificações de Temperatura</h6>
@@ -103,11 +100,11 @@
                             <div class="row">
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Temperatura mínima (°C)</label>
-                                    <input type="number" name="min_temperature" class="form-control" value="{{ old('min_temperature') }}" {{ old('requires_temperature_control', 0) == 1 ? 'required' : '' }}>
+                                    <input type="number" name="min_temperature" class="form-control" value="{{ old('min_temperature') }}">
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Temperatura máxima (°C)</label>
-                                    <input type="number" name="max_temperature" class="form-control" value="{{ old('max_temperature') }}" {{ old('requires_temperature_control', 0) == 1 ? 'required' : '' }}>
+                                    <input type="number" name="max_temperature" class="form-control" value="{{ old('max_temperature') }}">
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label">Tolerância (±°C)</label>
@@ -133,7 +130,7 @@
                             </div>
                             <div class="mb-3">
                                 <label class="form-label">Observações</label>
-                                <textarea name="temperature_notes" class="form-control" rows="2" placeholder="Informações adicionais sobre o controle de temperatura">{{ old('temperature_notes') }}</textarea>
+                                <textarea name="temperature_notes" class="form-control" rows="2">{{ old('temperature_notes') }}</textarea>
                             </div>
                         </div>
                     </div>
@@ -157,23 +154,12 @@
         function updateTemperatureFields() {
             if(tempCheck.checked) {
                 temperatureFields.style.display = 'block';
-                // Adiciona required apenas quando visível
-                document.querySelector('[name="min_temperature"]').required = true;
-                document.querySelector('[name="max_temperature"]').required = true;
             } else {
                 temperatureFields.style.display = 'none';
-                // Remove required e limpa valores
-                document.querySelector('[name="min_temperature"]').required = false;
-                document.querySelector('[name="max_temperature"]').required = false;
-                document.querySelector('[name="min_temperature"]').value = '';
-                document.querySelector('[name="max_temperature"]').value = '';
             }
         }
 
-        // Inicialização
         updateTemperatureFields();
-        
-        // Event listener
         tempCheck.addEventListener('change', updateTemperatureFields);
     });
 </script>
