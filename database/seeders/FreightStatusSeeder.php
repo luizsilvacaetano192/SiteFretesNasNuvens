@@ -23,6 +23,7 @@ class FreightStatusSeeder extends Seeder
             ['id' => 7, 'nome' => 'Em processo de entrega'],
             ['id' => 8, 'nome' => 'Carga entregue'],
             ['id' => 9, 'nome' => 'Aguardando Aprovação empresa'],
+            ['id' => 10, 'nome' => 'Frete recusado'],
         ]);
     }
 }
