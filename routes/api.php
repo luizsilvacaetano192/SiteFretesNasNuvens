@@ -28,8 +28,31 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-Route::get('/driver-truck-details/{driver}/{truck}', [FreightController::class, 'driver-truck-details']);
-
+// In your API route or controller
+Route::get('/driver-truck-details/{driver}/{truck}', function(Driver $driver, Truck $truck) {
+    return response()->json([
+        'driver' => $driver->append([
+            'driver_license_front_url',
+            'driver_license_back_url',
+            'face_photo_url',
+            'address_proof_url'
+        ]),
+        'truck' => $truck->append([
+            'front_photo_url',
+            'rear_photo_url',
+            'left_side_photo_url',
+            'right_side_photo_url',
+            'crv_photo_url',
+            'crlv_photo_url'
+        ]),
+        'implements' => $truck->implements->map(function($implement) {
+            $implement->photo_url = $implement->photo 
+                ? Storage::disk('s3')->url($implement->photo) 
+                : null;
+            return $implement;
+        })
+    ]);
+});
 Route::post('/analyze-driver', [DriverAnalysisController::class, 'analyze']);
 
 Route::get('/shipments', [ShipmentController::class, 'getAllShipments']);
