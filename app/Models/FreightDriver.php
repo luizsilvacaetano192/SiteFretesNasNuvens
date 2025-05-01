@@ -15,17 +15,17 @@ class FreightDriver extends Model
 
     public function freight(){
 
-        return $this->hasOne(freight::class);
+        return $this->belongsTo(freight::class);
     }
 
     public function driver(){
 
-        return $this->hasOne(driver::class);
+        return $this->belongsTo(driver::class);
     }
 
     public function truck(){
 
-        return $this->hasOne(truck::class);
+        return $this->belongsTo(truck::class);
     }
 
 
