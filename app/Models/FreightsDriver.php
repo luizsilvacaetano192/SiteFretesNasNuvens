@@ -10,22 +10,24 @@ class FreightsDriver extends Model
     use HasFactory;
 
     protected $fillable = [
-      
+        'freight_id',
+        'driver_id', 
+        'truck_id',
+        // any other pivot fields
     ];
 
-    public function freight(){
-
+    public function freight()
+    {
         return $this->belongsTo(Freight::class);
     }
 
-    public function driver(){
-
-        return $this->hasOne(Driver::class);
+    public function driver()
+    {
+        return $this->belongsTo(Driver::class);
     }
 
-    public function truck(){
-
-        return $this->hasOne(Truck::class);
+    public function truck()
+    {
+        return $this->belongsTo(Truck::class);
     }
-        
 }
