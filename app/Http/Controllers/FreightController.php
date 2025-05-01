@@ -35,7 +35,7 @@ class FreightController extends Controller
         $freightDriver = FreightsDriver::findOrFail($freightsDriver_id);
         $driver = Driver::findOrFail($freightDriver->driver_id);
         $truck = Truck::findOrFail($freightDriver->truck_id);
-        dd($truck);
+
         return response()->json([
             'driver' => $driver->append([
                 'driver_license_front_url',
