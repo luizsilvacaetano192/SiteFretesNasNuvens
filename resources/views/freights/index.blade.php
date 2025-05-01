@@ -610,15 +610,6 @@ function detailsDriverTruck(driverId, truckId) {
         $('#truckCapacity').text(data.truck.load_capacity);
         $('#truckAxles').text(data.truck.axles_number);
         
-        // Set truck photos - ajuste para os nomes corretos dos campos
-        setPhoto('#truckFrontPhoto', data.truck.front_photo_url);
-        setPhoto('#truckRearPhoto', data.truck.rear_photo_url);
-        setPhoto('#truckLeftPhoto', data.truck.left_side_photo_url);
-        setPhoto('#truckRightPhoto', data.truck.right_side_photo_url);
-        setPhoto('#truckCrvPhoto', data.truck.crv_photo_url);
-        setPhoto('#truckCrlvPhoto', data.truck.crlv_photo_url);
-
-        // Restante do código permanece o mesmo...
         // Implements
         const $implementsContainer = $('#truckImplements');
         $implementsContainer.empty();
