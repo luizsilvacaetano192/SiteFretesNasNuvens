@@ -8,6 +8,7 @@ use App\Models\Driver;
 use App\Models\FreightStatus;
 use App\Models\FreightsDriver;
 use App\Models\Company;
+use App\Models\FreightDriver;
 use App\Models\Truck;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
@@ -29,8 +30,11 @@ class FreightController extends Controller
     }
 
     // In your controller
-    public function getDriverTruckDetails(Driver $driver, Truck $truck)
+    public function getDriverTruckDetails($freightsDriver_id)
     {
+        $freightDriver = FreightsDriver::findOrFail($freightsDriver_id);
+        $driver = Driver::findOrFail($freightDriver->driver_id);
+        $truck = Truck::findOrFail($freightDriver->truck_id);
         return response()->json([
             'driver' => $driver->append([
                 'driver_license_front_url',
@@ -56,7 +60,7 @@ class FreightController extends Controller
 
     public function getDataTable(Request $request)
     {
-        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver.driver','freightsDriver.truck'])
+        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver.driver'])
                 ->select('freights.*');
     
         // Aplica os filtros antes de passar para o DataTables
@@ -97,7 +101,7 @@ class FreightController extends Controller
                 <div class="d-flex flex-column">
                     <span class="badge bg-success mb-1">' . e($freight->freightsDriver->driver->name) . '</span>
                     <a href="#" 
-                        onclick="detailsDriverTruck(' . $freight->freightsDriver->driver->id. ',' . $freight->freightsDriver->truck->id. '); return false;" 
+                        onclick="detailsDriverTruck(' . $freight->freightsDriver->id.'); return false;" 
                         class="btn btn-sm btn-primary align-self-start">
                         Ver Detalhes
                     </a>

@@ -38,10 +38,47 @@ class Truck extends Model
         'active'
     ];
 
+        // In your Truck model
+    protected $appends = [
+        'front_photo_url',
+        'rear_photo_url',
+        'left_side_photo_url',
+        'right_side_photo_url',
+        'crv_photo_url',
+        'crlv_photo_url'
+    ];
 
     
 
-   
+    public function getFrontPhotoUrlAttribute()
+    {
+        return $this->front_photo_url ? Storage::disk('s3')->url($this->front_photo_url) : null;
+    }
+
+    public function getRearPhotoUrlAttribute()
+    {
+        return $this->rear_photo_url ? Storage::disk('s3')->url($this->rear_photo_url) : null;
+    }
+
+    public function getLeftSidePhotoUrlAttribute()
+    {
+        return $this->left_side_photo_url ? Storage::disk('s3')->url($this->left_side_photo_url) : null;
+    }
+
+    public function getRightSidePhotoUrlAttribute()
+    {
+        return $this->right_side_photo_url ? Storage::disk('s3')->url($this->right_side_photo_url) : null;
+    }
+
+    public function getCrvPhotoUrlAttribute()
+    {
+        return $this->crv_photo_url ? Storage::disk('s3')->url($this->crv_photo_url) : null;
+    }
+
+    public function getCrlvPhotoUrlAttribute()
+    {
+        return $this->crlv_photo_url ? Storage::disk('s3')->url($this->crlv_photo_url) : null;
+    }
 
     protected $casts = [
         'active' => 'boolean',

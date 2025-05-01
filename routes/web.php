@@ -60,6 +60,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Dashboard
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
     
+    Route::get('/driver-truck-details/{freightsDriver}', [FreightController::class, 'getDriverTruckDetails']);
+
     // Shipments
     Route::prefix('shipments')->group(function () {
         Route::get('/data', [ShipmentController::class, 'getShipments'])->name('shipments.data');

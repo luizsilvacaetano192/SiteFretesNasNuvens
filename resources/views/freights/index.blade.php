@@ -580,13 +580,13 @@ body {
 let freightTable;
 let countdownInterval;
 
-function detailsDriverTruck(driverId, truckId) {
-    alert('entrou aq');
+function detailsDriverTruck(id) {
+    
     $('#driverTruckModal').modal('show');
     $('#modalLoading').show();
     $('#modalContent').hide();
 
-    $.get(`/api/driver-truck-details/${driverId}/${truckId}`, function(data) {
+    $.get(`/api/driver-truck-details/${id}`, function(data) {
         // Driver Info
         $('#driverName').text(data.driver.name);
         $('#driverCpf').text(data.driver.cpf);
