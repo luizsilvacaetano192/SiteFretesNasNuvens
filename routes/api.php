@@ -42,7 +42,7 @@ Route::get('/driver-truck-details/{driver}/{truck}', function(Driver $driver, Tr
             return $implement;
         })
     ]);
-})->middleware('auth:api'); // Add appropriate middleware
+}); // Add appropriate middleware
 
 Route::post('/analyze-driver', [DriverAnalysisController::class, 'analyze']);
 
