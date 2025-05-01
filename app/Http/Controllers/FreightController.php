@@ -61,16 +61,19 @@ class FreightController extends Controller
                 return $freight->company->name ?? 'N/A';
             })
             ->addColumn('driver_name', function($freight) {
-                if (!$freight->freightsDriver) return '<span class=""badge bg-info text-muted">Não atribuído</span>';
-                    return 
-                    '<div class="d-flex flex-column">
-                        <span class="badge bg-success mb-1"> $freight->freightsDriver->driver->name</span>
-                        <a href="#" 
-                            onclick="detailsDriver($freight->freightsDriver->driver->id)" 
-                            class="btn btn-sm btn-primary align-self-start">
-                            Ver Detalhes
-                        </a>
-                    </div>';
+                if (!$freight->freightsDriver) {
+                    return '<span class="badge bg-info text-muted">Não atribuído</span>';
+                }
+                
+                return '
+                <div class="d-flex flex-column">
+                    <span class="badge bg-success mb-1">' . e($freight->freightsDriver->driver->name) . '</span>
+                    <a href="#" 
+                        onclick="detailsDriver(' . $freight->freightsDriver->driver->id . '); return false;" 
+                        class="btn btn-sm btn-primary align-self-start">
+                        Ver Detalhes
+                    </a>
+                </div>';
             })
             ->addColumn('status_badge', function($freight) {
                 $status = $freight->freightStatus;
