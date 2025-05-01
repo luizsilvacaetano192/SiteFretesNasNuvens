@@ -738,11 +738,13 @@
             <div class="testimonial-slider">
                 <div class="testimonial">
                     <div class="quote">
-                        <img src="images/quote.svg" alt="Aspas" width="24">
-                        <p>Desde que começamos a usar a plataforma, reduzimos em 30% nossos custos com fretes e ganhamos muito mais agilidade.</p>
+                        <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
+                        <p>Desde que começamos a usar a plataforma, reduzimos em 30% nossos custos com fretes e ganhamos muito mais agilidade.
+
+                        </p>
                     </div>
                     <div class="author">
-                        <img src="images/client1.jpg" alt="Cliente" width="60">
+                        <img src="{{ asset('images/client1.png') }}" alt="Cliente" width="60">
                         <div class="info">
                             <h4>Carlos Mendes</h4>
                             <p>Gerente de Logística - Empresa ABC</p>
@@ -752,11 +754,11 @@
                 
                 <div class="testimonial">
                     <div class="quote">
-                        <img src="images/quote.svg" alt="Aspas" width="24">
+                        <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
                         <p>Como motorista autônomo, a plataforma me permite escolher os melhores fretes e ter uma renda mais estável.</p>
                     </div>
                     <div class="author">
-                        <img src="images/client2.jpg" alt="Cliente" width="60">
+                        <img src="{{ asset('images/client1.png') }}" alt="Cliente" width="60">
                         <div class="info">
                             <h4>Roberto Silva</h4>
                             <p>Motorista parceiro há 2 anos</p>
