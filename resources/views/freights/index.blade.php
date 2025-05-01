@@ -494,7 +494,7 @@ function initializeDataTable() {
                 data: 'driver_name', 
                 name: 'driver.name',
                 render: function(data, type, row) {
-                    if (!data) return '<span >Não atribuído</span>';
+                    if (!data) return '<span" badge bg-info" >Não atribuído</span>';
                     
                         return `<span class="badge bg-success">${data}</span>`;
                 }
