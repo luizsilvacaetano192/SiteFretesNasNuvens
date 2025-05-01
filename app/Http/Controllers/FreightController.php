@@ -279,10 +279,11 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
             DB::beginTransaction();
 
             $freight = Freight::create($validated);
-            DB::commit();
+         
 
             $paymentData = $this->createAsaasPayment($freight);
 
+            DB::commit();
 
             return  $paymentData ;
 
