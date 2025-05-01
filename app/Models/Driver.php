@@ -67,7 +67,7 @@ class Driver extends Model
     {
         return $this->belongsTo(UserAccount::class,'id', 'driver_id');
         
-        // ou mantém o belongsTo se a chave estrangeira estiver na tabela user_accounts
+       
     }
 
 
