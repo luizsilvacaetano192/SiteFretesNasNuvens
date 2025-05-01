@@ -6,6 +6,7 @@ use App\Models\Freight;
 use App\Models\Shipment;
 use App\Models\Driver;
 use App\Models\FreightStatus;
+use App\Models\FreightsDriver;
 use App\Models\Company;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
@@ -27,7 +28,7 @@ class FreightController extends Controller
 
     public function getDataTable(Request $request)
     {
-        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightDriver'])
+        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver'])
                 ->select('freights.*');
     
         // Aplica os filtros antes de passar para o DataTables
@@ -60,13 +61,11 @@ class FreightController extends Controller
                 return $freight->company->name ?? 'N/A';
             })
             ->addColumn('driver_name', function($freight) {
-                if (!$freight->freightDriver->driver->name) return '<span class="text-muted">Não atribuído</span>';
+                if (!$freight->freightsDriver) return '<span class="text-muted">Não atribuído</span>';
+             
+                if (!$freight->freightsDriver->driver->name) return 
                 
-                $badgeClass = 'bg-primary';
-                if ($freight->driver->status === 'inactive') $badgeClass = 'bg-secondary';
-                if ($freight->driver->status === 'on_delivery') $badgeClass = 'bg-warning';
-                
-                return '<span class="badge '.$badgeClass.'">'.$freight->driver->name.'</span>';
+                return '<span class="badge bg-info >'.$freight->driver->name.'</span>';
             })
             ->addColumn('status_badge', function($freight) {
                 $status = $freight->freightStatus;

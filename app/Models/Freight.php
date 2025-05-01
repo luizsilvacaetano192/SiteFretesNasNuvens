@@ -57,12 +57,12 @@ class Freight extends Model
         return $this->belongsTo(Company::class);
     }
 
-    public function freightDriver()
+    public function freightsDriver()
     {
-        return $this->hasOne(FreightDriver::class);
+        return $this->hasOne(FreightsDriver::class);
     }
 
-    // Relacionamento com Status
+    // Relacionamento com Statuss
     public function freightStatus()
     {
         return $this->belongsTo(FreightStatus::class,'status_id','id');

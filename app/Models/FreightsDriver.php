@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class FreightDriver extends Model
+class FreightsDriver extends Model
 {
     use HasFactory;
 
@@ -27,7 +27,5 @@ class FreightDriver extends Model
 
         return $this->belongsTo(truck::class);
     }
-
-
         
 }
