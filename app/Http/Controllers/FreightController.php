@@ -90,6 +90,27 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
         }
     }
 
+    if ($freightsDriver->status_id == 10) {
+    
+        try {
+            $response = Http::post('https://8t163e6pei.execute-api.us-east-1.amazonaws.com/teste', [
+                'freights_driver_id' => $freightsDriver->id
+            ]);
+
+            // Verifica se a requisição foi bem-sucedida (opcional)
+            if ($response->successful()) {
+                // Faça algo com a resposta, se necessário
+                // $responseData = $response->json();
+            } else {
+                // Log de erro, se a API retornar status 4xx/5xx
+                \Log::error('Falha na chamada da API: ' . $response->status());
+            }
+        } catch (\Exception $e) {
+            // Log em caso de erro de conexão, timeout, etc.
+            \Log::error('Erro ao chamar API externa: ' . $e->getMessage());
+        }
+    }
+
     return response()->json([
         'success' => true,
         'message' => 'Status atualizado com sucesso!'
