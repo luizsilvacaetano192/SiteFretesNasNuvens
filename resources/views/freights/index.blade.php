@@ -894,8 +894,8 @@ function setupColumnToggleButtons() {
     const destinationColumn = freightTable.column(3); // Índice 3 é a coluna Destino
     
     // Atualiza o estado inicial dos botões
-    updateToggleButton('#toggle-origin', originColumn.visible());
-    updateToggleButton('#toggle-destination', destinationColumn.visible());
+    updateToggleButtonOrigem('#toggle-origin', originColumn.visible());
+    updateToggleButtonDestino('#toggle-destination', destinationColumn.visible());
     
     // Configura os eventos de clique
     $('#toggle-origin').click(function() {
