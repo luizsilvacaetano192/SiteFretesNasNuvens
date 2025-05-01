@@ -367,6 +367,16 @@
             </div>
         </div>
         
+        <!-- Botões para mostrar/ocultar colunas -->
+        <div class="card-header bg-light py-2 d-flex gap-2">
+            <button id="toggle-origin" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-eye me-1"></i> Mostrar Origem
+            </button>
+            <button id="toggle-destination" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-eye me-1"></i> Mostrar Destino
+            </button>
+        </div>
+        
         <div class="card-body p-0">
             <div class="table-wrapper">
                 <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -692,8 +702,6 @@ function detailsDriverTruck(id) {
     });
 }
 
-
-
 function setPhoto(elementId, photoUrl) {
     if (photoUrl) {
         $(elementId).attr('src', photoUrl).removeClass('d-none');
@@ -779,6 +787,7 @@ function initializeDataTable() {
             { 
                 data: 'start_address', 
                 name: 'start_address',
+                visible: false, // COLUNA ORIGEM OCULTA INICIALMENTE
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
@@ -791,6 +800,7 @@ function initializeDataTable() {
             { 
                 data: 'destination_address', 
                 name: 'destination_address',
+                visible: false, // COLUNA DESTINO OCULTA INICIALMENTE
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
@@ -870,12 +880,44 @@ function initializeDataTable() {
             loadStatusFilter();
             loadCompanyFilter();
             loadDriverFilter();
+            setupColumnToggleButtons();
         },
         drawCallback: function(settings) {
             updateTableInfo();
             updateStats();
         }
     });
+}
+
+function setupColumnToggleButtons() {
+    const originColumn = freightTable.column(2); // Índice 2 é a coluna Origem
+    const destinationColumn = freightTable.column(3); // Índice 3 é a coluna Destino
+    
+    // Atualiza o estado inicial dos botões
+    updateToggleButton('#toggle-origin', originColumn.visible());
+    updateToggleButton('#toggle-destination', destinationColumn.visible());
+    
+    // Configura os eventos de clique
+    $('#toggle-origin').click(function() {
+        originColumn.visible(!originColumn.visible());
+        updateToggleButton('#toggle-origin', originColumn.visible());
+    });
+    
+    $('#toggle-destination').click(function() {
+        destinationColumn.visible(!destinationColumn.visible());
+        updateToggleButton('#toggle-destination', destinationColumn.visible());
+    });
+}
+
+function updateToggleButton(buttonId, isVisible) {
+    const button = $(buttonId);
+    if (isVisible) {
+        button.html('<i class="fas fa-eye-slash me-1"></i> Ocultar Origem');
+        button.removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+    } else {
+        button.html('<i class="fas fa-eye me-1"></i> Mostrar Origem');
+        button.removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+    }
 }
 
 function loadStatusFilter() {
