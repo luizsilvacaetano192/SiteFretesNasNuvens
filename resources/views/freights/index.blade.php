@@ -586,7 +586,7 @@ function detailsDriverTruck(id) {
     $('#modalLoading').show();
     $('#modalContent').hide();
 
-    $.get(`/api/driver-truck-details/${id}`, function(data) {
+    $.get(`/driver-truck-details/${id}`, function(data) {
         // Driver Info
         $('#driverName').text(data.driver.name);
         $('#driverCpf').text(data.driver.cpf);
