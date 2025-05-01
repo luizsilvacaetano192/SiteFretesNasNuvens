@@ -37,7 +37,14 @@ class FreightController extends Controller
                 'driver_license_back_url',
                 'face_photo_url'
             ]),
-            'truck' => $truck,
+            'truck' => $truck->append([
+                'front_photo_url',
+                'rear_photo_url',
+                'left_side_photo_url',
+                'right_side_photo_url',
+                'crv_photo_url',
+                'crlv_photo_url'
+            ]),
             'implements' => $truck->implements->map(function($implement) {
                 $implement->photo_url = $implement->photo 
                     ? Storage::disk('s3')->url($implement->photo) 

@@ -8,7 +8,7 @@
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">Detalhes do Motorista e Caminhão</h5>
+                <h5 class="modal-title">Detalhes Completo</h5>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
@@ -27,6 +27,9 @@
                         <li class="nav-item" role="presentation">
                             <button class="nav-link" id="truck-tab" data-bs-toggle="tab" data-bs-target="#truck" type="button" role="tab">Caminhão</button>
                         </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="documents-tab" data-bs-toggle="tab" data-bs-target="#documents" type="button" role="tab">Documentos</button>
+                        </li>
                     </ul>
                     
                     <div class="tab-content p-3 border border-top-0 rounded-bottom" id="detailsTabContent">
@@ -41,7 +44,19 @@
                                             <td id="driverName"></td>
                                         </tr>
                                         <tr>
-                                            <th>CNH:</th>
+                                            <th>CPF:</th>
+                                            <td id="driverCpf"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Telefone:</th>
+                                            <td id="driverPhone"></td>
+                                        </tr>
+                                    </table>
+                                    
+                                    <h4 class="mt-4">CNH</h4>
+                                    <table class="table table-sm">
+                                        <tr>
+                                            <th>Número:</th>
                                             <td id="driverLicense"></td>
                                         </tr>
                                         <tr>
@@ -49,16 +64,8 @@
                                             <td id="driverLicenseCategory"></td>
                                         </tr>
                                         <tr>
-                                            <th>Validade CNH:</th>
+                                            <th>Validade:</th>
                                             <td id="driverLicenseExpiration"></td>
-                                        </tr>
-                                        <tr>
-                                            <th>Telefone:</th>
-                                            <td id="driverPhone"></td>
-                                        </tr>
-                                        <tr>
-                                            <th>CPF:</th>
-                                            <td id="driverCpf"></td>
                                         </tr>
                                     </table>
                                 </div>
@@ -76,6 +83,10 @@
                                         <div class="col-md-6 mb-3">
                                             <h6>Foto do Rosto</h6>
                                             <img id="driverFacePhoto" src="" class="img-fluid rounded border d-none" style="max-height: 200px;">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6>Comprovante de Endereço</h6>
+                                            <img id="driverAddressProofPhoto" src="" class="img-fluid rounded border d-none" style="max-height: 200px;">
                                         </div>
                                     </div>
                                 </div>
@@ -101,12 +112,24 @@
                                             <td id="truckYear"></td>
                                         </tr>
                                         <tr>
-                                            <th>Capacidade:</th>
-                                            <td id="truckCapacity"></td>
+                                            <th>Renavam:</th>
+                                            <td id="truckRenavam"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Chassi:</th>
+                                            <td id="truckChassis"></td>
                                         </tr>
                                         <tr>
                                             <th>Tipo:</th>
                                             <td id="truckType"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Capacidade:</th>
+                                            <td id="truckCapacity"></td>
+                                        </tr>
+                                        <tr>
+                                            <th>Eixos:</th>
+                                            <td id="truckAxles"></td>
                                         </tr>
                                     </table>
                                 </div>
@@ -135,6 +158,25 @@
                             
                             <h4 class="mt-4">Implementos</h4>
                             <div class="row" id="truckImplements"></div>
+                        </div>
+                        
+                        <!-- Documents Tab -->
+                        <div class="tab-pane fade" id="documents" role="tabpanel">
+                            <div class="row">
+                                <div class="col-md-6 mb-4">
+                                    <h4>Documentos do Caminhão</h4>
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6>CRV</h6>
+                                            <img id="truckCrvPhoto" src="" class="img-fluid rounded border d-none" style="max-height: 200px;">
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6>CRLV</h6>
+                                            <img id="truckCrlvPhoto" src="" class="img-fluid rounded border d-none" style="max-height: 200px;">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -537,20 +579,75 @@ body {
 <script>
 
 function detailsDriverTruck(driverId, truckId) {
-    // Show loading state
     $('#driverTruckModal').modal('show');
     $('#modalLoading').show();
     $('#modalContent').hide();
 
-    // Make AJAX request to get data
     $.get(`/api/driver-truck-details/${driverId}/${truckId}`, function(data) {
-        // Populate modal with data
-        populateModal(data);
-    }).fail(function() {
-        alert('Error loading details');
-    }).always(function() {
+        // Driver Info
+        $('#driverName').text(data.driver.name);
+        $('#driverCpf').text(data.driver.cpf);
+        $('#driverPhone').text(data.driver.phone);
+        $('#driverLicense').text(data.driver.driver_license_number);
+        $('#driverLicenseCategory').text(data.driver.driver_license_category);
+        $('#driverLicenseExpiration').text(data.driver.driver_license_expiration);
+        
+        // Set driver photos
+        setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_url);
+        setPhoto('#driverLicenseBackPhoto', data.driver.driver_license_back_url);
+        setPhoto('#driverFacePhoto', data.driver.face_photo_url);
+        setPhoto('#driverAddressProofPhoto', data.driver.address_proof_url);
+
+        // Truck Info
+        $('#truckLicensePlate').text(data.truck.license_plate);
+        $('#truckBrandModel').text(`${data.truck.brand} ${data.truck.model}`);
+        $('#truckYear').text(data.truck.manufacture_year);
+        $('#truckRenavam').text(data.truck.renavam);
+        $('#truckChassis').text(data.truck.chassis_number);
+        $('#truckType').text(data.truck.vehicle_type);
+        $('#truckCapacity').text(data.truck.load_capacity);
+        $('#truckAxles').text(data.truck.axles_number);
+        
+        // Set truck photos
+        setPhoto('#truckFrontPhoto', data.truck.front_photo_url);
+        setPhoto('#truckRearPhoto', data.truck.rear_photo_url);
+        setPhoto('#truckLeftPhoto', data.truck.left_side_photo_url);
+        setPhoto('#truckRightPhoto', data.truck.right_side_photo_url);
+        setPhoto('#truckCrvPhoto', data.truck.crv_photo_url);
+        setPhoto('#truckCrlvPhoto', data.truck.crlv_photo_url);
+
+        // Implements
+        const $implementsContainer = $('#truckImplements');
+        $implementsContainer.empty();
+        
+        if (data.implements.length > 0) {
+            data.implements.forEach(imp => {
+                $implementsContainer.append(`
+                    <div class="col-md-4 mb-3">
+                        <div class="card">
+                            <img src="${imp.photo_url}" class="card-img-top" style="height: 200px; object-fit: cover;">
+                            <div class="card-body">
+                                <h5 class="card-title">${imp.type}</h5>
+                                <p class="card-text">
+                                    <strong>Marca/Modelo:</strong> ${imp.brand} ${imp.model}<br>
+                                    <strong>Placa:</strong> ${imp.license_plate}<br>
+                                    <strong>Ano:</strong> ${imp.manufacture_year}<br>
+                                    <strong>Capacidade:</strong> ${imp.capacity}
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                `);
+            });
+        } else {
+            $implementsContainer.append('<p class="text-muted">Nenhum implemento cadastrado</p>');
+        }
+
         $('#modalLoading').hide();
         $('#modalContent').show();
+    }).fail(function() {
+        alert('Erro ao carregar detalhes');
+        $('#driverTruckModal').modal('hide');
     });
 }
 
