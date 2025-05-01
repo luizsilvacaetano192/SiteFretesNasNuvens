@@ -37,7 +37,14 @@ Route::get('/driver-truck-details/{driver}/{truck}', function(Driver $driver, Tr
             'face_photo_url',
             'address_proof_url'
         ]),
-        $truck,
+        'truck' => $truck->append([
+            'front_photo_url',
+            'rear_photo_url',
+            'left_side_photo_url',
+            'right_side_photo_url',
+            'crv_photo_url',
+            'crlv_photo_url'
+        ]),
         'implements' => $truck->implements->map(function($implement) {
             $implement->photo_url = $implement->photo 
                 ? Storage::disk('s3')->url($implement->photo) 

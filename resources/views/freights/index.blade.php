@@ -581,6 +581,7 @@ let freightTable;
 let countdownInterval;
 
 function detailsDriverTruck(driverId, truckId) {
+    alert('entrou aq');
     $('#driverTruckModal').modal('show');
     $('#modalLoading').show();
     $('#modalContent').hide();
@@ -645,7 +646,7 @@ function detailsDriverTruck(driverId, truckId) {
     });
 }
 
-function populateModal(data) {
+function populatfeModal(data) {
     // Driver Info
     $('#driverName').text(data.driver.name);
     $('#driverLicense').text(data.driver.driver_license_number);
