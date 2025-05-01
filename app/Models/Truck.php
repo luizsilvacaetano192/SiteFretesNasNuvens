@@ -48,32 +48,32 @@ class Truck extends Model
         'crlv_photo_url'
     ];
 
-    public function getFrontPhotoFullUrlAttribute()
+    public function getFrontPhotoUrlAttribute()
     {
         return $this->front_photo_url ? Storage::disk('s3')->url($this->front_photo_url) : null;
     }
 
-    public function getRearPhotoFullUrlAttribute()
+    public function getRearPhotoUrlAttribute()
     {
         return $this->rear_photo_url ? Storage::disk('s3')->url($this->rear_photo_url) : null;
     }
 
-    public function getLeftSidePhotoFullUrlAttribute()
+    public function getLeftSidePhotoUrlAttribute()
     {
         return $this->left_side_photo_url ? Storage::disk('s3')->url($this->left_side_photo_url) : null;
     }
 
-    public function getRightSidePhotoFullUrlAttribute()
+    public function getRightSidePhotoUrlAttribute()
     {
         return $this->right_side_photo_url ? Storage::disk('s3')->url($this->right_side_photo_url) : null;
     }
 
-    public function getCrvPhotoFullUrlAttribute()
+    public function getCrvPhotoUrlAttribute()
     {
         return $this->crv_photo_url ? Storage::disk('s3')->url($this->crv_photo_url) : null;
     }
 
-    public function getCrlvPhotoFullUrlAttribute()
+    public function getCrlvPhotoUrlAttribute()
     {
         return $this->crlv_photo_url ? Storage::disk('s3')->url($this->crlv_photo_url) : null;
     }
