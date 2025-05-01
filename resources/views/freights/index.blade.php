@@ -496,7 +496,7 @@ function initializeDataTable() {
                 render: function(data, type, row) {
                     if (!data) return '<span >Não atribuído</span>';
                     
-                        return `<span class="badge bg-info">${data}</span>`;
+                        return `<span class="badge bg-success">${data}</span>`;
                 }
             },
             { 
