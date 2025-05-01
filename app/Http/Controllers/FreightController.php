@@ -66,7 +66,7 @@ class FreightController extends Controller
         ]);
 
 
-        dd($freightsDriver);
+        dd(Freight::where('id', $freightsDriver->freight_id)->get());
         DB::transaction(function () use ($freightsDriver, $validated) {
             // Atualiza o status na tabela freights
             $freightsDriver->update(['status_id' => $validated['status_id']]);
