@@ -64,9 +64,9 @@ class FreightController extends Controller
                 if (!$freight->freightsDriver) return '<span class=""badge bg-info text-muted">Não atribuído</span>';
                     return 
                     '<div class="d-flex flex-column">
-                        <span class="badge bg-success mb-1"><?php echo $freight->freightsDriver->driver->name; ?></span>
+                        <span class="badge bg-success mb-1"> $freight->freightsDriver->driver->name</span>
                         <a href="#" 
-                            onclick="detailsDriver(<?php echo $freight->freightsDriver->driver->id; ?>); return false;" 
+                            onclick="detailsDriver($freight->freightsDriver->driver->id)" 
                             class="btn btn-sm btn-primary align-self-start">
                             Ver Detalhes
                         </a>
