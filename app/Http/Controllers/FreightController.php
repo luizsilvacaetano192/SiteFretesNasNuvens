@@ -101,11 +101,24 @@ class FreightController extends Controller
                 return '
                 <div class="d-flex flex-column">
                     <span class="badge bg-success mb-1">' . e($freight->freightsDriver->driver->name) . '</span>
-                    <a href="#" 
-                        onclick="detailsDriverTruck(' . $freight->freightsDriver->id.'); return false;" 
-                        class="btn btn-sm btn-primary align-self-start">
-                        Ver Detalhes
-                    </a>
+                    <div class="d-flex gap-1 align-self-start">' .
+                        ($freight->freightsDriver->status_id == 9 ? '
+                            <button onclick="approveRejectDriver(' . $freight->freightsDriver->id . ', 5); return false;" 
+                                    class="btn btn-sm btn-success">
+                                Aprovar
+                            </button>
+                            <button onclick="approveRejectDriver(' . $freight->freightsDriver->id . ', 10); return false;" 
+                                    class="btn btn-sm btn-danger">
+                                Recusar
+                            </button>'
+                            : ''
+                        ) . '
+                        <a href="#" 
+                            onclick="detailsDriverTruck(' . $freight->freightsDriver->id . '); return false;" 
+                            class="btn btn-sm btn-primary">
+                            Ver Detalhes
+                        </a>
+                    </div>
                 </div>';
             })
             ->addColumn('status_badge', function($freight) {
