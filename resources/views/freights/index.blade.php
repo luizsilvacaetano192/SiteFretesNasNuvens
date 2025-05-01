@@ -610,6 +610,13 @@ function detailsDriverTruck(id) {
         $('#truckType').text(data.truck.vehicle_type);
         $('#truckCapacity').text(data.truck.load_capacity);
         $('#truckAxles').text(data.truck.axles_number);
+
+        setPhoto('#truckFrontPhoto', data.truck.front_photo_full_url);
+        setPhoto('#truckRearPhoto', data.truck.rear_photo_full_url);
+        setPhoto('#truckLeftPhoto', data.truck.left_side_photo_full_url);
+        setPhoto('#truckRightPhoto', data.truck.right_side_photo_full_url);
+        setPhoto('#truckCrvPhoto', data.truck.crv_photo_full_url);
+        setPhoto('#truckCrlvPhoto', data.truck.crlv_photo_full_url);
         
         // Implements
         const $implementsContainer = $('#truckImplements');
@@ -644,67 +651,6 @@ function detailsDriverTruck(id) {
         alert('Erro ao carregar detalhes');
         $('#driverTruckModal').modal('hide');
     });
-}
-
-function populatfeModal(data) {
-    // Driver Info
-    $('#driverName').text(data.driver.name);
-    $('#driverLicense').text(data.driver.driver_license_number);
-    $('#driverLicenseCategory').text(data.driver.driver_license_category);
-    $('#driverLicenseExpiration').text(data.driver.driver_license_expiration);
-    $('#driverPhone').text(data.driver.phone);
-    $('#driverCpf').text(data.driver.cpf);
-    
-    // Set driver photos
-    setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_url);
-    setPhoto('#driverLicenseBackPhoto', data.driver.driver_license_back_url);
-    setPhoto('#driverFacePhoto', data.driver.face_photo_url);
-
-    // Truck Info
-    $('#truckLicensePlate').text(data.truck.license_plate);
-    $('#truckBrandModel').text(`${data.truck.brand} ${data.truck.model}`);
-    $('#truckYear').text(data.truck.manufacture_year);
-    $('#truckCapacity').text(data.truck.load_capacity);
-    $('#truckType').text(data.truck.vehicle_type);
-    
-    // Set truck photos
-
-    console.log('truck', data.truck);
-
-
-    setPhoto('#truckFrontPhoto', data.truck.front_photo_full_url);
-    setPhoto('#truckRearPhoto', data.truck.rear_photo_full_url);
-    setPhoto('#truckLeftPhoto', data.truck.left_side_photo_full_url);
-    setPhoto('#truckRightPhoto', data.truck.right_side_photo_full_url);
-    setPhoto('#truckCrvPhoto', data.truck.crv_photo_full_url);
-    setPhoto('#truckCrlvPhoto', data.truck.crlv_photo_full_url);
-
-    // Implements
-    const $implementsContainer = $('#truckImplements');
-    $implementsContainer.empty();
-    
-    if (data.implements.length > 0) {
-        data.implements.forEach(imp => {
-            $implementsContainer.append(`
-                <div class="col-md-4 mb-3">
-                    <div class="card">
-                        <img src="${imp.photo_url}" class="card-img-top" alt="${imp.type}">
-                        <div class="card-body">
-                            <h5 class="card-title">${imp.type}</h5>
-                            <p class="card-text">
-                                <strong>Marca/Modelo:</strong> ${imp.brand} ${imp.model}<br>
-                                <strong>Placa:</strong> ${imp.license_plate}<br>
-                                <strong>Ano:</strong> ${imp.manufacture_year}<br>
-                                <strong>Capacidade:</strong> ${imp.capacity}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `);
-        });
-    } else {
-        $implementsContainer.append('<p class="text-muted">Nenhum implemento cadastrado</p>');
-    }
 }
 
 function setPhoto(elementId, photoUrl) {
