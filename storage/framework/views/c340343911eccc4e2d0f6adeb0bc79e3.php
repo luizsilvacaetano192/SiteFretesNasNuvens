@@ -580,7 +580,7 @@
                     <li><a href="#para-empresas">Para Empresas</a></li>
                     <li><a href="#para-motoristas">Para Motoristas</a></li>
                     <li><a href="#contato">Contato</a></li>
-                    <li><a href="login.html" class="btn btn-outline">Entrar</a></li>
+                    <li><a href="/login" class="btn btn-outline">Entrar</a></li>
                     <li><a href="cadastro.html" class="btn btn-primary">Cadastre-se</a></li>
                 </ul>
             </nav>
@@ -599,7 +599,7 @@
                 </div>
             </div>
             <div class="hero-image">
-                <img src="images/hero-image.png" alt="Plataforma de fretes conectando empresas e motoristas" loading="lazy">
+                <img src="<?php echo e(asset('images/mascote-fretes-em-nuvens.png')); ?>" loading="lazy">
             </div>
         </div>
     </section>
@@ -608,17 +608,17 @@
     <section class="highlights">
         <div class="container">
             <div class="highlight-item">
-                <img src="images/icon-motoristas.svg" alt="Motoristas cadastrados" width="60">
+                <img src="<?php echo e(asset('images/icon-motoristas.png')); ?>" alt="Motoristas cadastrados" width="60">
                 <h3>+5.000 Motoristas</h3>
                 <p>Cadastrados e verificados em nossa plataforma</p>
             </div>
             <div class="highlight-item">
-                <img src="images/icon-empresas.svg" alt="Empresas parceiras" width="60">
+                <img src="<?php echo e(asset('images/icon-empresas.png')); ?>" alt="Empresas parceiras" width="60">
                 <h3>+300 Empresas</h3>
                 <p>Utilizando nossos serviços regularmente</p>
             </div>
             <div class="highlight-item">
-                <img src="images/icon-fretes.svg" alt="Fretes realizados" width="60">
+                <img src="<?php echo e(asset('images/icon-fretes.png')); ?>" alt="Fretes realizados" width="60">
                 <h3>+20.000 Fretes</h3>
                 <p>Realizados com sucesso através da plataforma</p>
             </div>
@@ -634,27 +634,27 @@
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
-                    <img src="images/step1.svg" alt="Cadastro na plataforma" loading="lazy">
+                   
                     <h3>Cadastro</h3>
                     <p>Empresas e motoristas se cadastram em nossa plataforma</p>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
-                    <img src="images/step2.svg" alt="Publicação de fretes" loading="lazy">
+                 
                     <h3>Publicação</h3>
                     <p>Empresas publicam suas necessidades de fretes</p>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
-                    <img src="images/step3.svg" alt="Propostas de motoristas" loading="lazy">
+                 
                     <h3>Propostas</h3>
-                    <p>Motoristas enviam propostas para os fretes disponíveis</p>
+                    <p>Motoristas candidatam-se aos fretes disponíveis</p>
                 </div>
                 <div class="step">
                     <div class="step-number">4</div>
-                    <img src="images/step4.svg" alt="Fechamento do frete" loading="lazy">
+                  
                     <h3>Fechamento</h3>
-                    <p>A empresa seleciona a melhor proposta e o frete é realizado</p>
+                    <p>A empresa aprova o candidato e o frete é realizado</p>
                 </div>
             </div>
         </div>
@@ -667,23 +667,23 @@
                 <h2>Solução completa para sua empresa</h2>
                 <ul class="benefits">
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
                         <span>Encontre motoristas confiáveis rapidamente</span>
                     </li>
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
-                        <span>Compare propostas e escolha a melhor opção</span>
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
+                        <span>Escolha o melhor o caminhão perfeito para o transporte</span>
                     </li>
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
                         <span>Acompanhe seus fretes em tempo real</span>
                     </li>
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
                         <span>Reduza custos com transporte</span>
                     </li>
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
                         <span>Gestão centralizada de todos seus fretes</span>
                     </li>
                 </ul>
@@ -705,23 +705,23 @@
                 <h2>Mais oportunidades para motoristas</h2>
                 <ul class="benefits">
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
                         <span>Acesse fretes de diversas empresas</span>
                     </li>
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
-                        <span>Defina seus preços e condições</span>
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
+                        <span>Escolha o frete que melhor combina com seu caminhão</span>
                     </li>
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
                         <span>Receba pagamentos com segurança</span>
                     </li>
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
                         <span>Avaliações que aumentam sua reputação</span>
                     </li>
                     <li>
-                        <img src="images/icon-check.svg" alt="Benefício" width="24">
+                        <img src="<?php echo e(asset('images/icone-check.png')); ?>" alt="Benefício" width="24">
                         <span>Trabalhe quando e como quiser</span>
                     </li>
                 </ul>
@@ -781,12 +781,11 @@
 
     <!-- WhatsApp Widget -->
     <div class="whatsapp-widget">
-      <a href="https://wa.me/5511999999999?text=Olá,%20gostaria%20de%20mais%20informações%20sobre%20a%20plataforma%20Fretes%20em%20Nuvens" 
+      <a href="https://wa.me/5541996077879?text=Olá,%20gostaria%20de%20mais%20informações%20sobre%20a%20plataforma%20Fretes%20em%20Nuvens" 
          class="whatsapp-link" 
          target="_blank"
          aria-label="Conversar pelo WhatsApp">
-        <img src="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCA0NDggNTEyIj48cGF0aCBmaWxsPSJ3aGl0ZSIgZD0iTM4MC45IDk3LjFjLTQyLjQtNDIuNC05Mi43LTY5LjItMTQ4LjItNzkuMkMtMTc4LjQgMTIuOSA4MCA0MS44IDMyLjEgMTQwLjQtMTUuOCAyMzkgMTIuOSAzOTcuNCAxMDcuNiA0NDhjMTcuNC0yNS4yIDI3LjgtNTMuOSAzMC44LTgzLjEgNS4yLTU1LjUgMTcuNS0xMDcuNSAzNS44LTE1NC41IDkuNS0yNC4xIDIyLjItNDYuNSAzNy41LTY2OWwtMi4zLTIuM3ptLTI0NC41IDc2Yy0xNS43LTE1LjctMTUuNy00MS4yIDAtNTYuOSAxNS43LTE1LjcgNDEuMi0xNS43IDU2LjkgMGwxMS4zIDExLjMgMTEuMy0xMS4zYzE1LjctMTUuNyA0MS4yLTE1LjcgNTYuOSAwIDE1LjcgMTUuNyAxNS43IDQxLjIgMCA1Ni45bC0xMS4zIDExLjMgMTEuMyAxMS4zYzE1LjcgMTUuNyAxNS43IDQxLjIgMCA1Ni45LTE1LjcgMTUuNy00MS4yIDE1LjctNTYuOSAwbC0xMS4zLTExLjMtMTEuMyAxMS4zYy0xNS43IDE1LjctNDEuMiAxNS43LTU2LjkgMC0xNS43LTE1LjctMTUuNy00MS4yIDAtNTYuOWwxMS4zLTExLjMtMTEuMy0xMS4zeiIvPjwvc3ZnPg==" alt="WhatsApp"/>
-      </a>
+        <img src="<?php echo e(asset('images/icone-whatsapp.png')); ?>"></a>
     </div>
 
     <!-- Rodapé -->
@@ -812,7 +811,6 @@
                     <h4>Recursos</h4>
                     <ul>
                         <li><a href="como-funciona.html">Como funciona</a></li>
-                        <li><a href="planos.html">Planos</a></li>
                         <li><a href="seguranca.html">Segurança</a></li>
                         <li><a href="duvidas.html">Dúvidas</a></li>
                     </ul>
@@ -830,8 +828,8 @@
                 <div class="links-column">
                     <h4 id="contato">Contato</h4>
                     <ul>
-                        <li><a href="mailto:contato@empresa.com">contato@empresa.com</a></li>
-                        <li><a href="tel:+5511999999999">(11) 99999-9999</a></li>
+                        <li><a href="mailto:contato@empresa.com">fretesnasnuvens.carlospugas@gmail.com</a></li>
+                        <li><a href="tel:+5541996077879">(41) 99607-7879</a></li>
                         <li>
                             <div class="social-links">
                                 <a href="#"><img src="images/icon-facebook.svg" alt="Facebook" width="24"></a>
