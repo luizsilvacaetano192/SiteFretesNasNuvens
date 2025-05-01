@@ -59,6 +59,29 @@ class FreightController extends Controller
         ]);
     }
 
+    public function updateStatus(FreightsDriver $freightsDriver, Request $request)
+    {
+        $validated = $request->validate([
+            'status_id' => 'required|integer|exists:statuses,id'
+        ]);
+
+
+        dd($freightsDriver);
+        DB::transaction(function () use ($freightsDriver, $validated) {
+            // Atualiza o status na tabela freights
+            $freightsDriver->update(['status_id' => $validated['status_id']]);
+            
+            // Atualiza o status na tabela freights_driver (se existir)
+            Freight::where('id', $freightsDriver->freight_id)
+                ->update(['status_id' => $validated['status_id']]);
+        });
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Status atualizado com sucesso!'
+        ]);
+    }
+
     public function getDataTable(Request $request)
     {
         $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver.driver'])
@@ -103,11 +126,11 @@ class FreightController extends Controller
                     <span class="badge bg-success mb-1">' . e($freight->freightsDriver->driver->name) . '</span>
                     <div class="d-flex gap-1 align-self-start">' .
                         ($freight->freightsDriver->status_id == 9 ? '
-                            <button onclick="approveRejectDriver(' . $freight->freightsDriver->id . ', 5); return false;" 
+                            <button onclick="aprovar(' . $freight->freightsDriver->id . ', 5); return false;" 
                                     class="btn btn-sm btn-success">
                                 Aprovar
                             </button>
-                            <button onclick="approveRejectDriver(' . $freight->freightsDriver->id . ', 10); return false;" 
+                            <button onclick="reprovar(' . $freight->freightsDriver->id . ', 10); return false;" 
                                     class="btn btn-sm btn-danger">
                                 Recusar
                             </button>'

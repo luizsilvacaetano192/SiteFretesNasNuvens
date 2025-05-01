@@ -629,6 +629,68 @@ function maskPlate(plate) {
     return plate; // Retorna original se não bater com os padrões
 }
 
+function aprovar(id,statusId){
+    
+    Swal.fire({
+        title: 'Confirmar Aprovação',
+        text: "Deseja realmente aprovar este frete? O motorista será notificado.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sim, aprovar!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            updateFreightStatus(id, 5); // 5 = Status "Aguardando retirada"
+        }
+    });
+};
+
+function reprovar(id,statusId){
+    
+    Swal.fire({
+        title: 'Confirmar Recusa',
+        text: "Deseja realmente recusar este frete? O motorista será notificado.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, recusar!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            updateFreightStatus(id, 10); // 10 = Status "Recusado"
+        }
+    });
+};
+
+function updateFreightStatus(id, statusId) {
+    $.ajax({
+        url: `/freights/${$id}/update-status`,
+        type: 'PUT',
+        data: {
+            status_id: statusId,
+            _token: '{{ csrf_token() }}'
+        },
+        beforeSend: function() {
+            // Mostrar loading
+            $('.actions-container').html('<div class="spinner-border spinner-border-sm" role="status"></div>');
+        },
+        success: function(response) {
+            if(response.success) {
+                toastr.success(response.message);
+                freightTable.ajax.reload(null, false);
+            } else {
+                toastr.error(response.message);
+            }
+        },
+        error: function(xhr) {
+            toastr.error('Erro ao atualizar status: ' + xhr.responseText);
+        }
+    });
+}
+
 function detailsDriverTruck(id) {
     
     $('#driverTruckModal').modal('show');

@@ -150,10 +150,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create', [FreightController::class, 'create'])->name('freights.create');
         Route::delete('/delete-all', [FreightController::class, 'deleteAll'])->name('freights.deleteAll');
         Route::delete('/{id}', [FreightController::class, 'destroy'])->name('freights.destroy');
+        Route::put('/{freightsDriver}/update-status', [FreightController::class, 'updateStatus'])->name('freights.update-status');
         Route::get('/mapa-frete-app', [FreightController::class, 'map'])->name('freights.map');
         Route::get('/{freightId}/transport', [FreightController::class, 'transport'])->name('freights.transport');
     });
 
+   
     // Freight Statuses
     Route::prefix('freight-statuses')->group(function () {
         Route::get('/', [FreightStatusController::class, 'index'])->name('freight_statuses.index');
