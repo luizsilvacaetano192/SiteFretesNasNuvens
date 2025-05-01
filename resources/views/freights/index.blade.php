@@ -594,9 +594,9 @@ function detailsDriverTruck(driverId, truckId) {
         $('#driverLicenseCategory').text(data.driver.driver_license_category);
         $('#driverLicenseExpiration').text(data.driver.driver_license_expiration);
         
-        // Set driver photos
-        setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_url);
-        setPhoto('#driverLicenseBackPhoto', data.driver.driver_license_back_url);
+        // Set driver photos - ajuste para os nomes corretos dos campos
+        setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_photo_url);
+        setPhoto('#driverLicenseBackPhoto', data.driver.driver_license_back_photo_url);
         setPhoto('#driverFacePhoto', data.driver.face_photo_url);
         setPhoto('#driverAddressProofPhoto', data.driver.address_proof_url);
 
@@ -610,7 +610,7 @@ function detailsDriverTruck(driverId, truckId) {
         $('#truckCapacity').text(data.truck.load_capacity);
         $('#truckAxles').text(data.truck.axles_number);
         
-        // Set truck photos
+        // Set truck photos - ajuste para os nomes corretos dos campos
         setPhoto('#truckFrontPhoto', data.truck.front_photo_url);
         setPhoto('#truckRearPhoto', data.truck.rear_photo_url);
         setPhoto('#truckLeftPhoto', data.truck.left_side_photo_url);
@@ -618,6 +618,7 @@ function detailsDriverTruck(driverId, truckId) {
         setPhoto('#truckCrvPhoto', data.truck.crv_photo_url);
         setPhoto('#truckCrlvPhoto', data.truck.crlv_photo_url);
 
+        // Restante do código permanece o mesmo...
         // Implements
         const $implementsContainer = $('#truckImplements');
         $implementsContainer.empty();
