@@ -596,8 +596,8 @@ function detailsDriverTruck(id) {
         $('#driverLicenseExpiration').text(data.driver.driver_license_expiration);
         
         // Set driver photos - ajuste para os nomes corretos dos campos
-        setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_photo_url);
-        setPhoto('#driverLicenseBackPhoto', data.driver.driver_license_back_photo_url);
+        setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_url);
+        setPhoto('#driverLicenseBackPhoto', data.driver.driver_license_back_url);
         setPhoto('#driverFacePhoto', data.driver.face_photo_url);
         setPhoto('#driverAddressProofPhoto', data.driver.address_proof_url);
 
@@ -668,10 +668,14 @@ function populatfeModal(data) {
     $('#truckType').text(data.truck.vehicle_type);
     
     // Set truck photos
+
+
     setPhoto('#truckFrontPhoto', data.truck.front_photo_full_url);
     setPhoto('#truckRearPhoto', data.truck.rear_photo_full_url);
     setPhoto('#truckLeftPhoto', data.truck.left_side_photo_full_url);
     setPhoto('#truckRightPhoto', data.truck.right_side_photo_full_url);
+    setPhoto('#truckCrvPhoto', data.truck.crv_photo_full_url);
+    setPhoto('#truckCrlvPhoto', data.truck.crlv_photo_full_url);
 
     // Implements
     const $implementsContainer = $('#truckImplements');
