@@ -48,6 +48,8 @@ class Truck extends Model
         'crlv_photo_url'
     ];
 
+    
+
     public function getFrontPhotoUrlAttribute()
     {
         return $this->front_photo_url ? Storage::disk('s3')->url($this->front_photo_url) : null;
