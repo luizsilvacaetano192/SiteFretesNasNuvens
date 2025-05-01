@@ -667,7 +667,7 @@ function reprovar(id,statusId){
 
 function updateFreightStatus(id, statusId) {
     $.ajax({
-        url: `/freights/${$id}/update-status`,
+        url: `/freights/${id}/update-status`,
         type: 'PUT',
         data: {
             status_id: statusId,
