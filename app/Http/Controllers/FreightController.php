@@ -42,7 +42,7 @@ class FreightController extends Controller
                 'driver_license_back_url',
                 'face_photo_url'
             ]),
-            $truck->append([
+            'truck' => $truck->append([
                 'front_photo_full_url',
                 'rear_photo_full_url',
                 'left_side_photo_full_url',
