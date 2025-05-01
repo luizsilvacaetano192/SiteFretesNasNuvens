@@ -70,6 +70,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
     // Se o novo status for 5, chama a API externa
     if ($freightsDriver->status_id == 5) {
+    
         try {
             $response = Http::post('https://qpo5gxrs74.execute-api.us-east-1.amazonaws.com/teste', [
                 'freights_driver_id' => $freightsDriver->id
@@ -86,10 +87,12 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
                 \Log::error('Falha na chamada da API: ' . $response->status());
             }
         } catch (\Exception $e) {
+            dd('entrou no cath');
             // Log em caso de erro de conexão, timeout, etc.
             \Log::error('Erro ao chamar API externa: ' . $e->getMessage());
         }
     }
+    dd('saiu do if');
 
     return response()->json([
         'success' => true,
