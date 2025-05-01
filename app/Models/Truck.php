@@ -43,12 +43,7 @@ class Truck extends Model
 
     
 
-    public function getFrontPhotoUrlAttribute()
-    {
-        return $this->front_photo_url ? Storage::disk('s3')->url($this->front_photo_url) : null;
-  
-    }
-
+ 
     public function getRearPhotoUrlAttribute()
     {
         return $this->rear_photo_url ? Storage::disk('s3')->url($this->rear_photo_url) : null;
