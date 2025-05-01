@@ -28,7 +28,7 @@ class FreightController extends Controller
 
     public function getDataTable(Request $request)
     {
-        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver','driver'])
+        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver'])
                 ->select('freights.*');
     
         // Aplica os filtros antes de passar para o DataTables
@@ -62,8 +62,6 @@ class FreightController extends Controller
             })
             ->addColumn('driver_name', function($freight) {
                 if (!$freight->freightsDriver) return '<span class="text-muted">Não atribuído</span>';
-             
-                if ($freight->freightsDriver->driver->name) 
                     return '<span class="badge bg-info >'.$freight->freightsDriver->driver->name.'</span>';
             })
             ->addColumn('status_badge', function($freight) {
