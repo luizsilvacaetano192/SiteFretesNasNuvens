@@ -40,12 +40,12 @@ class Truck extends Model
 
         // In your Truck model
     protected $appends = [
-        'front_photo_url_url',
-        'rear_photo_url_url',
-        'left_side_photo_url_url',
-        'right_side_photo_url_url',
-        'crv_photo_url_url',
-        'crlv_photo_url_url'
+        'front_photo_full_url',
+        'rear_photo_full_url',
+        'left_side_photo_full_url',
+        'right_side_photo_full_url',
+        'crv_photo_full_url',
+        'crlv_photo_full_url'
     ];
 
     
