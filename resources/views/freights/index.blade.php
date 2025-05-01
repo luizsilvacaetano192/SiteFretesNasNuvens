@@ -580,6 +580,45 @@ body {
 let freightTable;
 let countdownInterval;
 
+function formatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR');
+}
+
+function maskPhone(value) {
+    if (!value) return '';
+    return value.replace(/\D/g, '').replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+}
+
+function maskRG(value) {
+    if (!value) return '';
+    return value.replace(/^(\d{1,2})(\d{3})(\d{3})([\dxX])?$/, (_, p1, p2, p3, p4) => `${p1}.${p2}.${p3}${p4 ? '-' + p4 : ''}`);
+}
+
+function maskCPF(cpf) {
+    return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+}
+
+function maskPlate(plate) {
+    if (!plate) return '';
+
+    // Remove caracteres não alfanuméricos e transforma em maiúsculas
+    const cleanPlate = plate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+
+    // Formato antigo: 3 letras + hífen + 4 números (ABC-1234)
+    if (/^[A-Z]{3}[0-9]{4}$/.test(cleanPlate)) {
+        return cleanPlate.replace(/^([A-Z]{3})([0-9]{4})$/, '$1-$2');
+    }
+
+    // Formato novo (Mercosul): ABC1D23 (sem hífen)
+    if (/^[A-Z]{3}[0-9][A-Z][0-9]{2}$/.test(cleanPlate)) {
+        return cleanPlate; // Já está no padrão Mercosul
+    }
+
+    return plate; // Retorna original se não bater com os padrões
+}
+
 function detailsDriverTruck(id) {
     
     $('#driverTruckModal').modal('show');
@@ -589,11 +628,11 @@ function detailsDriverTruck(id) {
     $.get(`/driver-truck-details/${id}`, function(data) {
         // Driver Info
         $('#driverName').text(data.driver.name);
-        $('#driverCpf').text(data.driver.cpf);
-        $('#driverPhone').text(data.driver.phone);
+        $('#driverCpf').text(maskCPF(data.driver.cpf));
+        $('#driverPhone').text(maskPhone(data.driver.phone));
         $('#driverLicense').text(data.driver.driver_license_number);
         $('#driverLicenseCategory').text(data.driver.driver_license_category);
-        $('#driverLicenseExpiration').text(data.driver.driver_license_expiration);
+        $('#driverLicenseExpiration').text( formatDateBR(data.driver.driver_license_expiration));
         
         // Set driver photos - ajuste para os nomes corretos dos campos
         setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_url);
@@ -602,7 +641,7 @@ function detailsDriverTruck(id) {
         setPhoto('#driverAddressProofPhoto', data.driver.address_proof_url);
 
         // Truck Info
-        $('#truckLicensePlate').text(data.truck.license_plate);
+        $('#truckLicensePlate').text(maskPlate(data.truck.license_plate));
         $('#truckBrandModel').text(`${data.truck.brand} ${data.truck.model}`);
         $('#truckYear').text(data.truck.manufacture_year);
         $('#truckRenavam').text(data.truck.renavam);
@@ -652,6 +691,8 @@ function detailsDriverTruck(id) {
         $('#driverTruckModal').modal('hide');
     });
 }
+
+
 
 function setPhoto(elementId, photoUrl) {
     if (photoUrl) {
