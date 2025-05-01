@@ -669,6 +669,8 @@ function populatfeModal(data) {
     
     // Set truck photos
 
+    console.log('truck', data.truck);
+
 
     setPhoto('#truckFrontPhoto', data.truck.front_photo_full_url);
     setPhoto('#truckRearPhoto', data.truck.rear_photo_full_url);
