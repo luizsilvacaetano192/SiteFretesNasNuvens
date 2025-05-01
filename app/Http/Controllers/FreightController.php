@@ -27,7 +27,7 @@ class FreightController extends Controller
 
     public function getDataTable(Request $request)
     {
-        $query = Freight::with(['driver', 'freightStatus', 'company', 'shipment', 'charge'])
+        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightDriver'])
                 ->select('freights.*');
     
         // Aplica os filtros antes de passar para o DataTables
@@ -60,7 +60,7 @@ class FreightController extends Controller
                 return $freight->company->name ?? 'N/A';
             })
             ->addColumn('driver_name', function($freight) {
-                if (!$freight->driver) return '<span class="text-muted">Não atribuído</span>';
+                if (!$freight->freightDriver->driver->name) return '<span class="text-muted">Não atribuído</span>';
                 
                 $badgeClass = 'bg-primary';
                 if ($freight->driver->status === 'inactive') $badgeClass = 'bg-secondary';
@@ -131,16 +131,12 @@ class FreightController extends Controller
 
     public function create()
     {
-
-       
         $companies = Company::all();
         $drivers = Driver::all();
         $statuses = FreightStatus::all();
         $shipments = Shipment::whereDoesntHave('freight')->get();
 
-        return view('freights.create', compact('companies', 'drivers', 'statuses', 'shipments'));
-
-        
+        return view('freights.create', compact('companies', 'drivers', 'statuses', 'shipments'));  
     }
 
     public function store(Request $request)
@@ -170,10 +166,9 @@ class FreightController extends Controller
             DB::beginTransaction();
 
             $freight = Freight::create($validated);
+            $paymentData = $this->createAsaasPayment($freight);
 
             DB::commit();
-            
-            $paymentData = $this->createAsaasPayment($freight);
 
             return  $paymentData ;
 
