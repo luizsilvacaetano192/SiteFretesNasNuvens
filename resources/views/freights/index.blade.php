@@ -668,10 +668,10 @@ function populatfeModal(data) {
     $('#truckType').text(data.truck.vehicle_type);
     
     // Set truck photos
-    setPhoto('#truckFrontPhoto', data.truck.front_photo_url);
-    setPhoto('#truckRearPhoto', data.truck.rear_photo_url);
-    setPhoto('#truckLeftPhoto', data.truck.left_side_photo_url);
-    setPhoto('#truckRightPhoto', data.truck.right_side_photo_url);
+    setPhoto('#truckFrontPhoto', data.truck.front_photo_full_url);
+    setPhoto('#truckRearPhoto', data.truck.rear_photo_full_url);
+    setPhoto('#truckLeftPhoto', data.truck.left_side_photo_full_url);
+    setPhoto('#truckRightPhoto', data.truck.right_side_photo_full_url);
 
     // Implements
     const $implementsContainer = $('#truckImplements');
