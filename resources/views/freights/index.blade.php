@@ -900,22 +900,33 @@ function setupColumnToggleButtons() {
     // Configura os eventos de clique
     $('#toggle-origin').click(function() {
         originColumn.visible(!originColumn.visible());
-        updateToggleButton('#toggle-origin', originColumn.visible());
+        updateToggleButtonOrigem('#toggle-origin', originColumn.visible());
     });
     
     $('#toggle-destination').click(function() {
         destinationColumn.visible(!destinationColumn.visible());
-        updateToggleButton('#toggle-destination', destinationColumn.visible());
+        updateToggleButtonDestino('#toggle-destination', destinationColumn.visible());
     });
 }
 
-function updateToggleButton(buttonId, isVisible) {
+function updateToggleButtonOrigem(buttonId, isVisible) {
     const button = $(buttonId);
     if (isVisible) {
         button.html('<i class="fas fa-eye-slash me-1"></i> Ocultar Origem');
         button.removeClass('btn-outline-secondary').addClass('btn-outline-primary');
     } else {
         button.html('<i class="fas fa-eye me-1"></i> Mostrar Origem');
+        button.removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+    }
+}
+
+function updateToggleButtonDestino(buttonId, isVisible) {
+    const button = $(buttonId);
+    if (isVisible) {
+        button.html('<i class="fas fa-eye-slash me-1"></i> Ocultar Destino');
+        button.removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+    } else {
+        button.html('<i class="fas fa-eye me-1"></i> Mostrar Destino');
         button.removeClass('btn-outline-primary').addClass('btn-outline-secondary');
     }
 }
