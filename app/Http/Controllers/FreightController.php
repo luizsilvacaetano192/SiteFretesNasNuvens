@@ -43,12 +43,12 @@ class FreightController extends Controller
                 'face_photo_url'
             ]),
             $truck->append([
-                'front_photo_url',
-                'rear_photo_url',
-                'left_side_photo_url',
-                'right_side_photo_url',
-                'crv_photo_url',
-                'crlv_photo_url'
+                'front_photo_url_url',
+                'rear_photo_url_url',
+                'left_side_photo_url_url',
+                'right_side_photo_url_url',
+                'crv_photo_url_url',
+                'crlv_photo_url_url'
             ]),
             'implements' => $truck->implements->map(function($implement) {
                 $implement->photo_url = $implement->photo 

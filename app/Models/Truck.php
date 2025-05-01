@@ -39,11 +39,23 @@ class Truck extends Model
     ];
 
         // In your Truck model
-
+    protected $appends = [
+        'front_photo_url_url',
+        'rear_photo_url_url',
+        'left_side_photo_url_url',
+        'right_side_photo_url_url',
+        'crv_photo_url_url',
+        'crlv_photo_url_url'
+    ];
 
     
 
- 
+    public function getFrontPhotoUrlAttribute()
+    {
+        return $this->front_photo_url ? Storage::disk('s3')->url($this->front_photo_url) : null;
+  
+    }
+
     public function getRearPhotoUrlAttribute()
     {
         return $this->rear_photo_url ? Storage::disk('s3')->url($this->rear_photo_url) : null;
