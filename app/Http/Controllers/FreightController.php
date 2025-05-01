@@ -62,7 +62,7 @@ class FreightController extends Controller
     public function updateStatus(FreightsDriver $freightsDriver, Request $request)
     {
         $validated = $request->validate([
-            'status_id' => 'required|integer|exists:statuses,id'
+            'status_id' => 'required|integer|exists:freight_statuses,id'
         ]);
 
 
