@@ -8,11 +8,13 @@ use App\Models\Driver;
 use App\Models\FreightStatus;
 use App\Models\FreightsDriver;
 use App\Models\Company;
+use App\Models\Truck;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 
 class FreightController extends Controller
 {
@@ -24,6 +26,25 @@ class FreightController extends Controller
         
         $statuses = FreightStatus::all();
         return view('freights.index', compact('statuses'));
+    }
+
+    // In your controller
+    public function getDriverTruckDetails(Driver $driver, Truck $truck)
+    {
+        return response()->json([
+            'driver' => $driver->append([
+                'driver_license_front_url',
+                'driver_license_back_url',
+                'face_photo_url'
+            ]),
+            'truck' => $truck,
+            'implements' => $truck->implements->map(function($implement) {
+                $implement->photo_url = $implement->photo 
+                    ? Storage::disk('s3')->url($implement->photo) 
+                    : null;
+                return $implement;
+            })
+        ]);
     }
 
     public function getDataTable(Request $request)
@@ -69,7 +90,7 @@ class FreightController extends Controller
                 <div class="d-flex flex-column">
                     <span class="badge bg-success mb-1">' . e($freight->freightsDriver->driver->name) . '</span>
                     <a href="#" 
-                        onclick="detailsDriver(' . $freight->freightsDriver->driver->id . '); return false;" 
+                        onclick="detailsDriverTruck(' . $freight->freightsDriver->driver->id. ',' . $freight->freightsDriver->truck->id. '); return false;" 
                         class="btn btn-sm btn-primary align-self-start">
                         Ver Detalhes
                     </a>

@@ -52,4 +52,10 @@ class Truck extends Model
     {
         return $this->belongsTo(Driver::class);
     }
+
+    public function implements()
+    {
+        return $this->hasMany(TruckImplement::class);
+    }
+
 }
