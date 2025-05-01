@@ -59,28 +59,45 @@ class FreightController extends Controller
         ]);
     }
 
-    public function updateStatus(FreightsDriver $freightsDriver, Request $request)
-    {
-        $validated = $request->validate([
-            'status_id' => 'required|integer|exists:freight_statuses,id'
-        ]);
 
+public function updateStatus(FreightsDriver $freightsDriver, Request $request)
+{
+    $validated = $request->validate([
+        'status_id' => 'required|integer|exists:freight_statuses,id'
+    ]);
 
-        dd(Freight::where('id', $freightsDriver->freight_id)->get());
-        DB::transaction(function () use ($freightsDriver, $validated) {
-            // Atualiza o status na tabela freights
-            $freightsDriver->update(['status_id' => $validated['status_id']]);
-            
-            // Atualiza o status na tabela freights_driver (se existir)
-            Freight::where('id', $freightsDriver->freight_id)
-                ->update(['status_id' => $validated['status_id']]);
-        });
+    $freightsDriver->status_id = $validated['status_id'];
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Status atualizado com sucesso!'
-        ]);
+    // Se o novo status for 5, chama a API externa
+    if ($freightsDriver->status_id == 5) {
+        try {
+            $response = Http::post('https://qpo5gxrs74.execute-api.us-east-1.amazonaws.com/teste', [
+                'freights_driver_id' => $freightsDriver->id
+            ]);
+
+            dd($response);
+
+            // Verifica se a requisição foi bem-sucedida (opcional)
+            if ($response->successful()) {
+                // Faça algo com a resposta, se necessário
+                // $responseData = $response->json();
+            } else {
+                // Log de erro, se a API retornar status 4xx/5xx
+                \Log::error('Falha na chamada da API: ' . $response->status());
+            }
+        } catch (\Exception $e) {
+            // Log em caso de erro de conexão, timeout, etc.
+            \Log::error('Erro ao chamar API externa: ' . $e->getMessage());
+        }
     }
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Status atualizado com sucesso!'
+    ]);
+}
+
+    
 
     public function getDataTable(Request $request)
     {
