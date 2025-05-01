@@ -494,13 +494,9 @@ function initializeDataTable() {
                 data: 'driver_name', 
                 name: 'driver.name',
                 render: function(data, type, row) {
-                    if (!data) return '<span class="text-muted">Não atribuído</span>';
+                    if (!data) return '<span >Não atribuído</span>';
                     
-                    let badgeClass = 'bg-primary';
-                    if (row.driver_status === 'inactive') badgeClass = 'bg-secondary';
-                    if (row.driver_status === 'on_delivery') badgeClass = 'bg-warning';
-                    
-                    return `<span class="badge ${badgeClass}">${data}</span>`;
+                        return `<span class="badge bg-info">${data}</span>`;
                 }
             },
             { 
