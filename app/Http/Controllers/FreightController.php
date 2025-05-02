@@ -280,7 +280,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
             $freight = Freight::create($validated);
             
-            dd($freight);
+          
 
             $paymentData = $this->createAsaasPayment($freight);
 
@@ -437,6 +437,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
     protected function createAsaasPayment(Freight $freight)
     {
+        dd($freight->id);
         try {
             $response = Http::post('https://0xjej23ew7.execute-api.us-east-1.amazonaws.com/teste', [
                 'name' => 'Frete #'.$freight->id,
