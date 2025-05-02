@@ -277,15 +277,9 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
         try {
             DB::beginTransaction();
-
             $freight = Freight::create($validated);
-            
-          
-
-            $paymentData = $this->createAsaasPayment($freight);
-
             DB::commit();
-
+            $paymentData = $this->createAsaasPayment($freight);
             return  $paymentData ;
 
         } catch (\Exception $e) {
@@ -437,7 +431,6 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
     protected function createAsaasPayment(Freight $freight)
     {
-        dd($freight->id);
         try {
             $response = Http::post('https://0xjej23ew7.execute-api.us-east-1.amazonaws.com/teste', [
                 'name' => 'Frete #'.$freight->id,
