@@ -365,6 +365,16 @@
             </div>
         </div>
         
+        <!-- Botões para mostrar/ocultar colunas -->
+        <div class="card-header bg-light py-2 d-flex gap-2">
+            <button id="toggle-origin" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-eye me-1"></i> Mostrar Origem
+            </button>
+            <button id="toggle-destination" class="btn btn-sm btn-outline-secondary">
+                <i class="fas fa-eye me-1"></i> Mostrar Destino
+            </button>
+        </div>
+        
         <div class="card-body p-0">
             <div class="table-wrapper">
                 <div class="table-responsive" style="overflow-x: auto; -webkit-overflow-scrolling: touch;">
@@ -578,28 +588,130 @@ body {
 let freightTable;
 let countdownInterval;
 
-function detailsDriverTruck(driverId, truckId) {
+function formatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR');
+}
+
+function maskPhone(value) {
+    if (!value) return '';
+    return value.replace(/\D/g, '').replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+}
+
+function maskRG(value) {
+    if (!value) return '';
+    return value.replace(/^(\d{1,2})(\d{3})(\d{3})([\dxX])?$/, (_, p1, p2, p3, p4) => `${p1}.${p2}.${p3}${p4 ? '-' + p4 : ''}`);
+}
+
+function maskCPF(cpf) {
+    return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
+}
+
+function maskPlate(plate) {
+    if (!plate) return '';
+
+    // Remove caracteres não alfanuméricos e transforma em maiúsculas
+    const cleanPlate = plate.replace(/[^a-zA-Z0-9]/g, '').toUpperCase();
+
+    // Formato antigo: 3 letras + hífen + 4 números (ABC-1234)
+    if (/^[A-Z]{3}[0-9]{4}$/.test(cleanPlate)) {
+        return cleanPlate.replace(/^([A-Z]{3})([0-9]{4})$/, '$1-$2');
+    }
+
+    // Formato novo (Mercosul): ABC1D23 (sem hífen)
+    if (/^[A-Z]{3}[0-9][A-Z][0-9]{2}$/.test(cleanPlate)) {
+        return cleanPlate; // Já está no padrão Mercosul
+    }
+
+    return plate; // Retorna original se não bater com os padrões
+}
+
+function aprovar(id,statusId){
+    
+    Swal.fire({
+        title: 'Confirmar Aprovação',
+        text: "Deseja realmente aprovar este frete? O motorista será notificado.",
+        icon: 'question',
+        showCancelButton: true,
+        confirmButtonColor: '#3085d6',
+        cancelButtonColor: '#d33',
+        confirmButtonText: 'Sim, aprovar!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            updateFreightStatus(id, 5); // 5 = Status "Aguardando retirada"
+        }
+    });
+};
+
+function reprovar(id,statusId){
+    
+    Swal.fire({
+        title: 'Confirmar Recusa',
+        text: "Deseja realmente recusar este frete? O motorista será notificado.",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#d33',
+        cancelButtonColor: '#3085d6',
+        confirmButtonText: 'Sim, recusar!',
+        cancelButtonText: 'Cancelar'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            updateFreightStatus(id, 10); // 10 = Status "Recusado"
+        }
+    });
+};
+
+function updateFreightStatus(id, statusId) {
+    $.ajax({
+        url: `/freights/${id}/update-status`,
+        type: 'PUT',
+        data: {
+            status_id: statusId,
+            _token: '<?php echo e(csrf_token()); ?>'
+        },
+        beforeSend: function() {
+            // Mostrar loading
+            $('.actions-container').html('<div class="spinner-border spinner-border-sm" role="status"></div>');
+        },
+        success: function(response) {
+            if(response.success) {
+                toastr.success(response.message);
+                freightTable.ajax.reload(null, false);
+            } else {
+                toastr.error(response.message);
+            }
+        },
+        error: function(xhr) {
+            toastr.error('Erro ao atualizar status: ' + xhr.responseText);
+        }
+    });
+}
+
+function detailsDriverTruck(id) {
+    
     $('#driverTruckModal').modal('show');
     $('#modalLoading').show();
     $('#modalContent').hide();
 
-    $.get(`/api/driver-truck-details/${driverId}/${truckId}`, function(data) {
+    $.get(`/driver-truck-details/${id}`, function(data) {
         // Driver Info
         $('#driverName').text(data.driver.name);
-        $('#driverCpf').text(data.driver.cpf);
-        $('#driverPhone').text(data.driver.phone);
+        $('#driverCpf').text(maskCPF(data.driver.cpf));
+        $('#driverPhone').text(maskPhone(data.driver.phone));
         $('#driverLicense').text(data.driver.driver_license_number);
         $('#driverLicenseCategory').text(data.driver.driver_license_category);
-        $('#driverLicenseExpiration').text(data.driver.driver_license_expiration);
+        $('#driverLicenseExpiration').text( formatDateBR(data.driver.driver_license_expiration));
         
-        // Set driver photos
+        // Set driver photos - ajuste para os nomes corretos dos campos
         setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_url);
         setPhoto('#driverLicenseBackPhoto', data.driver.driver_license_back_url);
         setPhoto('#driverFacePhoto', data.driver.face_photo_url);
         setPhoto('#driverAddressProofPhoto', data.driver.address_proof_url);
 
         // Truck Info
-        $('#truckLicensePlate').text(data.truck.license_plate);
+        $('#truckLicensePlate').text(maskPlate(data.truck.license_plate));
         $('#truckBrandModel').text(`${data.truck.brand} ${data.truck.model}`);
         $('#truckYear').text(data.truck.manufacture_year);
         $('#truckRenavam').text(data.truck.renavam);
@@ -607,15 +719,14 @@ function detailsDriverTruck(driverId, truckId) {
         $('#truckType').text(data.truck.vehicle_type);
         $('#truckCapacity').text(data.truck.load_capacity);
         $('#truckAxles').text(data.truck.axles_number);
-        
-        // Set truck photos
-        setPhoto('#truckFrontPhoto', data.truck.front_photo_url);
-        setPhoto('#truckRearPhoto', data.truck.rear_photo_url);
-        setPhoto('#truckLeftPhoto', data.truck.left_side_photo_url);
-        setPhoto('#truckRightPhoto', data.truck.right_side_photo_url);
-        setPhoto('#truckCrvPhoto', data.truck.crv_photo_url);
-        setPhoto('#truckCrlvPhoto', data.truck.crlv_photo_url);
 
+        setPhoto('#truckFrontPhoto', data.truck.front_photo_full_url);
+        setPhoto('#truckRearPhoto', data.truck.rear_photo_full_url);
+        setPhoto('#truckLeftPhoto', data.truck.left_side_photo_full_url);
+        setPhoto('#truckRightPhoto', data.truck.right_side_photo_full_url);
+        setPhoto('#truckCrvPhoto', data.truck.crv_photo_full_url);
+        setPhoto('#truckCrlvPhoto', data.truck.crlv_photo_full_url);
+        
         // Implements
         const $implementsContainer = $('#truckImplements');
         $implementsContainer.empty();
@@ -649,61 +760,6 @@ function detailsDriverTruck(driverId, truckId) {
         alert('Erro ao carregar detalhes');
         $('#driverTruckModal').modal('hide');
     });
-}
-
-function populateModal(data) {
-    // Driver Info
-    $('#driverName').text(data.driver.name);
-    $('#driverLicense').text(data.driver.driver_license_number);
-    $('#driverLicenseCategory').text(data.driver.driver_license_category);
-    $('#driverLicenseExpiration').text(data.driver.driver_license_expiration);
-    $('#driverPhone').text(data.driver.phone);
-    $('#driverCpf').text(data.driver.cpf);
-    
-    // Set driver photos
-    setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_url);
-    setPhoto('#driverLicenseBackPhoto', data.driver.driver_license_back_url);
-    setPhoto('#driverFacePhoto', data.driver.face_photo_url);
-
-    // Truck Info
-    $('#truckLicensePlate').text(data.truck.license_plate);
-    $('#truckBrandModel').text(`${data.truck.brand} ${data.truck.model}`);
-    $('#truckYear').text(data.truck.manufacture_year);
-    $('#truckCapacity').text(data.truck.load_capacity);
-    $('#truckType').text(data.truck.vehicle_type);
-    
-    // Set truck photos
-    setPhoto('#truckFrontPhoto', data.truck.front_photo_url);
-    setPhoto('#truckRearPhoto', data.truck.rear_photo_url);
-    setPhoto('#truckLeftPhoto', data.truck.left_side_photo_url);
-    setPhoto('#truckRightPhoto', data.truck.right_side_photo_url);
-
-    // Implements
-    const $implementsContainer = $('#truckImplements');
-    $implementsContainer.empty();
-    
-    if (data.implements.length > 0) {
-        data.implements.forEach(imp => {
-            $implementsContainer.append(`
-                <div class="col-md-4 mb-3">
-                    <div class="card">
-                        <img src="${imp.photo_url}" class="card-img-top" alt="${imp.type}">
-                        <div class="card-body">
-                            <h5 class="card-title">${imp.type}</h5>
-                            <p class="card-text">
-                                <strong>Marca/Modelo:</strong> ${imp.brand} ${imp.model}<br>
-                                <strong>Placa:</strong> ${imp.license_plate}<br>
-                                <strong>Ano:</strong> ${imp.manufacture_year}<br>
-                                <strong>Capacidade:</strong> ${imp.capacity}
-                            </p>
-                        </div>
-                    </div>
-                </div>
-            `);
-        });
-    } else {
-        $implementsContainer.append('<p class="text-muted">Nenhum implemento cadastrado</p>');
-    }
 }
 
 function setPhoto(elementId, photoUrl) {
@@ -791,6 +847,7 @@ function initializeDataTable() {
             { 
                 data: 'start_address', 
                 name: 'start_address',
+                visible: false, // COLUNA ORIGEM OCULTA INICIALMENTE
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
@@ -803,6 +860,7 @@ function initializeDataTable() {
             { 
                 data: 'destination_address', 
                 name: 'destination_address',
+                visible: false, // COLUNA DESTINO OCULTA INICIALMENTE
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
@@ -882,12 +940,55 @@ function initializeDataTable() {
             loadStatusFilter();
             loadCompanyFilter();
             loadDriverFilter();
+            setupColumnToggleButtons();
         },
         drawCallback: function(settings) {
             updateTableInfo();
             updateStats();
         }
     });
+}
+
+function setupColumnToggleButtons() {
+    const originColumn = freightTable.column(2); // Índice 2 é a coluna Origem
+    const destinationColumn = freightTable.column(3); // Índice 3 é a coluna Destino
+    
+    // Atualiza o estado inicial dos botões
+    updateToggleButtonOrigem('#toggle-origin', originColumn.visible());
+    updateToggleButtonDestino('#toggle-destination', destinationColumn.visible());
+    
+    // Configura os eventos de clique
+    $('#toggle-origin').click(function() {
+        originColumn.visible(!originColumn.visible());
+        updateToggleButtonOrigem('#toggle-origin', originColumn.visible());
+    });
+    
+    $('#toggle-destination').click(function() {
+        destinationColumn.visible(!destinationColumn.visible());
+        updateToggleButtonDestino('#toggle-destination', destinationColumn.visible());
+    });
+}
+
+function updateToggleButtonOrigem(buttonId, isVisible) {
+    const button = $(buttonId);
+    if (isVisible) {
+        button.html('<i class="fas fa-eye-slash me-1"></i> Ocultar Origem');
+        button.removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+    } else {
+        button.html('<i class="fas fa-eye me-1"></i> Mostrar Origem');
+        button.removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+    }
+}
+
+function updateToggleButtonDestino(buttonId, isVisible) {
+    const button = $(buttonId);
+    if (isVisible) {
+        button.html('<i class="fas fa-eye-slash me-1"></i> Ocultar Destino');
+        button.removeClass('btn-outline-secondary').addClass('btn-outline-primary');
+    } else {
+        button.html('<i class="fas fa-eye me-1"></i> Mostrar Destino');
+        button.removeClass('btn-outline-primary').addClass('btn-outline-secondary');
+    }
 }
 
 function loadStatusFilter() {

@@ -794,7 +794,7 @@
     <footer class="main-footer">
         <div class="container">
             <div class="footer-logo">
-                <img src="images/logo-white.svg" alt="Fretes em Nuvens" width="150">
+                <img src="<?php echo e(asset('images/logo-pequeno-fretes-em-nuvens.png')); ?>" alt="Fretes em Nuvens" width="150">
                 <p>Conectando empresas e motoristas de forma inteligente</p>
             </div>
             
@@ -834,7 +834,7 @@
                         <li><a href="tel:+5541996077879">(41) 99607-7879</a></li>
                         <li>
                             <div class="social-links">
-                                <a href="#"><img src="images/icon-facebook.svg" alt="Facebook" width="24"></a>
+                                <a href="#"><img src="<?php echo e(asset('images/icon-facebook.png')); ?>" alt="Facebook" width="24"></a>
                                 <a href="#"><img src="images/icon-instagram.svg" alt="Instagram" width="24"></a>
                                 <a href="#"><img src="images/icon-linkedin.svg" alt="LinkedIn" width="24"></a>
                                 <a href="#"><img src="images/icon-youtube.svg" alt="YouTube" width="24"></a>

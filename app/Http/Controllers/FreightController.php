@@ -294,7 +294,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
     public function show($id)
     {
 
-        $freight = Freight::with(['driver', 'freightStatus', 'company', 'shipment', 'charge','history'])
+        $freight = Freight::with(['fri', 'freightStatus', 'company', 'shipment', 'charge','history','freightsDriver'])
         ->select('freights.*')->findorfail($id);
         // Determina a classe do badge baseado no status
         
