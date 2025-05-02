@@ -59,8 +59,9 @@ class Freight extends Model
 
     public function freightsDriver()
     {
-        return $this->hasOne(FreightsDriver::class);
+        return $this->hasOne(FreightsDriver::class)->whereNot('status_id', 10);
     }
+    
 
     // Relacionamento com Statuss
     public function freightStatus()
