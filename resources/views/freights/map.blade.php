@@ -342,12 +342,15 @@
 @endpush
 
 @push('scripts')
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places,geometry&callback=initMap" async defer></script>
 <script>
     let map;
     let directionsRenderer;
     let truckMarker;
     let updateInterval;
+    let currentPosition = null;
+    let animationInterval;
+    const MOVEMENT_SPEED = 50; // pixels por segundo (ajuste conforme necessário)
 
     function initMap() {
         const mapElement = document.getElementById("map");
@@ -418,44 +421,103 @@
                     });
 
                     @if($freight->current_lat && $freight->current_lng)
-                        updateTruckPosition({{ $freight->current_lat }}, {{ $freight->current_lng }}, true);
+                        currentPosition = new google.maps.LatLng({{ $freight->current_lat }}, {{ $freight->current_lng }});
+                        createTruckMarker(currentPosition);
                     @endif
                 }
             });
         @endif
     }
 
-    function updateTruckPosition(lat, lng, position, initialLoad = false) {
-        const truckPosition = new google.maps.LatLng(lat, lng);
-        
+    function createTruckMarker(position) {
         if (truckMarker) {
             truckMarker.setMap(null);
         }
         
         truckMarker = new google.maps.Marker({
-            position: truckPosition,
+            position: position,
             map: map,
             icon: {
                 url: "https://img.icons8.com/ios-filled/50/000000/truck.png",
-                scaledSize: new google.maps.Size(40, 40)
+                scaledSize: new google.maps.Size(40, 40),
+                anchor: new google.maps.Point(20, 20)
             },
             title: "Posição Atual do Caminhão"
         });
         
-        document.getElementById('current-position').textContent = position;
-        document.getElementById('last-update').textContent = new Date().toLocaleString();
-        
-        if (!initialLoad) {
-            // Ajusta o zoom para nível 15 (ruas visíveis) e centraliza no caminhão
-            map.setCenter(truckPosition);
-            map.setZoom(15);
-            
-            // Efeito de animação
-            truckMarker.setAnimation(google.maps.Animation.BOUNCE);
-            setTimeout(() => {
-                truckMarker.setAnimation(null);
-            }, 1500);
+        // Centraliza o mapa mantendo um zoom razoável
+        map.setCenter(position);
+        if (map.getZoom() < 12) map.setZoom(12);
+    }
+
+    function moveTruckTo(newLatLng) {
+        if (!truckMarker || !currentPosition) {
+            createTruckMarker(newLatLng);
+            currentPosition = newLatLng;
+            return;
         }
+
+        // Calcula a distância entre os pontos
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+            currentPosition, newLatLng);
+        
+        // Se a distância for muito pequena, apenas atualiza a posição
+        if (distance < 10) {
+            truckMarker.setPosition(newLatLng);
+            currentPosition = newLatLng;
+            return;
+        }
+
+        // Calcula a direção entre os pontos
+        const heading = google.maps.geometry.spherical.computeHeading(
+            currentPosition, newLatLng);
+        
+        // Rotaciona o ícone para a direção do movimento
+        truckMarker.setIcon({
+            url: "https://img.icons8.com/ios-filled/50/000000/truck.png",
+            scaledSize: new google.maps.Size(40, 40),
+            anchor: new google.maps.Point(20, 20),
+            rotation: heading
+        });
+
+        // Configura a animação de movimento
+        const steps = 20; // Número de passos para a animação
+        const step = 1/steps;
+        let currentStep = 0;
+        
+        if (animationInterval) {
+            clearInterval(animationInterval);
+        }
+        
+        animationInterval = setInterval(() => {
+            currentStep += step;
+            
+            if (currentStep >= 1) {
+                clearInterval(animationInterval);
+                currentPosition = newLatLng;
+                truckMarker.setPosition(newLatLng);
+                return;
+            }
+            
+            // Interpolação linear entre os pontos
+            const interpolatedLat = currentPosition.lat() + 
+                (newLatLng.lat() - currentPosition.lat()) * currentStep;
+            const interpolatedLng = currentPosition.lng() + 
+                (newLatLng.lng() - currentPosition.lng()) * currentStep;
+            
+            const interpolatedLatLng = new google.maps.LatLng(interpolatedLat, interpolatedLng);
+            truckMarker.setPosition(interpolatedLatLng);
+            
+            // Ajusta suavemente o centro do mapa
+            const mapCenter = map.getCenter();
+            const newCenterLat = mapCenter.lat() + 
+                (interpolatedLat - currentPosition.lat()) * 0.1;
+            const newCenterLng = mapCenter.lng() + 
+                (interpolatedLng - currentPosition.lng()) * 0.1;
+            
+            map.panTo(new google.maps.LatLng(newCenterLat, newCenterLng));
+            
+        }, 100); // Intervalo de animação em milissegundos
     }
 
     function startAutoUpdate() {
@@ -468,7 +530,15 @@
                 .then(response => response.json())
                 .then(data => {
                     if (data.current_lat && data.current_lng) {
-                        updateTruckPosition(data.current_lat, data.current_lng, data.position);
+                        const newPosition = new google.maps.LatLng(
+                            parseFloat(data.current_lat), 
+                            parseFloat(data.current_lng)
+                        );
+                        
+                        document.getElementById('current-position').textContent = data.position || 'Posição atual';
+                        document.getElementById('last-update').textContent = new Date().toLocaleString();
+                        
+                        moveTruckTo(newPosition);
                     }
                     
                     if (data.history && data.history.length > 0) {
@@ -478,7 +548,7 @@
                 .catch(error => {
                     console.error("Erro ao atualizar posição:", error);
                 });
-        }, 10000);
+        }, 10000); // Atualiza a cada 10 segundos
     }
 
     function updateHistoryTable(history) {
@@ -503,9 +573,8 @@
     });
 
     window.addEventListener('beforeunload', function() {
-        if (updateInterval) {
-            clearInterval(updateInterval);
-        }
+        if (updateInterval) clearInterval(updateInterval);
+        if (animationInterval) clearInterval(animationInterval);
     });
 </script>
 @endpush
