@@ -4,7 +4,7 @@
 
 @section('content')
 <div class="container-fluid px-4">
-    <!-- Botão Voltar no Topo -->
+    <!-- Cabeçalho -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800">
@@ -71,11 +71,18 @@
                 </div>
                 <div class="card-body p-0">
                     <div id="map-container" style="position: relative;">
+                        <!-- Controles do Mapa -->
                         <div id="map-controls" class="position-absolute top-0 end-0 mt-2 me-2" style="z-index: 1000;">
-                            <button id="zoom-toggle" class="btn btn-sm btn-primary shadow-sm">
-                                <i class="fas fa-search"></i> Alternar Zoom
-                            </button>
+                            <div class="btn-group-vertical shadow-sm">
+                                <button id="track-toggle" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-lock"></i> Travar Mapa
+                                </button>
+                                <button id="zoom-toggle" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-search-plus"></i> Visão de Rua
+                                </button>
+                            </div>
                         </div>
+                        
                         <div id="location-info" class="p-3 bg-light border-bottom">
                             <div class="d-flex justify-content-between">
                                 <div>
@@ -323,9 +330,18 @@
     }
     
     #map-controls {
-        background-color: rgba(255, 255, 255, 0.8);
+        background-color: rgba(255, 255, 255, 0.9);
         border-radius: 4px;
         padding: 5px;
+    }
+    
+    #map-controls .btn-group-vertical .btn {
+        margin-bottom: 2px;
+        border-radius: 4px !important;
+    }
+    
+    #map-controls .btn-group-vertical .btn:last-child {
+        margin-bottom: 0;
     }
     
     #map {
@@ -385,6 +401,7 @@
     let currentPosition = null;
     let animationInterval;
     let isStreetView = true;
+    let isTracking = true; // Controla se o mapa deve acompanhar o marcador
 
     // Inicialização do mapa
     function initMap() {
@@ -414,8 +431,9 @@
             initRoute();
             startAutoUpdate();
 
-            // Configura o botão de alternar zoom
+            // Configura os botões de controle
             document.getElementById('zoom-toggle')?.addEventListener('click', toggleZoomLevel);
+            document.getElementById('track-toggle')?.addEventListener('click', toggleTracking);
 
         } catch (error) {
             console.error("Erro ao inicializar o mapa:", error);
@@ -464,6 +482,7 @@
                     @if($freight->current_lat && $freight->current_lng)
                         currentPosition = new google.maps.LatLng({{ $freight->current_lat }}, {{ $freight->current_lng }});
                         createTruckMarker(currentPosition);
+                        centerMapOnMarker(currentPosition);
                     @endif
                 }
             });
@@ -486,10 +505,18 @@
             },
             title: "Posição Atual do Caminhão"
         });
+    }
+
+    // Centraliza o mapa no marcador
+    function centerMapOnMarker(position) {
+        if (!isTracking) return;
         
-        // Centraliza o mapa com zoom de rua
         map.setCenter(position);
-        map.setZoom(ZOOM_STREET_LEVEL);
+        if (isStreetView) {
+            map.setZoom(ZOOM_STREET_LEVEL);
+        } else {
+            map.setZoom(ZOOM_ROUTE_LEVEL);
+        }
     }
 
     // Move o caminhão para nova posição com animação suave
@@ -497,6 +524,7 @@
         if (!truckMarker || !currentPosition) {
             createTruckMarker(newLatLng);
             currentPosition = newLatLng;
+            centerMapOnMarker(newLatLng);
             return;
         }
 
@@ -508,6 +536,7 @@
         if (distance < 10) {
             truckMarker.setPosition(newLatLng);
             currentPosition = newLatLng;
+            centerMapOnMarker(newLatLng);
             return;
         }
 
@@ -539,6 +568,7 @@
                 clearInterval(animationInterval);
                 currentPosition = newLatLng;
                 truckMarker.setPosition(newLatLng);
+                centerMapOnMarker(newLatLng);
                 return;
             }
             
@@ -551,15 +581,9 @@
             const interpolatedLatLng = new google.maps.LatLng(interpolatedLat, interpolatedLng);
             truckMarker.setPosition(interpolatedLatLng);
             
-            // Ajusta suavemente o centro do mapa se estiver em modo rua
-            if (isStreetView) {
-                const mapCenter = map.getCenter();
-                const newCenterLat = mapCenter.lat() + 
-                    (interpolatedLat - currentPosition.lat()) * 0.3;
-                const newCenterLng = mapCenter.lng() + 
-                    (interpolatedLng - currentPosition.lng()) * 0.3;
-                
-                map.panTo(new google.maps.LatLng(newCenterLat, newCenterLng));
+            // Ajusta o centro do mapa se estiver no modo de acompanhamento
+            if (isTracking) {
+                map.panTo(interpolatedLatLng);
             }
             
         }, 100); // Intervalo de animação em milissegundos
@@ -570,19 +594,32 @@
         isStreetView = !isStreetView;
         
         if (isStreetView) {
-            // Modo rua - zoom próximo e centraliza no caminhão
-            if (truckMarker) {
-                map.setCenter(truckMarker.getPosition());
-            }
+            // Modo rua - zoom próximo
             map.setZoom(ZOOM_STREET_LEVEL);
             document.getElementById('zoom-toggle').innerHTML = '<i class="fas fa-search-minus"></i> Visão Geral';
         } else {
-            // Modo rota - zoom amplo para ver toda a rota
-            if (directionsRenderer.getDirections()) {
-                map.fitBounds(directionsRenderer.getDirections().routes[0].bounds);
-            }
+            // Modo rota - zoom amplo
             map.setZoom(ZOOM_ROUTE_LEVEL);
             document.getElementById('zoom-toggle').innerHTML = '<i class="fas fa-search-plus"></i> Visão de Rua';
+        }
+        
+        // Se estiver acompanhando, centraliza no marcador
+        if (isTracking && truckMarker) {
+            centerMapOnMarker(truckMarker.getPosition());
+        }
+    }
+
+    // Alterna o modo de acompanhamento
+    function toggleTracking() {
+        isTracking = !isTracking;
+        
+        if (isTracking) {
+            document.getElementById('track-toggle').innerHTML = '<i class="fas fa-lock"></i> Travar Mapa';
+            if (truckMarker) {
+                centerMapOnMarker(truckMarker.getPosition());
+            }
+        } else {
+            document.getElementById('track-toggle').innerHTML = '<i class="fas fa-lock-open"></i> Acompanhar';
         }
     }
 
