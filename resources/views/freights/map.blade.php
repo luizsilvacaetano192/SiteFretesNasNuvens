@@ -71,6 +71,11 @@
                 </div>
                 <div class="card-body p-0">
                     <div id="map-container" style="position: relative;">
+                        <div id="map-controls" class="position-absolute top-0 end-0 mt-2 me-2" style="z-index: 1000;">
+                            <button id="zoom-toggle" class="btn btn-sm btn-primary shadow-sm">
+                                <i class="fas fa-search"></i> Alternar Zoom
+                            </button>
+                        </div>
                         <div id="location-info" class="p-3 bg-light border-bottom">
                             <div class="d-flex justify-content-between">
                                 <div>
@@ -285,6 +290,7 @@
         border-radius: 0.35rem;
         overflow: hidden;
         border: 1px solid #e3e6f0;
+        position: relative;
     }
     
     .badge {
@@ -316,6 +322,22 @@
         color: #5a5c69 !important;
     }
     
+    #map-controls {
+        background-color: rgba(255, 255, 255, 0.8);
+        border-radius: 4px;
+        padding: 5px;
+    }
+    
+    #map {
+        transition: all 0.5s ease;
+        height: 400px;
+    }
+    
+    .gm-style .gm-style-iw {
+        font-weight: 500;
+        font-size: 14px;
+    }
+    
     @media print {
         .no-print {
             display: none !important;
@@ -337,6 +359,10 @@
         #map {
             height: 300px !important;
         }
+        
+        #map-controls {
+            display: none !important;
+        }
     }
 </style>
 @endpush
@@ -344,14 +370,23 @@
 @push('scripts')
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places,geometry&callback=initMap" async defer></script>
 <script>
+    // Constantes de configuração
+    const ZOOM_STREET_LEVEL = 15; // Zoom para visualização de rua
+    const ZOOM_ROUTE_LEVEL = 12;  // Zoom para visualização da rota
+    const UPDATE_INTERVAL = 30000; // 30 segundos
+    const MOVEMENT_SPEED = 50; // pixels por segundo
+    const ZOOM_TRANSITION_DURATION = 1000; // Duração da transição de zoom em ms
+
+    // Variáveis globais
     let map;
     let directionsRenderer;
     let truckMarker;
     let updateInterval;
     let currentPosition = null;
     let animationInterval;
-    const MOVEMENT_SPEED = 50; // pixels por segundo (ajuste conforme necessário)
+    let isStreetView = true;
 
+    // Inicialização do mapa
     function initMap() {
         const mapElement = document.getElementById("map");
         if (!mapElement) return;
@@ -360,9 +395,10 @@
         
         try {
             map = new google.maps.Map(mapElement, {
-                zoom: 7,
+                zoom: ZOOM_STREET_LEVEL,
                 center: defaultCenter,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                gestureHandling: "greedy"
             });
 
             directionsRenderer = new google.maps.DirectionsRenderer({
@@ -378,11 +414,15 @@
             initRoute();
             startAutoUpdate();
 
+            // Configura o botão de alternar zoom
+            document.getElementById('zoom-toggle')?.addEventListener('click', toggleZoomLevel);
+
         } catch (error) {
             console.error("Erro ao inicializar o mapa:", error);
         }
     }
 
+    // Inicializa a rota
     function initRoute() {
         const directionsService = new google.maps.DirectionsService();
 
@@ -393,7 +433,8 @@
             directionsService.route({
                 origin: start,
                 destination: end,
-                travelMode: google.maps.TravelMode.DRIVING
+                travelMode: google.maps.TravelMode.DRIVING,
+                provideRouteAlternatives: false
             }, (response, status) => {
                 if (status === 'OK') {
                     directionsRenderer.setDirections(response);
@@ -429,6 +470,7 @@
         @endif
     }
 
+    // Cria o marcador do caminhão
     function createTruckMarker(position) {
         if (truckMarker) {
             truckMarker.setMap(null);
@@ -445,11 +487,12 @@
             title: "Posição Atual do Caminhão"
         });
         
-        // Centraliza o mapa mantendo um zoom razoável
+        // Centraliza o mapa com zoom de rua
         map.setCenter(position);
-        if (map.getZoom() < 12) map.setZoom(12);
+        map.setZoom(ZOOM_STREET_LEVEL);
     }
 
+    // Move o caminhão para nova posição com animação suave
     function moveTruckTo(newLatLng) {
         if (!truckMarker || !currentPosition) {
             createTruckMarker(newLatLng);
@@ -508,49 +551,83 @@
             const interpolatedLatLng = new google.maps.LatLng(interpolatedLat, interpolatedLng);
             truckMarker.setPosition(interpolatedLatLng);
             
-            // Ajusta suavemente o centro do mapa
-            const mapCenter = map.getCenter();
-            const newCenterLat = mapCenter.lat() + 
-                (interpolatedLat - currentPosition.lat()) * 0.1;
-            const newCenterLng = mapCenter.lng() + 
-                (interpolatedLng - currentPosition.lng()) * 0.1;
-            
-            map.panTo(new google.maps.LatLng(newCenterLat, newCenterLng));
+            // Ajusta suavemente o centro do mapa se estiver em modo rua
+            if (isStreetView) {
+                const mapCenter = map.getCenter();
+                const newCenterLat = mapCenter.lat() + 
+                    (interpolatedLat - currentPosition.lat()) * 0.3;
+                const newCenterLng = mapCenter.lng() + 
+                    (interpolatedLng - currentPosition.lng()) * 0.3;
+                
+                map.panTo(new google.maps.LatLng(newCenterLat, newCenterLng));
+            }
             
         }, 100); // Intervalo de animação em milissegundos
     }
 
+    // Alterna entre visão de rua e visão de rota
+    function toggleZoomLevel() {
+        isStreetView = !isStreetView;
+        
+        if (isStreetView) {
+            // Modo rua - zoom próximo e centraliza no caminhão
+            if (truckMarker) {
+                map.setCenter(truckMarker.getPosition());
+            }
+            map.setZoom(ZOOM_STREET_LEVEL);
+            document.getElementById('zoom-toggle').innerHTML = '<i class="fas fa-search-minus"></i> Visão Geral';
+        } else {
+            // Modo rota - zoom amplo para ver toda a rota
+            if (directionsRenderer.getDirections()) {
+                map.fitBounds(directionsRenderer.getDirections().routes[0].bounds);
+            }
+            map.setZoom(ZOOM_ROUTE_LEVEL);
+            document.getElementById('zoom-toggle').innerHTML = '<i class="fas fa-search-plus"></i> Visão de Rua';
+        }
+    }
+
+    // Inicia a atualização automática
     function startAutoUpdate() {
         if (updateInterval) {
             clearInterval(updateInterval);
         }
         
-        updateInterval = setInterval(() => {
-            fetch(`/freights/{{ $freight->id }}/position`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.current_lat && data.current_lng) {
-                        const newPosition = new google.maps.LatLng(
-                            parseFloat(data.current_lat), 
-                            parseFloat(data.current_lng)
-                        );
-                        
-                        document.getElementById('current-position').textContent = data.position || 'Posição atual';
-                        document.getElementById('last-update').textContent = new Date().toLocaleString();
-                        
-                        moveTruckTo(newPosition);
-                    }
-                    
-                    if (data.history && data.history.length > 0) {
-                        updateHistoryTable(data.history);
-                    }
-                })
-                .catch(error => {
-                    console.error("Erro ao atualizar posição:", error);
-                });
-        }, 10000); // Atualiza a cada 10 segundos
+        // Primeira atualização imediata
+        updatePosition();
+        
+        // Configura o intervalo para 30 segundos
+        updateInterval = setInterval(updatePosition, UPDATE_INTERVAL);
     }
 
+    // Atualiza a posição do caminhão
+    function updatePosition() {
+        fetch(`/freights/{{ $freight->id }}/position`)
+            .then(response => response.json())
+            .then(data => {
+                if (data.current_lat && data.current_lng) {
+                    const newPosition = new google.maps.LatLng(
+                        parseFloat(data.current_lat), 
+                        parseFloat(data.current_lng)
+                    );
+                    
+                    document.getElementById('current-position').textContent = data.position || 'Posição atual';
+                    document.getElementById('last-update').textContent = new Date().toLocaleString();
+                    
+                    moveTruckTo(newPosition);
+                }
+                
+                if (data.history && data.history.length > 0) {
+                    updateHistoryTable(data.history);
+                }
+            })
+            .catch(error => {
+                console.error("Erro ao atualizar posição:", error);
+                // Tenta novamente em 5 segundos se houver erro
+                setTimeout(updatePosition, 5000);
+            });
+    }
+
+    // Atualiza a tabela de histórico
     function updateHistoryTable(history) {
         const historyTable = document.getElementById('activity-history');
         historyTable.innerHTML = '';
@@ -566,12 +643,14 @@
         });
     }
 
+    // Eventos quando o DOM estiver carregado
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof google !== 'undefined') {
             startAutoUpdate();
         }
     });
 
+    // Limpeza quando a página for fechada
     window.addEventListener('beforeunload', function() {
         if (updateInterval) clearInterval(updateInterval);
         if (animationInterval) clearInterval(animationInterval);
