@@ -113,16 +113,20 @@
                             <thead>
                                 <tr>
                                     <th width="120">Data/Hora</th>
-                                    <th>Evento</th>
-                                    <th>Detalhes</th>
+                                    <th>Data</th>
+                                    <th>Hora</th>
+                                    <th>address</th>
+                                    <th>status</th>
                                 </tr>
                             </thead>
                             <tbody id="activity-history">
                                 @forelse($freight->history as $activity)
                                 <tr>
-                                    <td>{{ $activity->created_at }}</td>
-                                    <td>{{ $activity->event }}</td>
-                                    <td>{{ $activity->details }}</td>
+                                    <td>{{ $activity->date->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $activity->time }}</td>
+                                    <td>{{ $activity->address }}</td>
+                                    <td>{{ $activity->status }}</td>
+                                 
                                 </tr>
                                 @empty
                                 <tr>
