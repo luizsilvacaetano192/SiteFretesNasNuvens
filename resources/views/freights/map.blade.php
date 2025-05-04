@@ -87,7 +87,7 @@
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <strong>📍 Posição atual:</strong> 
-                                    <span id="current-position">{{ $freight->current_position ?? 'Não disponível' }}</span>
+                                    <span id="current-position">{{ $freight->current_position ?? ($lastPositionHistory->data['position'] ?? 'Não disponível') }}</span>
                                 </div>
                                 <div>
                                     <strong>🔄 Atualizado em:</strong> 
@@ -479,10 +479,31 @@
                         title: "Ponto de Destino"
                     });
 
+                    // Tenta primeiro usar a posição atual do frete
                     @if($freight->current_lat && $freight->current_lng)
                         currentPosition = new google.maps.LatLng({{ $freight->current_lat }}, {{ $freight->current_lng }});
                         createTruckMarker(currentPosition);
                         centerMapOnMarker(currentPosition);
+                    @else
+                        // Se não tiver posição atual, tenta pegar a última do histórico
+                        @php
+                            $lastPositionHistory = $freight->history
+                                ->sortByDesc('created_at')
+                                ->first(function ($item) {
+                                    return $item->event === 'Localização atualizada' && 
+                                           isset($item->data['latitude']) && 
+                                           isset($item->data['longitude']);
+                                });
+                        @endphp
+
+                        @if($lastPositionHistory)
+                            currentPosition = new google.maps.LatLng(
+                                {{ $lastPositionHistory->data['latitude'] }}, 
+                                {{ $lastPositionHistory->data['longitude'] }}
+                            );
+                            createTruckMarker(currentPosition);
+                            centerMapOnMarker(currentPosition);
+                        @endif
                     @endif
                 }
             });
@@ -639,17 +660,45 @@
     // Atualiza a posição do caminhão
     function updatePosition() {
         fetch(`/freights/{{ $freight->id }}/position`)
-            .then(response => response.json())
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Erro na resposta da rede');
+                }
+                return response.json();
+            })
             .then(data => {
+                let newPosition = null;
+                let positionDescription = 'Posição atual';
+                
+                // Primeiro tenta pegar a posição atual
                 if (data.current_lat && data.current_lng) {
-                    const newPosition = new google.maps.LatLng(
+                    newPosition = new google.maps.LatLng(
                         parseFloat(data.current_lat), 
                         parseFloat(data.current_lng)
                     );
+                    positionDescription = data.position || 'Posição atual';
+                } 
+                // Se não tiver posição atual, tenta pegar a última do histórico
+                else if (data.history && data.history.length > 0) {
+                    const lastLocation = data.history.find(item => 
+                        item.event === 'Localização atualizada' && 
+                        item.data && 
+                        item.data.latitude && 
+                        item.data.longitude
+                    );
                     
-                    document.getElementById('current-position').textContent = data.position || 'Posição atual';
+                    if (lastLocation) {
+                        newPosition = new google.maps.LatLng(
+                            parseFloat(lastLocation.data.latitude),
+                            parseFloat(lastLocation.data.longitude)
+                        );
+                        positionDescription = lastLocation.data.position || 'Última posição registrada';
+                    }
+                }
+                
+                if (newPosition) {
+                    document.getElementById('current-position').textContent = positionDescription;
                     document.getElementById('last-update').textContent = new Date().toLocaleString();
-                    
                     moveTruckTo(newPosition);
                 }
                 
@@ -667,6 +716,8 @@
     // Atualiza a tabela de histórico
     function updateHistoryTable(history) {
         const historyTable = document.getElementById('activity-history');
+        if (!historyTable) return;
+        
         historyTable.innerHTML = '';
         
         history.forEach(item => {
