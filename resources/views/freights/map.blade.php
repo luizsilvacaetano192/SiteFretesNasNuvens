@@ -45,7 +45,7 @@
                             <div class="mb-3">
                                 <h6 class="text-muted mb-2">Informações Básicas</h6>
                                 <p class="mb-1"><strong>Empresa:</strong> {{ $freight->company->name }}</p>
-                                <p class="mb-1"><strong>Criado em:</strong> {{ $freight->created_at->format('d/m/Y H:i') }}</p>
+                                <p class="mb-1"><strong>Criado em:</strong> {{ $freight->created_at }}</p>
                                 <p class="mb-1"><strong>Valor Total:</strong> R$ {{ number_format($freight->freight_value, 2, ',', '.') }}</p>
                                 <p class="mb-1"><strong>Valor Motorista:</strong> R$ {{ number_format($freight->driver_freight_value, 2, ',', '.') }}</p>
                             </div>
