@@ -122,7 +122,7 @@
                             <tbody id="activity-history">
                                 @forelse($freight->history as $activity)
                                 <tr>
-                                    <td>{{ $activity->date->format('d/m/Y H:i') }}</td>
+                                    <td>{{ $activity->date }}</td>
                                     <td>{{ $activity->time }}</td>
                                     <td>{{ $activity->address }}</td>
                                     <td>{{ $activity->status }}</td>
