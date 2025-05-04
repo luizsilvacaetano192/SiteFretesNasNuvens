@@ -895,8 +895,7 @@
                 <td>${item.time}</td>
                 <td>${item.address}</td>
                 <td><span class="badge bg-${item.status === 'em_transito' ? 'info' : (item.status === 'entregue' ? 'success' : 'warning')}">${item.status.replace('_', ' ')}</span></td>
-                <td>${item.latitude}</td>
-                <td>${item.longitude}</td>
+             
             `;
             historyTable.appendChild(row);
         });
