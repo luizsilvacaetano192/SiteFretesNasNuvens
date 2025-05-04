@@ -126,6 +126,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/save', [SettingController::class, 'save'])->name('settings.save');
     });
 
+    Route::get('/freights/{freight}/position', [FreightController::class, 'getPosition'])
+    ->name('freights.position');
+
     // Trucks
     Route::prefix('trucks')->group(function () {
         Route::get('/', function(Request $request) {
