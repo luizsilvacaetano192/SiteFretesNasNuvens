@@ -499,7 +499,7 @@
             position: position,
             map: map,
             icon: {
-                url: "https://img.icons8.com/ios-filled/50/000000/truck.png",
+                url: "{{ asset('images/icon-truck.png') }}",
                 scaledSize: new google.maps.Size(40, 40),
                 anchor: new google.maps.Point(20, 20)
             },
