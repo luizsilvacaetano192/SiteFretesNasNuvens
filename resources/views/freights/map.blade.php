@@ -293,7 +293,7 @@
                     <div class="d-flex justify-content-between align-items-center">
                         <div>
                             <h6 class="text-muted mb-2">Distância</h6>
-                            <p class="h5">{{ number_format($freight->distance, 2, ',', '.') }} km</p>
+                            <p class="h5">{{ $freight->distance }} km</p>
                         </div>
                         <div>
                             <h6 class="text-muted mb-2">Tempo Estimado</h6>
