@@ -133,7 +133,7 @@
                                 </tr>
                             </thead>
                             <tbody id="activity-history">
-                                @forelse($freight->history()->orderBy('id', 'asc')->get() as $location)
+                                @forelse($freight->history() as $location)
                                 <tr>
                                     <td>{{ \Carbon\Carbon::parse($location->date)->format('d/m/Y') }}</td>
                                     <td>{{ \Carbon\Carbon::parse($location->date)->format('H:i') }}</td>
