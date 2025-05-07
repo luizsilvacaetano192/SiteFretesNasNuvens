@@ -310,7 +310,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
     {
         // Busca o histórico de posições ordenado por data decrescente
         $history = $freight->history()
-            ->orderBy('created_at', 'desc')
+            ->orderBy('id', 'desc')
             ->get()
             ->map(function ($item) {
                 return [
