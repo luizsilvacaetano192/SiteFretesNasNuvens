@@ -924,7 +924,7 @@
         
         // Ordena do mais recente para o mais antigo
         const sortedHistory = history.sort((a, b) => 
-            new Date(b.date) - new Date(a.date));
+            b.id - (a.id));
         
         // Limpa a tabela
         historyTable.innerHTML = '';
