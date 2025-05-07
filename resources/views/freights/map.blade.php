@@ -129,8 +129,7 @@
                                     <th>Hora</th>
                                     <th>Endereço</th>
                                     <th>Status</th>
-                                    <th>Latitude</th>
-                                    <th>Longitude</th>
+                                   
                                 </tr>
                             </thead>
                             <tbody id="activity-history">
@@ -144,8 +143,7 @@
                                             {{ ucfirst(str_replace('_', ' ', $location->status)) }}
                                         </span>
                                     </td>
-                                    <td>{{ $location->latitude }}</td>
-                                    <td>{{ $location->longitude }}</td>
+                                   
                                 </tr>
                                 @empty
                                 <tr>
