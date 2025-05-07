@@ -886,6 +886,7 @@
 
     // Atualiza a posição atual e informações
     function updateCurrentPosition(address, newPosition, created_at) {
+        console.log('atualiza a descriçao do endereço')
         document.getElementById('current-position').textContent = address || 'Posição atual';
         
         // Atualiza o horário da última atualização
