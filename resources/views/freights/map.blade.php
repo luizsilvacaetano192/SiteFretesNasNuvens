@@ -701,7 +701,7 @@
     function initLastPosition() {
         @php
             $lastLocation = $freight->history()
-                ->orderBy('created_at', 'desc')
+                ->orderBy('id', 'desc')
                 ->first();
         @endphp
 
