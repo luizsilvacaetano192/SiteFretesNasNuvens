@@ -130,25 +130,23 @@
                                     <th>Hora</th>
                                     <th>Endereço</th>
                                     <th>Status</th>
-                                   
                                 </tr>
                             </thead>
                             <tbody id="activity-history">
-                                @forelse($freight->history()->orderBy('id', 'desc')->get() as $location)
+                                @forelse($freight->history()->orderBy('id', 'asc')->get() as $location)
                                 <tr>
                                     <td>{{ \Carbon\Carbon::parse($location->date)->format('d/m/Y') }}</td>
-                                    <td>{{ $location->time }}</td>
+                                    <td>{{ \Carbon\Carbon::parse($location->date)->format('H:i') }}</td>
                                     <td>{{ $location->address }}</td>
                                     <td>
                                         <span class="badge bg-{{ $location->status === 'em_transito' ? 'info' : ($location->status === 'entregue' ? 'success' : 'warning') }}">
                                             {{ ucfirst(str_replace('_', ' ', $location->status)) }}
                                         </span>
                                     </td>
-                                   
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="6" class="text-center py-4">Nenhum registro de localização encontrado</td>
+                                    <td colspan="4" class="text-center py-4">Nenhum registro de localização encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -922,15 +920,13 @@
         const historyTable = document.getElementById('activity-history');
         if (!historyTable) return;
         
-        // Ordena do mais recente para o mais antigo
-        const sortedHistory = [...history].sort((a, b) => b.id - a.id);
-
-
+        // Ordena do mais antigo para o mais recente (ordem crescente)
+        const sortedHistory = [...history].sort((a, b) => a.id - b.id);
         
         // Limpa a tabela
         historyTable.innerHTML = '';
         
-        // Adiciona os registros
+        // Adiciona os registros em ordem crescente
         sortedHistory.forEach(item => {
             const dateObj = new Date(item.date);
             const formattedDate = dateObj.toLocaleDateString('pt-BR');
@@ -952,11 +948,10 @@
                         ${item.status.replace('_', ' ')}
                     </span>
                 </td>
-               
             `;
             
-            // Insere no início da tabela
-            historyTable.insertBefore(row, historyTable.firstChild);
+            // Adiciona no final da tabela (ordem crescente)
+            historyTable.appendChild(row);
         });
     }
 
