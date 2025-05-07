@@ -854,6 +854,7 @@
 
     // Atualiza a posição do caminhão
     function updatePosition() {
+        console.log('atualizando a posicao')
         fetch(`/freights/{{ $freight->id }}/position`)
             .then(response => {
                 if (!response.ok) {
