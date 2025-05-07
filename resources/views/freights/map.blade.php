@@ -215,8 +215,8 @@
                     @if($freight->freightsDriver)
                     <div class="d-flex align-items-center mb-3">
                         <div class="flex-shrink-0">
-                            <img src="{{ $freight->driver->photo_url ?? asset('img/default-driver.png') }}" 
-                                 class="rounded-circle" width="50" height="50" alt="Foto do Motorista">
+                           <!--  <img src="{{ $freight->driver->photo_url ?? asset('img/default-driver.png') }}" 
+                                 class="rounded-circle" width="50" height="50" alt="Foto do Motorista"> -->
                         </div>
                         <div class="flex-grow-1 ms-3">
                             <h6 class="mb-0">{{ $freight->freightsDriver->name }}</h6>
