@@ -70,7 +70,7 @@
                     </h6>
                 </div>
                 <div class="card-body p-0">
-                    <div id="map-container" style="position: relative;margin-bottom: 50px;">
+                    <div id="map-container" style="position: relative;margin-top: 100px;">
                         <!-- Controles do Mapa -->
                         <div id="map-controls" class="position-absolute top-0 end-0 mt-2 me-2" style="z-index: 1000;">
                             <div class="btn-group-vertical shadow-sm">
