@@ -315,7 +315,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
             ->map(function ($item) {
                 return [
                    
-                    'created_at' => $item->created_at->toDateTimeString(),
+                   
 
                     'date'  => $item->date,
                     'time'  => $item->time,
