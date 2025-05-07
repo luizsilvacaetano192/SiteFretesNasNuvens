@@ -525,10 +525,11 @@
 @push('scripts')
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places,geometry&callback=initMap" async defer></script>
 <script>
-    // Constantes de configuração
+    // Configurações
     const ZOOM_STREET_LEVEL = 15;
     const ZOOM_ROUTE_LEVEL = 12;
-    const UPDATE_INTERVAL = 30000;
+    const UPDATE_INTERVAL = 60000; // 1 minuto
+    const MIN_DISTANCE_UPDATE = 100; // 100 metros (distância mínima para considerar movimento)
 
     // Variáveis globais
     let map;
@@ -539,6 +540,7 @@
     let animationInterval;
     let isStreetView = true;
     let isTracking = true;
+    let lastUpdateTime = null;
 
     // Inicialização do mapa
     function initMap() {
@@ -548,93 +550,16 @@
         const defaultCenter = { lat: -15.7801, lng: -47.9292 };
         
         try {
+            // Configuração do mapa
             map = new google.maps.Map(mapElement, {
                 zoom: ZOOM_STREET_LEVEL,
                 center: defaultCenter,
                 mapTypeId: google.maps.MapTypeId.ROADMAP,
                 gestureHandling: "greedy",
-                styles: [
-                    {
-                        "featureType": "administrative",
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                            {
-                                "color": "#444444"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "landscape",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "color": "#f2f2f2"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "poi",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "visibility": "off"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "saturation": -100
-                            },
-                            {
-                                "lightness": 45
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road.highway",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "visibility": "simplified"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road.arterial",
-                        "elementType": "labels.icon",
-                        "stylers": [
-                            {
-                                "visibility": "off"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "transit",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "visibility": "off"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "water",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "color": "#4e73df"
-                            },
-                            {
-                                "visibility": "on"
-                            }
-                        ]
-                    }
-                ]
+                styles: getMapStyles()
             });
 
+            // Configuração do renderizador de rotas
             directionsRenderer = new google.maps.DirectionsRenderer({
                 suppressMarkers: true,
                 map: map,
@@ -645,15 +570,81 @@
                 }
             });
 
+            // Inicializa a rota e atualizações
             initRoute();
             startAutoUpdate();
 
             // Configura os botões de controle
-            document.getElementById('zoom-toggle')?.addEventListener('click', toggleZoomLevel);
-            document.getElementById('track-toggle')?.addEventListener('click', toggleTracking);
+            setupMapControls();
 
         } catch (error) {
             console.error("Erro ao inicializar o mapa:", error);
+            showMapError();
+        }
+    }
+
+    // Estilos do mapa
+    function getMapStyles() {
+        return [
+            {
+                "featureType": "administrative",
+                "elementType": "labels.text.fill",
+                "stylers": [{"color": "#444444"}]
+            },
+            {
+                "featureType": "landscape",
+                "elementType": "all",
+                "stylers": [{"color": "#f2f2f2"}]
+            },
+            {
+                "featureType": "poi",
+                "elementType": "all",
+                "stylers": [{"visibility": "off"}]
+            },
+            {
+                "featureType": "road",
+                "elementType": "all",
+                "stylers": [{"saturation": -100}, {"lightness": 45}]
+            },
+            {
+                "featureType": "road.highway",
+                "elementType": "all",
+                "stylers": [{"visibility": "simplified"}]
+            },
+            {
+                "featureType": "road.arterial",
+                "elementType": "labels.icon",
+                "stylers": [{"visibility": "off"}]
+            },
+            {
+                "featureType": "transit",
+                "elementType": "all",
+                "stylers": [{"visibility": "off"}]
+            },
+            {
+                "featureType": "water",
+                "elementType": "all",
+                "stylers": [{"color": "#4e73df"}, {"visibility": "on"}]
+            }
+        ];
+    }
+
+    // Configura os controles do mapa
+    function setupMapControls() {
+        document.getElementById('zoom-toggle')?.addEventListener('click', toggleZoomLevel);
+        document.getElementById('track-toggle')?.addEventListener('click', toggleTracking);
+    }
+
+    // Mostra erro no mapa
+    function showMapError() {
+        const mapContainer = document.getElementById('map-container');
+        if (mapContainer) {
+            mapContainer.innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Erro ao carregar o mapa. Por favor, recarregue a página.
+                </div>
+            `;
         }
     }
 
@@ -673,50 +664,63 @@
             }, (response, status) => {
                 if (status === 'OK') {
                     directionsRenderer.setDirections(response);
-                    
-                    // Marcador de origem
-                    new google.maps.Marker({
-                        position: start,
-                        map: map,
-                        icon: {
-                            url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-                            scaledSize: new google.maps.Size(32, 32)
-                        },
-                        title: "Ponto de Partida"
-                    });
-
-                    // Marcador de destino
-                    new google.maps.Marker({
-                        position: end,
-                        map: map,
-                        icon: {
-                            url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                            scaledSize: new google.maps.Size(32, 32)
-                        },
-                        title: "Ponto de Destino"
-                    });
-
-                    // Busca a última posição do histórico
-                    @php
-                        $lastLocation = $freight->history()
-                            ->orderBy('created_at', 'desc')
-                            ->first();
-                    @endphp
-
-                    @if($lastLocation && $lastLocation->latitude && $lastLocation->longitude)
-                        currentPosition = new google.maps.LatLng(
-                            {{ $lastLocation->latitude }}, 
-                            {{ $lastLocation->longitude }}
-                        );
-                        createTruckMarker(currentPosition);
-                        centerMapOnMarker(currentPosition);
-                    @endif
+                    addRouteMarkers(start, end);
+                    initLastPosition();
+                } else {
+                    console.error("Erro ao traçar rota:", status);
                 }
             });
         @endif
     }
 
-    // Cria o marcador do caminhão
+    // Adiciona marcadores de origem e destino
+    function addRouteMarkers(start, end) {
+        // Marcador de origem
+        new google.maps.Marker({
+            position: start,
+            map: map,
+            icon: {
+                url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+                scaledSize: new google.maps.Size(32, 32)
+            },
+            title: "Ponto de Partida"
+        });
+
+        // Marcador de destino
+        new google.maps.Marker({
+            position: end,
+            map: map,
+            icon: {
+                url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                scaledSize: new google.maps.Size(32, 32)
+            },
+            title: "Ponto de Destino"
+        });
+    }
+
+    // Inicializa a última posição conhecida
+    function initLastPosition() {
+        @php
+            $lastLocation = $freight->history()
+                ->orderBy('created_at', 'desc')
+                ->first();
+        @endphp
+
+        @if($lastLocation && $lastLocation->latitude && $lastLocation->longitude)
+            currentPosition = new google.maps.LatLng(
+                {{ $lastLocation->latitude }}, 
+                {{ $lastLocation->longitude }}
+            );
+            createTruckMarker(currentPosition);
+            centerMapOnMarker(currentPosition);
+            
+            // Atualiza o último horário de atualização
+            lastUpdateTime = new Date("{{ $lastLocation->created_at }}");
+            updateLastUpdateTime();
+        @endif
+    }
+
+    // Cria/atualiza o marcador do caminhão
     function createTruckMarker(position) {
         if (truckMarker) {
             truckMarker.setMap(null);
@@ -739,11 +743,7 @@
         if (!isTracking) return;
         
         map.setCenter(position);
-        if (isStreetView) {
-            map.setZoom(ZOOM_STREET_LEVEL);
-        } else {
-            map.setZoom(ZOOM_ROUTE_LEVEL);
-        }
+        map.setZoom(isStreetView ? ZOOM_STREET_LEVEL : ZOOM_ROUTE_LEVEL);
     }
 
     // Move o caminhão para nova posição com animação suave
@@ -758,7 +758,8 @@
         const distance = google.maps.geometry.spherical.computeDistanceBetween(
             currentPosition, newLatLng);
         
-        if (distance < 10) {
+        // Só anima se a distância for significativa
+        if (distance < MIN_DISTANCE_UPDATE) {
             truckMarker.setPosition(newLatLng);
             currentPosition = newLatLng;
             centerMapOnMarker(newLatLng);
@@ -768,13 +769,15 @@
         const heading = google.maps.geometry.spherical.computeHeading(
             currentPosition, newLatLng);
         
+        // Ajusta a rotação do ícone para a direção do movimento
         truckMarker.setIcon({
-            url: "https://img.icons8.com/ios-filled/50/000000/truck.png",
+            url: "{{ asset('images/icon-truck.png') }}",
             scaledSize: new google.maps.Size(40, 40),
             anchor: new google.maps.Point(20, 20),
             rotation: heading
         });
 
+        // Animação suave do movimento
         const steps = 20;
         const step = 1/steps;
         let currentStep = 0;
@@ -813,12 +816,13 @@
     function toggleZoomLevel() {
         isStreetView = !isStreetView;
         
+        const zoomToggleBtn = document.getElementById('zoom-toggle');
         if (isStreetView) {
             map.setZoom(ZOOM_STREET_LEVEL);
-            document.getElementById('zoom-toggle').innerHTML = '<i class="fas fa-search-minus"></i> Visão Geral';
+            zoomToggleBtn.innerHTML = '<i class="fas fa-search-minus"></i> Visão Geral';
         } else {
             map.setZoom(ZOOM_ROUTE_LEVEL);
-            document.getElementById('zoom-toggle').innerHTML = '<i class="fas fa-search-plus"></i> Visão de Rua';
+            zoomToggleBtn.innerHTML = '<i class="fas fa-search-plus"></i> Visão de Rua';
         }
         
         if (isTracking && truckMarker) {
@@ -830,13 +834,14 @@
     function toggleTracking() {
         isTracking = !isTracking;
         
+        const trackToggleBtn = document.getElementById('track-toggle');
         if (isTracking) {
-            document.getElementById('track-toggle').innerHTML = '<i class="fas fa-lock"></i> Travar Mapa';
+            trackToggleBtn.innerHTML = '<i class="fas fa-lock"></i> Travar Mapa';
             if (truckMarker) {
                 centerMapOnMarker(truckMarker.getPosition());
             }
         } else {
-            document.getElementById('track-toggle').innerHTML = '<i class="fas fa-lock-open"></i> Acompanhar';
+            trackToggleBtn.innerHTML = '<i class="fas fa-lock-open"></i> Acompanhar';
         }
     }
 
@@ -866,9 +871,8 @@
                         parseFloat(data.longitude)
                     );
                     
-                    document.getElementById('current-position').textContent = data.address || 'Posição atual';
-                    document.getElementById('last-update').textContent = new Date(data.created_at).toLocaleString();
-                    moveTruckTo(newPosition);
+                    // Atualiza a posição atual
+                    updateCurrentPosition(data.address, newPosition, data.created_at);
                 }
                 
                 if (data.history && data.history.length > 0) {
@@ -877,8 +881,41 @@
             })
             .catch(error => {
                 console.error("Erro ao atualizar posição:", error);
-                setTimeout(updatePosition, 5000);
+                // Tenta novamente em 30 segundos se houver erro
+                setTimeout(updatePosition, 30000);
             });
+    }
+
+    // Atualiza a posição atual e informações
+    function updateCurrentPosition(address, newPosition, created_at) {
+        document.getElementById('current-position').textContent = address || 'Posição atual';
+        
+        // Atualiza o horário da última atualização
+        lastUpdateTime = new Date(created_at);
+        updateLastUpdateTime();
+        
+        // Move o marcador para a nova posição
+        moveTruckTo(newPosition);
+    }
+
+    // Atualiza o texto do último horário de atualização
+    function updateLastUpdateTime() {
+        if (!lastUpdateTime) return;
+        
+        const now = new Date();
+        const diffSeconds = Math.floor((now - lastUpdateTime) / 1000);
+        
+        let updateText;
+        if (diffSeconds < 60) {
+            updateText = `${diffSeconds} segundos atrás`;
+        } else if (diffSeconds < 3600) {
+            const minutes = Math.floor(diffSeconds / 60);
+            updateText = `${minutes} minuto${minutes !== 1 ? 's' : ''} atrás`;
+        } else {
+            updateText = lastUpdateTime.toLocaleTimeString('pt-BR');
+        }
+        
+        document.getElementById('last-update').textContent = updateText;
     }
 
     // Atualiza a tabela de histórico
@@ -886,24 +923,49 @@
         const historyTable = document.getElementById('activity-history');
         if (!historyTable) return;
         
+        // Ordena do mais recente para o mais antigo
+        const sortedHistory = history.sort((a, b) => 
+            new Date(b.created_at) - new Date(a.created_at));
+        
+        // Limpa a tabela
         historyTable.innerHTML = '';
         
-        history.forEach(item => {
+        // Adiciona os registros
+        sortedHistory.forEach(item => {
+            const dateObj = new Date(item.created_at);
+            const formattedDate = dateObj.toLocaleDateString('pt-BR');
+            const formattedTime = dateObj.toLocaleTimeString('pt-BR', { 
+                hour: '2-digit', 
+                minute: '2-digit' 
+            });
+            
             const row = document.createElement('tr');
             row.innerHTML = `
-                <td>${new Date(item.date).toLocaleDateString()}</td>
-                <td>${item.time}</td>
-                <td>${item.address}</td>
-                <td><span class="badge bg-${item.status === 'em_transito' ? 'info' : (item.status === 'entregue' ? 'success' : 'warning')}">${item.status.replace('_', ' ')}</span></td>
-             
+                <td>${formattedDate}</td>
+                <td>${formattedTime}</td>
+                <td>${item.address || 'N/A'}</td>
+                <td>
+                    <span class="badge bg-${
+                        item.status === 'em_transito' ? 'info' : 
+                        (item.status === 'entregue' ? 'success' : 'warning')
+                    }">
+                        ${item.status.replace('_', ' ')}
+                    </span>
+                </td>
+                <td>${item.latitude}</td>
+                <td>${item.longitude}</td>
             `;
-            historyTable.appendChild(row);
+            
+            // Insere no início da tabela
+            historyTable.insertBefore(row, historyTable.firstChild);
         });
     }
 
     // Eventos quando o DOM estiver carregado
     document.addEventListener('DOMContentLoaded', function() {
         if (typeof google !== 'undefined') {
+            // Atualiza o horário a cada minuto
+            setInterval(updateLastUpdateTime, 60000);
             startAutoUpdate();
         }
     });

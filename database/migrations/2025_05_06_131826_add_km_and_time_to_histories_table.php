@@ -16,7 +16,7 @@ return new class extends Migration {
     public function down(): void
     {
         Schema::table('histories', function (Blueprint $table) {
-            $table->dropColumn(['km', 'time_end']);
+            $table->dropColumn(['km', 'time_endf']);
         });
     }
 };
