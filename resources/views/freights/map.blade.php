@@ -714,7 +714,7 @@
             centerMapOnMarker(currentPosition);
             
             // Atualiza o último horário de atualização
-            lastUpdateTime = new Date("{{ $lastLocation->created_at }}");
+            lastUpdateTime = new Date("{{ $lastLocation->date }}");
             updateLastUpdateTime();
         @endif
     }
@@ -924,14 +924,14 @@
         
         // Ordena do mais recente para o mais antigo
         const sortedHistory = history.sort((a, b) => 
-            new Date(b.created_at) - new Date(a.created_at));
+            new Date(b.date) - new Date(a.date));
         
         // Limpa a tabela
         historyTable.innerHTML = '';
         
         // Adiciona os registros
         sortedHistory.forEach(item => {
-            const dateObj = new Date(item.created_at);
+            const dateObj = new Date(item.date);
             const formattedDate = dateObj.toLocaleDateString('pt-BR');
             const formattedTime = dateObj.toLocaleTimeString('pt-BR', { 
                 hour: '2-digit', 
@@ -951,8 +951,7 @@
                         ${item.status.replace('_', ' ')}
                     </span>
                 </td>
-                <td>${item.latitude}</td>
-                <td>${item.longitude}</td>
+               
             `;
             
             // Insere no início da tabela
