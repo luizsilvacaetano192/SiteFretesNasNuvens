@@ -923,7 +923,7 @@
         if (!historyTable) return;
         
         // Ordena do mais antigo para o mais recente (ordem crescente)
-        const sortedHistory = [...history].sort((a, b) => a.id);
+        const sortedHistory = [...history].sort((a, b) =>b.id -  a.id);
         
         // Limpa a tabela
         historyTable.innerHTML = '';
