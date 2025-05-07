@@ -91,7 +91,7 @@
                                     <span id="current-position">
                                         @php
                                             $lastLocation = $freight->history()
-                                                ->orderBy('created_at', 'desc')
+                                                ->orderBy('id', 'desc')
                                                 ->first();
                                         @endphp
                                         {{ $lastLocation->address ?? 'Não disponível' }}
@@ -101,7 +101,7 @@
                                     <strong>🔄 Atualizado em:</strong> 
                                     <span id="last-update">
                                         @if($lastLocation)
-                                            {{ \Carbon\Carbon::parse($lastLocation->created_at)->format('d/m/Y H:i:s') }}
+                                            {{ \Carbon\Carbon::parse($lastLocation->date)->format('d/m/Y H:i:s') }}
                                         @else
                                             N/A
                                         @endif
