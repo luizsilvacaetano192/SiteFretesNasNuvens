@@ -74,7 +74,7 @@
                         <!-- Controles do Mapa -->
                         <div id="map-controls" class="position-relative top-0 end-0 mt-2 me-2" 
                         style="z-index: 1000; ">
-                            <div class="btn-group-vertical shadow-sm"  style="padding-top: 200px;">
+                            <div class="btn-group-vertical shadow-sm">
                                 <button id="track-toggle" class="btn btn-sm btn-primary">
                                     <i class="fas fa-lock"></i> Travar Mapa
                                 </button>
