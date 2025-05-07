@@ -316,7 +316,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
                 return [
                    
                    
-
+                    'id' => $item->id,
                     'date'  => $item->date,
                     'time'  => $item->time,
                     'address'  => $item->address,
