@@ -31,6 +31,89 @@
     <div class="row">
         <!-- Coluna Esquerda -->
         <div class="col-lg-8">
+            <!-- Card de Status -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Status do Frete
+                    </h6>
+                    <span class="badge bg-{{ $statusBadgeClass }}">{{ $freight->freightStatus->name }}</span>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Informações Básicas</h6>
+                                <p class="mb-1"><strong>Empresa:</strong> {{ $freight->company->name }}</p>
+                                <p class="mb-1"><strong>Criado em:</strong> {{ $freight->created_at->format('d/m/Y H:i') }}</p>
+                                <p class="mb-1"><strong>Valor Total:</strong> R$ {{ number_format($freight->freight_value, 2, ',', '.') }}</p>
+                                <p class="mb-1"><strong>Valor Motorista:</strong> R$ {{ number_format($freight->driver_freight_value, 2, ',', '.') }}</p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Datas Importantes</h6>
+                                <p class="mb-1"><strong>Coleta:</strong> {{ $freight->pickup_date ? $freight->pickup_date->format('d/m/Y H:i') : 'N/A' }}</p>
+                                <p class="mb-1"><strong>Entrega:</strong> {{ $freight->delivery_date ? $freight->delivery_date->format('d/m/Y H:i') : 'N/A' }}</p>
+                                <p class="mb-1"><strong>Concluído em:</strong> {{ $freight->completed_at ? $freight->completed_at->format('d/m/Y H:i') : 'N/A' }}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Rota e Mapa -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0">
+                        <i class="fas fa-map-marked-alt me-2"></i>Rota e Localização
+                    </h6>
+                </div>
+                <div class="card-body p-0">
+                    <div id="map-container" style="position: relative;">
+                        <!-- Controles do Mapa -->
+                        <div id="map-controls" class="position-relative top-0 end-0 mt-2 me-2" 
+                        style="z-index: 1000; ">
+                            <div class="btn-group-vertical shadow-sm">
+                                <button id="track-toggle" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-lock"></i> Travar Mapa
+                                </button>
+                                <button id="zoom-toggle" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-search-plus"></i> Visão de Rua
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div id="location-info" class="p-3 bg-light border-bottom">
+                            <div class="d-flex justify-content-between">
+                                <div>
+                                    <strong>📍 Posição atual:</strong> 
+                                    <span id="current-position">
+                                        @php
+                                            $lastLocation = $freight->history()
+                                                ->orderBy('id', 'desc')
+                                                ->first();
+                                        @endphp
+                                        {{ $lastLocation->address ?? 'Não disponível' }}
+                                    </span>
+                                </div>
+                                <div>
+                                    <strong>🔄 Atualizado em:</strong> 
+                                    <span id="last-update">
+                                        @if($lastLocation)
+                                            {{ \Carbon\Carbon::parse($lastLocation->date)->format('d/m/Y H:i:s') }}
+                                        @else
+                                            N/A
+                                        @endif
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="map" style="height: 400px;"></div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Card de Histórico -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -50,7 +133,6 @@
                                     <th>Hora</th>
                                     <th>Endereço</th>
                                     <th>Status</th>
-                                    <th>Lat/Long</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -68,13 +150,10 @@
                                             {{ ucfirst(str_replace('_', ' ', $location->status)) }}
                                         </span>
                                     </td>
-                                    <td>
-                                        {{ $location->latitude }}, {{ $location->longitude }}
-                                    </td>
                                 </tr>
                                 @empty
                                 <tr>
-                                    <td colspan="5" class="text-center py-4">Nenhum registro de localização encontrado</td>
+                                    <td colspan="4" class="text-center py-4">Nenhum registro de localização encontrado</td>
                                 </tr>
                                 @endforelse
                             </tbody>
@@ -86,7 +165,160 @@
 
         <!-- Coluna Direita -->
         <div class="col-lg-4">
-            <!-- Seus outros cards... -->
+            <!-- Card de Carga -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-boxes me-2"></i>Detalhes da Carga
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Informações Gerais</h6>
+                        <p class="mb-1"><strong>Tipo:</strong> {{ $freight->shipment->cargo_type }}</p>
+                        <p class="mb-1"><strong>Peso:</strong> {{ number_format($freight->shipment->weight, 2, ',', '.') }} kg</p>
+                        <p class="mb-1"><strong>Dimensões:</strong> {{ $freight->shipment->dimensions }}</p>
+                        <p class="mb-1"><strong>Volume:</strong> {{ $freight->shipment->volume }} m³</p>
+                        <p class="mb-1"><strong>Descrição:</strong> {{ $freight->shipment->description ?? 'N/A' }}</p>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Características</h6>
+                        <p class="mb-1"><strong>Frágil:</strong> 
+                            <span class="badge bg-{{ $freight->shipment->is_fragile ? 'warning' : 'secondary' }}">
+                                {{ $freight->shipment->is_fragile ? 'Sim' : 'Não' }}
+                            </span>
+                        </p>
+                        <p class="mb-1"><strong>Perigosa:</strong> 
+                            <span class="badge bg-{{ $freight->shipment->is_hazardous ? 'danger' : 'secondary' }}">
+                                {{ $freight->shipment->is_hazardous ? 'Sim' : 'Não' }}
+                            </span>
+                        </p>
+                        <p class="mb-1"><strong>Controle de Temperatura:</strong> 
+                            <span class="badge bg-{{ $freight->shipment->requires_temperature_control ? 'info' : 'secondary' }}">
+                                {{ $freight->shipment->requires_temperature_control ? 'Sim' : 'Não' }}
+                            </span>
+                        </p>
+                        @if($freight->shipment->requires_temperature_control)
+                        <p class="mb-1"><strong>Faixa de Temperatura:</strong> 
+                            <span class="badge bg-danger">
+                                {{ $freight->shipment->min_temperature }}°{{ $freight->shipment->temperature_unit }} a 
+                                {{ $freight->shipment->max_temperature }}°{{ $freight->shipment->temperature_unit }}
+                            </span>
+                        </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Motorista e Veículo -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-truck me-2"></i>Motorista e Veículo
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if($freight->freightsDriver)
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                           <!--  <img src="{{ $freight->driver->photo_url ?? asset('img/default-driver.png') }}" 
+                                 class="rounded-circle" width="50" height="50" alt="Foto do Motorista"> -->
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <h6 class="mb-0">{{ $freight->freightsDriver->name }}</h6>
+                            <small class="text-muted">{{ $freight->freightsDriver->phone }}</small>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Informações do Veículo</h6>
+                        <p class="mb-1"><strong>Tipo:</strong> {{ $freight->truck_type ? ucwords(str_replace('_', ' ', $freight->truck_type)) : 'N/A' }}</p>
+                        <p class="mb-1"><strong>Placa:</strong> {{ $freight->driver->truck_plate ?? 'N/A' }}</p>
+                        <p class="mb-1"><strong>Capacidade:</strong> {{ $freight->driver->truck_capacity ?? 'N/A' }} kg</p>
+                    </div>
+                    @else
+                    <div class="alert alert-warning mb-0">
+                        <i class="fas fa-exclamation-circle me-2"></i>Nenhum motorista atribuído a este frete.
+                    </div>
+                    @endif
+                </div>
+            </div>
+
+            <!-- Card de Endereços -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-map-marker-alt me-2"></i>Endereços
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="text-muted mb-2">Origem</h6>
+                        <p class="mb-1"><strong>Endereço:</strong> {{ $freight->start_address }}</p>
+                        <p class="mb-1"><strong>Instruções:</strong> {{ $freight->loading_instructions ?? 'N/A' }}</p>
+                        <p class="mb-0"><strong>Contato:</strong> {{ $freight->start_contact ?? 'N/A' }}</p>
+                    </div>
+                    
+                    <div class="mb-0">
+                        <h6 class="text-muted mb-2">Destino</h6>
+                        <p class="mb-1"><strong>Endereço:</strong> {{ $freight->destination_address }}</p>
+                        <p class="mb-1"><strong>Instruções:</strong> {{ $freight->unloading_instructions ?? 'N/A' }}</p>
+                        <p class="mb-0"><strong>Contato:</strong> {{ $freight->destination_contact ?? 'N/A' }}</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Card de Pagamento -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-money-bill-wave me-2"></i>Pagamento
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <p class="mb-1"><strong>Status:</strong> 
+                            <span class="badge bg-{{ $paymentBadgeClass }}">{{ ucfirst(str_replace('_', ' ', $freight->payment_status)) }}</span>
+                        </p>
+                        <p class="mb-1"><strong>Método:</strong> {{ $freight->payment_method ? strtoupper($freight->payment_method) : 'N/A' }}</p>
+                        <p class="mb-1"><strong>Seguradoras:</strong> 
+                            @if($freight->insurance_carriers && count($freight->insurance_carriers) > 0)
+                                @foreach($freight->insurance_carriers as $carrier)
+                                    <span class="badge bg-info me-1">{{ ucwords(str_replace('_', ' ', $carrier)) }}</span>
+                                @endforeach
+                            @else
+                                <span class="badge bg-secondary">Nenhuma</span>
+                            @endif
+                        </p>
+                    </div>
+                    
+                    @if($freight->charge)
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h6 class="text-muted mb-2">Distância</h6>
+                            <p class="h5">{{ $freight->distance }} km</p>
+                        </div>
+                        <div>
+                            <h6 class="text-muted mb-2">Tempo Estimado</h6>
+                            <p class="h5">{{ $freight->duration ?? 'N/A' }}</p>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        @if($freight->payment_status === 'paid' && $freight->charge->receipt_url)
+                        <a href="{{ $freight->charge->receipt_url }}" class="btn btn-sm btn-info me-2" target="_blank">
+                            <i class="fas fa-file-invoice-dollar me-1"></i>Recibo
+                        </a>
+                        @elseif($freight->charge->charge_url)
+                        <a href="{{ $freight->charge->charge_url }}" class="btn btn-sm btn-success" target="_blank">
+                            <i class="fas fa-credit-card me-1"></i>Pagar
+                        </a>
+                        @endif
+                    </div>
+                    @endif
+                </div>
+            </div>
         </div>
     </div>
 </div>
@@ -159,6 +391,7 @@
 @endpush
 
 @push('scripts')
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places,geometry&callback=initMap" async defer></script>
 <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
@@ -167,8 +400,335 @@
 <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json"></script>
 
 <script>
+    // Configurações do Mapa
+    const ZOOM_STREET_LEVEL = 15;
+    const ZOOM_ROUTE_LEVEL = 12;
+    const UPDATE_INTERVAL = 60000; // 1 minuto
+    const MIN_DISTANCE_UPDATE = 100; // 100 metros
+
+    // Variáveis globais do Mapa
+    let map;
+    let directionsRenderer;
+    let truckMarker;
+    let currentPosition = null;
+    let animationInterval;
+    let isStreetView = true;
+    let isTracking = true;
+    let lastUpdateTime = null;
+
+    // Inicialização do Mapa
+    function initMap() {
+        const mapElement = document.getElementById("map");
+        if (!mapElement) return;
+        
+        const defaultCenter = { lat: -15.7801, lng: -47.9292 };
+        
+        try {
+            map = new google.maps.Map(mapElement, {
+                zoom: ZOOM_STREET_LEVEL,
+                center: defaultCenter,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                gestureHandling: "greedy",
+                styles: getMapStyles()
+            });
+
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: true,
+                map: map,
+                polylineOptions: {
+                    strokeColor: '#4e73df',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 4
+                }
+            });
+
+            initRoute();
+            setupMapControls();
+
+        } catch (error) {
+            console.error("Erro ao inicializar o mapa:", error);
+            showMapError();
+        }
+    }
+
+    // Estilos do Mapa
+    function getMapStyles() {
+        return [
+            {
+                "featureType": "administrative",
+                "elementType": "labels.text.fill",
+                "stylers": [{"color": "#444444"}]
+            },
+            {
+                "featureType": "landscape",
+                "elementType": "all",
+                "stylers": [{"color": "#f2f2f2"}]
+            },
+            {
+                "featureType": "poi",
+                "elementType": "all",
+                "stylers": [{"visibility": "off"}]
+            },
+            {
+                "featureType": "road",
+                "elementType": "all",
+                "stylers": [{"saturation": -100}, {"lightness": 45}]
+            },
+            {
+                "featureType": "road.highway",
+                "elementType": "all",
+                "stylers": [{"visibility": "simplified"}]
+            },
+            {
+                "featureType": "road.arterial",
+                "elementType": "labels.icon",
+                "stylers": [{"visibility": "off"}]
+            },
+            {
+                "featureType": "transit",
+                "elementType": "all",
+                "stylers": [{"visibility": "off"}]
+            },
+            {
+                "featureType": "water",
+                "elementType": "all",
+                "stylers": [{"color": "#4e73df"}, {"visibility": "on"}]
+            }
+        ];
+    }
+
+    // Configura os controles do mapa
+    function setupMapControls() {
+        document.getElementById('zoom-toggle')?.addEventListener('click', toggleZoomLevel);
+        document.getElementById('track-toggle')?.addEventListener('click', toggleTracking);
+    }
+
+    // Mostra erro no mapa
+    function showMapError() {
+        const mapContainer = document.getElementById('map-container');
+        if (mapContainer) {
+            mapContainer.innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Erro ao carregar o mapa. Por favor, recarregue a página.
+                </div>
+            `;
+        }
+    }
+
+    // Inicializa a rota
+    function initRoute() {
+        const directionsService = new google.maps.DirectionsService();
+
+        @if($freight->start_lat && $freight->start_lng && $freight->destination_lat && $freight->destination_lng)
+            const start = new google.maps.LatLng({{ $freight->start_lat }}, {{ $freight->start_lng }});
+            const end = new google.maps.LatLng({{ $freight->destination_lat }}, {{ $freight->destination_lng }});
+
+            directionsService.route({
+                origin: start,
+                destination: end,
+                travelMode: google.maps.TravelMode.DRIVING,
+                provideRouteAlternatives: false
+            }, (response, status) => {
+                if (status === 'OK') {
+                    directionsRenderer.setDirections(response);
+                    addRouteMarkers(start, end);
+                    initLastPosition();
+                } else {
+                    console.error("Erro ao traçar rota:", status);
+                }
+            });
+        @endif
+    }
+
+    // Adiciona marcadores de origem e destino
+    function addRouteMarkers(start, end) {
+        new google.maps.Marker({
+            position: start,
+            map: map,
+            icon: {
+                url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+                scaledSize: new google.maps.Size(32, 32)
+            },
+            title: "Ponto de Partida"
+        });
+
+        new google.maps.Marker({
+            position: end,
+            map: map,
+            icon: {
+                url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                scaledSize: new google.maps.Size(32, 32)
+            },
+            title: "Ponto de Destino"
+        });
+    }
+
+    // Inicializa a última posição conhecida
+    function initLastPosition() {
+        @php
+            $lastLocation = $freight->history()
+                ->orderBy('id', 'desc')
+                ->first();
+        @endphp
+
+        @if($lastLocation && $lastLocation->latitude && $lastLocation->longitude)
+            currentPosition = new google.maps.LatLng(
+                {{ $lastLocation->latitude }}, 
+                {{ $lastLocation->longitude }}
+            );
+            createTruckMarker(currentPosition);
+            centerMapOnMarker(currentPosition);
+            
+            lastUpdateTime = new Date("{{ $lastLocation->date }}");
+            updateLastUpdateTime();
+        @endif
+    }
+
+    // Cria/atualiza o marcador do caminhão
+    function createTruckMarker(position) {
+        if (truckMarker) {
+            truckMarker.setMap(null);
+        }
+        
+        truckMarker = new google.maps.Marker({
+            position: position,
+            map: map,
+            icon: {
+                url: "{{ asset('images/icon-truck.png') }}",
+                scaledSize: new google.maps.Size(40, 40),
+                anchor: new google.maps.Point(20, 20)
+            },
+            title: "Posição Atual do Caminhão"
+        });
+    }
+
+    // Centraliza o mapa no marcador
+    function centerMapOnMarker(position) {
+        if (!isTracking) return;
+        
+        map.setCenter(position);
+        map.setZoom(isStreetView ? ZOOM_STREET_LEVEL : ZOOM_ROUTE_LEVEL);
+    }
+
+    // Move o caminhão para nova posição com animação suave
+    function moveTruckTo(newLatLng) {
+        if (!truckMarker || !currentPosition) {
+            createTruckMarker(newLatLng);
+            currentPosition = newLatLng;
+            centerMapOnMarker(newLatLng);
+            return;
+        }
+
+        const distance = google.maps.geometry.spherical.computeDistanceBetween(
+            currentPosition, newLatLng);
+        
+        if (distance < MIN_DISTANCE_UPDATE) {
+            truckMarker.setPosition(newLatLng);
+            currentPosition = newLatLng;
+            centerMapOnMarker(newLatLng);
+            return;
+        }
+
+        const heading = google.maps.geometry.spherical.computeHeading(
+            currentPosition, newLatLng);
+        
+        truckMarker.setIcon({
+            url: "{{ asset('images/icon-truck.png') }}",
+            scaledSize: new google.maps.Size(40, 40),
+            anchor: new google.maps.Point(20, 20),
+            rotation: heading
+        });
+
+        const steps = 20;
+        const step = 1/steps;
+        let currentStep = 0;
+        
+        if (animationInterval) {
+            clearInterval(animationInterval);
+        }
+        
+        animationInterval = setInterval(() => {
+            currentStep += step;
+            
+            if (currentStep >= 1) {
+                clearInterval(animationInterval);
+                currentPosition = newLatLng;
+                truckMarker.setPosition(newLatLng);
+                centerMapOnMarker(newLatLng);
+                return;
+            }
+            
+            const interpolatedLat = currentPosition.lat() + 
+                (newLatLng.lat() - currentPosition.lat()) * currentStep;
+            const interpolatedLng = currentPosition.lng() + 
+                (newLatLng.lng() - currentPosition.lng()) * currentStep;
+            
+            const interpolatedLatLng = new google.maps.LatLng(interpolatedLat, interpolatedLng);
+            truckMarker.setPosition(interpolatedLatLng);
+            
+            if (isTracking) {
+                map.panTo(interpolatedLatLng);
+            }
+            
+        }, 100);
+    }
+
+    // Alterna entre visão de rua e visão de rota
+    function toggleZoomLevel() {
+        isStreetView = !isStreetView;
+        
+        const zoomToggleBtn = document.getElementById('zoom-toggle');
+        if (isStreetView) {
+            map.setZoom(ZOOM_STREET_LEVEL);
+            zoomToggleBtn.innerHTML = '<i class="fas fa-search-minus"></i> Visão Geral';
+        } else {
+            map.setZoom(ZOOM_ROUTE_LEVEL);
+            zoomToggleBtn.innerHTML = '<i class="fas fa-search-plus"></i> Visão de Rua';
+        }
+        
+        if (isTracking && truckMarker) {
+            centerMapOnMarker(truckMarker.getPosition());
+        }
+    }
+
+    // Alterna o modo de acompanhamento
+    function toggleTracking() {
+        isTracking = !isTracking;
+        
+        const trackToggleBtn = document.getElementById('track-toggle');
+        if (isTracking) {
+            trackToggleBtn.innerHTML = '<i class="fas fa-lock"></i> Travar Mapa';
+            if (truckMarker) {
+                centerMapOnMarker(truckMarker.getPosition());
+            }
+        } else {
+            trackToggleBtn.innerHTML = '<i class="fas fa-lock-open"></i> Acompanhar';
+        }
+    }
+
+    // Atualiza o texto do último horário de atualização
+    function updateLastUpdateTime() {
+        if (!lastUpdateTime) return;
+        
+        const now = new Date();
+        const diffSeconds = Math.floor((now - lastUpdateTime) / 1000);
+        
+        let updateText;
+        if (diffSeconds < 60) {
+            updateText = `${diffSeconds} segundos atrás`;
+        } else if (diffSeconds < 3600) {
+            const minutes = Math.floor(diffSeconds / 60);
+            updateText = `${minutes} minuto${minutes !== 1 ? 's' : ''} atrás`;
+        } else {
+            updateText = lastUpdateTime.toLocaleTimeString('pt-BR');
+        }
+        
+        document.getElementById('last-update').textContent = updateText;
+    }
+
+    // Inicialização do DataTable
     $(document).ready(function() {
-        // Inicialização do DataTable
         var historyTable = $('#history-table').DataTable({
             dom: '<"top"Bf>rt<"bottom"lip><"clear">',
             buttons: [
@@ -197,7 +757,7 @@
                     }
                 }
             ],
-            order: [[0, 'desc'], [1, 'desc']], // Ordenação decrescente por data e hora
+            order: [[0, 'desc'], [1, 'desc']],
             pageLength: 10,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
             responsive: true,
@@ -213,14 +773,12 @@
                         if (type === 'sort') {
                             return data;
                         }
-                        return row[0]; // Exibe o valor original para outros tipos
+                        return row[0];
                     }
                 },
-                { orderable: false, targets: [4] }, // Desativa ordenação para lat/long
-                { visible: false, targets: [4] }   // Oculta a coluna de lat/long
+                { orderable: false, targets: [3] }
             ],
             initComplete: function() {
-                // Adiciona classe aos botões de exportação
                 $('.dt-buttons button').removeClass('dt-button');
             }
         });
@@ -243,14 +801,13 @@
                         var formattedTime = date.toLocaleTimeString('pt-BR');
                         
                         historyTable.row.add([
-                            item.date, // Para ordenação
+                            item.date,
                             formattedTime,
                             item.address,
                             '<span class="badge bg-' + 
                                 (item.status === 'em_transito' ? 'info' : 
                                 (item.status === 'entregue' ? 'success' : 'warning')) + 
-                            '">' + item.status.replace('_', ' ') + '</span>',
-                            item.latitude + ', ' + item.longitude
+                            '">' + item.status.replace('_', ' ') + '</span>'
                         ]);
                     });
                     
@@ -276,6 +833,18 @@
 
         // Atualização automática a cada 1 minuto
         setInterval(updateHistory, 60000);
+    });
+
+    // Eventos quando o DOM estiver carregado
+    document.addEventListener('DOMContentLoaded', function() {
+        if (typeof google !== 'undefined') {
+            setInterval(updateLastUpdateTime, 60000);
+        }
+    });
+
+    // Limpeza quando a página for fechada
+    window.addEventListener('beforeunload', function() {
+        if (animationInterval) clearInterval(animationInterval);
     });
 </script>
 @endpush
