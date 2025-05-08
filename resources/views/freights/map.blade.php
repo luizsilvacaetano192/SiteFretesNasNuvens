@@ -399,8 +399,13 @@
 </style>
 @endpush
 
+
 @push('scripts')
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places,geometry&callback=initMap" async defer></script>
+<!-- Substitua SUA_CHAVE_API pela sua chave real do Google Maps -->
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc
+9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places,geometry&callback=initMap" 
+        async defer onerror="handleMapError()"></script>
+
 <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
@@ -409,13 +414,16 @@
 <script type="text/javascript" src="https://cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json"></script>
 
 <script>
-    // Configurações do Mapa
+    // =============================================
+    // CONFIGURAÇÕES GLOBAIS E VARIÁVEIS
+    // =============================================
     const ZOOM_STREET_LEVEL = 15;
     const ZOOM_ROUTE_LEVEL = 12;
     const UPDATE_INTERVAL = 30000; // 30 segundos
     const MIN_DISTANCE_UPDATE = 100; // 100 metros
+    const MAX_MAP_LOAD_ATTEMPTS = 5;
 
-    // Variáveis globais do Mapa
+    // Variáveis globais
     let map;
     let directionsRenderer;
     let truckMarker;
@@ -426,47 +434,65 @@
     let lastUpdateTime = null;
     let positionUpdateInterval;
     let historyTable;
+    let mapLoaded = false;
+    let mapLoadAttempts = 0;
 
-    // Inicialização do Mapa
-    function initMap() {
-        const mapElement = document.getElementById("map");
-        if (!mapElement) return;
-        
-        const defaultCenter = { lat: -15.7801, lng: -47.9292 };
-        
-        try {
-            map = new google.maps.Map(mapElement, {
-                zoom: ZOOM_STREET_LEVEL,
-                center: defaultCenter,
-                mapTypeId: google.maps.MapTypeId.ROADMAP,
-                gestureHandling: "greedy",
-                styles: getMapStyles()
-            });
+    // =============================================
+    // FUNÇÕES DE INICIALIZAÇÃO E CONTROLE DO MAPA
+    // =============================================
 
-            directionsRenderer = new google.maps.DirectionsRenderer({
-                suppressMarkers: true,
-                map: map,
-                polylineOptions: {
-                    strokeColor: '#4e73df',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 4
-                }
-            });
+    // Tratamento de erro no carregamento do mapa
+    function handleMapError() {
+        console.error("Falha ao carregar a API do Google Maps");
+        showMapError();
+        attemptMapReload();
+    }
 
-            initRoute();
-            setupMapControls();
-            
-            // Iniciar atualização periódica
-            positionUpdateInterval = setInterval(updatePosition, UPDATE_INTERVAL);
-            updatePosition(); // Chamar imediatamente para primeira atualização
+    // Tenta recarregar o mapa automaticamente
+    function attemptMapReload() {
+        if (mapLoadAttempts >= MAX_MAP_LOAD_ATTEMPTS) {
+            console.log("Número máximo de tentativas atingido");
+            return;
+        }
 
-        } catch (error) {
-            console.error("Erro ao inicializar o mapa:", error);
-            showMapError();
+        mapLoadAttempts++;
+        console.log(`Tentativa ${mapLoadAttempts} de recarregar o mapa`);
+
+        setTimeout(() => {
+            const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=SUA_CHAVE_API&libraries=places,geometry&callback=initMap`;
+            script.async = true;
+            script.defer = true;
+            script.onerror = handleMapError;
+            document.head.appendChild(script);
+        }, 5000);
+    }
+
+    // Mostra mensagem de erro no container do mapa
+    function showMapError() {
+        const mapContainer = document.getElementById('map-container');
+        if (mapContainer) {
+            mapContainer.innerHTML = `
+                <div class="alert alert-danger m-3">
+                    <i class="fas fa-exclamation-triangle me-2"></i>
+                    Erro ao carregar o mapa. 
+                    <a href="javascript:location.reload()" class="alert-link">Clique aqui</a> para recarregar a página.
+                    <div class="mt-2">Tentando reconectar automaticamente (${mapLoadAttempts}/${MAX_MAP_LOAD_ATTEMPTS})...</div>
+                </div>
+            `;
         }
     }
 
-    // Estilos do Mapa
+    // Verifica se a API do Google Maps foi carregada corretamente
+    function checkGoogleMapsLoaded() {
+        if (typeof google === 'undefined' || typeof google.maps === 'undefined') {
+            console.warn("API do Google Maps não carregada");
+            return false;
+        }
+        return true;
+    }
+
+    // Estilos personalizados para o mapa
     function getMapStyles() {
         return [
             {
@@ -512,26 +538,61 @@
         ];
     }
 
-    // Configura os controles do mapa
-    function setupMapControls() {
-        document.getElementById('zoom-toggle')?.addEventListener('click', toggleZoomLevel);
-        document.getElementById('track-toggle')?.addEventListener('click', toggleTracking);
-    }
+    // Inicialização principal do mapa
+    function initMap() {
+        if (!checkGoogleMapsLoaded()) {
+            handleMapError();
+            return;
+        }
 
-    // Mostra erro no mapa
-    function showMapError() {
-        const mapContainer = document.getElementById('map-container');
-        if (mapContainer) {
-            mapContainer.innerHTML = `
-                <div class="alert alert-danger m-3">
-                    <i class="fas fa-exclamation-triangle me-2"></i>
-                    Erro ao carregar o mapa. Por favor, recarregue a página.
-                </div>
-            `;
+        try {
+            const mapElement = document.getElementById("map");
+            if (!mapElement) {
+                console.error("Elemento do mapa não encontrado");
+                return;
+            }
+
+            const defaultCenter = { lat: -15.7801, lng: -47.9292 };
+            
+            map = new google.maps.Map(mapElement, {
+                zoom: ZOOM_STREET_LEVEL,
+                center: defaultCenter,
+                mapTypeId: google.maps.MapTypeId.ROADMAP,
+                gestureHandling: "greedy",
+                styles: getMapStyles()
+            });
+
+            directionsRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: true,
+                map: map,
+                polylineOptions: {
+                    strokeColor: '#4e73df',
+                    strokeOpacity: 0.8,
+                    strokeWeight: 4
+                }
+            });
+
+            initRoute();
+            setupMapControls();
+            
+            positionUpdateInterval = setInterval(updatePosition, UPDATE_INTERVAL);
+            updatePosition();
+
+            mapLoaded = true;
+            console.log("Mapa inicializado com sucesso");
+
+        } catch (error) {
+            console.error("Erro na inicialização do mapa:", error);
+            showMapError();
+            attemptMapReload();
         }
     }
 
-    // Inicializa a rota
+    // =============================================
+    // FUNÇÕES DE ROTEAMENTO E MAPA
+    // =============================================
+
+    // Inicializa a rota entre origem e destino
     function initRoute() {
         const directionsService = new google.maps.DirectionsService();
 
@@ -600,7 +661,7 @@
         @endif
     }
 
-    // Cria/atualiza o marcador do caminhão
+    // Cria ou atualiza o marcador do caminhão
     function createTruckMarker(position) {
         if (truckMarker) {
             truckMarker.setMap(null);
@@ -618,15 +679,46 @@
         });
     }
 
-    // Centraliza o mapa no marcador
-    function centerMapOnMarker(position) {
-        if (!isTracking) return;
+    // =============================================
+    // FUNÇÕES DE ATUALIZAÇÃO EM TEMPO REAL
+    // =============================================
+
+    // Atualiza a posição do caminhão via AJAX
+    function updatePosition() {
+        if (!mapLoaded) return;
+
+        $('#updating-indicator').removeClass('d-none');
         
-        map.setCenter(position);
-        map.setZoom(isStreetView ? ZOOM_STREET_LEVEL : ZOOM_ROUTE_LEVEL);
+        $.ajax({
+            url: '{{ route("freights.last-position", $freight->id) }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data.latitude && data.longitude) {
+                    const newPosition = new google.maps.LatLng(
+                        parseFloat(data.latitude), 
+                        parseFloat(data.longitude)
+                    );
+                    
+                    moveTruckTo(newPosition);
+                    document.getElementById('current-position').textContent = data.address || 'Não disponível';
+                    lastUpdateTime = new Date(data.date);
+                    updateLastUpdateTime();
+                    
+                    if (data.status_changed) {
+                        updateHistory();
+                    }
+                }
+                $('#updating-indicator').addClass('d-none');
+            },
+            error: function(xhr) {
+                console.error('Erro ao atualizar posição:', xhr.responseText);
+                $('#updating-indicator').addClass('d-none');
+            }
+        });
     }
 
-    // Move o caminhão para nova posição com animação suave
+    // Move o caminhão para nova posição com animação
     function moveTruckTo(newLatLng) {
         if (!truckMarker || !currentPosition) {
             createTruckMarker(newLatLng);
@@ -659,15 +751,13 @@
         const step = 1/steps;
         let currentStep = 0;
         
-        if (animationInterval) {
-            clearInterval(animationInterval);
-        }
+        clearAnimationInterval();
         
         animationInterval = setInterval(() => {
             currentStep += step;
             
             if (currentStep >= 1) {
-                clearInterval(animationInterval);
+                clearAnimationInterval();
                 currentPosition = newLatLng;
                 truckMarker.setPosition(newLatLng);
                 centerMapOnMarker(newLatLng);
@@ -687,6 +777,52 @@
             }
             
         }, 100);
+    }
+
+    // Limpa o intervalo de animação
+    function clearAnimationInterval() {
+        if (animationInterval) {
+            clearInterval(animationInterval);
+            animationInterval = null;
+        }
+    }
+
+    // Centraliza o mapa no marcador
+    function centerMapOnMarker(position) {
+        if (!isTracking) return;
+        
+        map.setCenter(position);
+        map.setZoom(isStreetView ? ZOOM_STREET_LEVEL : ZOOM_ROUTE_LEVEL);
+    }
+
+    // Atualiza o texto do último horário de atualização
+    function updateLastUpdateTime() {
+        if (!lastUpdateTime) return;
+        
+        const now = new Date();
+        const diffSeconds = Math.floor((now - lastUpdateTime) / 1000);
+        
+        let updateText;
+        if (diffSeconds < 60) {
+            updateText = `${diffSeconds} segundos atrás`;
+        } else if (diffSeconds < 3600) {
+            const minutes = Math.floor(diffSeconds / 60);
+            updateText = `${minutes} minuto${minutes !== 1 ? 's' : ''} atrás`;
+        } else {
+            updateText = lastUpdateTime.toLocaleTimeString('pt-BR');
+        }
+        
+        document.getElementById('last-update').textContent = updateText;
+    }
+
+    // =============================================
+    // CONTROLES DO MAPA
+    // =============================================
+
+    // Configura os controles do mapa
+    function setupMapControls() {
+        document.getElementById('zoom-toggle')?.addEventListener('click', toggleZoomLevel);
+        document.getElementById('track-toggle')?.addEventListener('click', toggleTracking);
     }
 
     // Alterna entre visão de rua e visão de rota
@@ -722,66 +858,26 @@
         }
     }
 
-    // Atualiza o texto do último horário de atualização
-    function updateLastUpdateTime() {
-        if (!lastUpdateTime) return;
-        
-        const now = new Date();
-        const diffSeconds = Math.floor((now - lastUpdateTime) / 1000);
-        
-        let updateText;
-        if (diffSeconds < 60) {
-            updateText = `${diffSeconds} segundos atrás`;
-        } else if (diffSeconds < 3600) {
-            const minutes = Math.floor(diffSeconds / 60);
-            updateText = `${minutes} minuto${minutes !== 1 ? 's' : ''} atrás`;
-        } else {
-            updateText = lastUpdateTime.toLocaleTimeString('pt-BR');
-        }
-        
-        document.getElementById('last-update').textContent = updateText;
-    }
-
-    // Função para atualizar a posição do caminhão
-    function updatePosition() {
-        $('#updating-indicator').removeClass('d-none');
-        
-        $.ajax({
-            url: '{{ route("freights.last-position", $freight->id) }}',
-            type: 'GET',
-            dataType: 'json',
-            success: function(data) {
-                if (data.latitude && data.longitude) {
-                    const newPosition = new google.maps.LatLng(
-                        parseFloat(data.latitude), 
-                        parseFloat(data.longitude)
-                    );
-                    
-                    moveTruckTo(newPosition);
-                    
-                    // Atualiza o endereço exibido
-                    document.getElementById('current-position').textContent = data.address || 'Não disponível';
-                    
-                    // Atualiza o horário da última atualização
-                    lastUpdateTime = new Date(data.date);
-                    updateLastUpdateTime();
-                    
-                    // Se houver mudança de status, atualiza o histórico também
-                    if (data.status_changed) {
-                        updateHistory();
-                    }
-                }
-                $('#updating-indicator').addClass('d-none');
-            },
-            error: function(xhr) {
-                console.error('Erro ao atualizar posição:', xhr.responseText);
-                $('#updating-indicator').addClass('d-none');
-            }
-        });
-    }
+    // =============================================
+    // DATA TABLE E HISTÓRICO
+    // =============================================
 
     // Inicialização do DataTable
     $(document).ready(function() {
+        initializeDataTable();
+        setupEventListeners();
+        
+        // Verificação periódica se o mapa foi carregado
+        setTimeout(() => {
+            if (!mapLoaded && !checkGoogleMapsLoaded()) {
+                showMapError();
+                attemptMapReload();
+            }
+        }, 3000);
+    });
+
+    // Inicializa a tabela de histórico
+    function initializeDataTable() {
         historyTable = $('#history-table').DataTable({
             dom: '<"top"Bf>rt<"bottom"lip><"clear">',
             buttons: [
@@ -810,7 +906,7 @@
                     }
                 }
             ],
-            order: [[0, 'desc'], [1, 'desc']],
+            order: [[0, 'desc']],
             pageLength: 10,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
             responsive: true,
@@ -835,69 +931,70 @@
                 $('.dt-buttons button').removeClass('dt-button');
             }
         });
+    }
 
-        // Função para atualizar o histórico
-        function updateHistory() {
-            $.ajax({
-                url: '{{ route("freights.history", $freight->id) }}',
-                type: 'GET',
-                dataType: 'json',
-                beforeSend: function() {
-                    $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i> Carregando...');
-                },
-                success: function(data) {
-                    historyTable.clear();
-                    
-                    data.forEach(function(item) {
-                        var date = new Date(item.date);
-                        var formattedDate = date.toLocaleDateString('pt-BR');
-                        var formattedTime = date.toLocaleTimeString('pt-BR');
-                        
-                        historyTable.row.add([
-                            item.date,
-                            formattedTime,
-                            item.address,
-                            '<span class="badge bg-' + 
-                                (item.status === 'em_transito' ? 'info' : 
-                                (item.status === 'entregue' ? 'success' : 'warning')) + 
-                            '">' + item.status.replace('_', ' ') + '</span>'
-                        ]);
-                    });
-                    
-                    historyTable.draw();
-                    $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-                    
-                    // Mantém a ordenação decrescente
-                    historyTable.order([0, 'desc']).draw();
-                },
-                error: function(xhr) {
-                    console.error('Erro ao carregar histórico:', xhr.responseText);
-                    $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-                    alert('Erro ao carregar histórico. Tente novamente.');
-                }
-            });
-        }
-
-        // Evento de clique no botão de atualização
+    // Configura os listeners de eventos
+    function setupEventListeners() {
         $('#refresh-history').click(function(e) {
             e.preventDefault();
             updateHistory();
         });
 
-        // Atualização automática a cada 1 minuto
+        // Atualização automática do histórico a cada 1 minuto
         setInterval(updateHistory, 60000);
-    });
+    }
 
-    // Eventos quando o DOM estiver carregado
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof google !== 'undefined') {
-            setInterval(updateLastUpdateTime, 60000);
-        }
-    });
+    // Atualiza o histórico via AJAX
+    function updateHistory() {
+        $.ajax({
+            url: '{{ route("freights.history", $freight->id) }}',
+            type: 'GET',
+            dataType: 'json',
+            beforeSend: function() {
+                $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i> Carregando...');
+            },
+            success: function(data) {
+                historyTable.clear();
+                
+                data.forEach(function(item) {
+                    var date = new Date(item.date);
+                    var formattedTime = date.toLocaleTimeString('pt-BR');
+                    
+                    historyTable.row.add([
+                        item.date,
+                        formattedTime,
+                        item.address,
+                        '<span class="badge bg-' + 
+                            (item.status === 'em_transito' ? 'info' : 
+                            (item.status === 'entregue' ? 'success' : 'warning')) + 
+                        '">' + item.status.replace('_', ' ') + '</span>'
+                    ]);
+                });
+                
+                historyTable.draw();
+                $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+                historyTable.order([0, 'desc']).draw();
+            },
+            error: function(xhr) {
+                console.error('Erro ao carregar histórico:', xhr.responseText);
+                $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+            }
+        });
+    }
+
+    // =============================================
+    // GERENCIAMENTO DE EVENTOS E LIMPEZA
+    // =============================================
+
+    // Fallback para erros de autenticação do Google Maps
+    window.gm_authFailure = function() {
+        showMapError();
+        console.error("Falha de autenticação com a API do Google Maps");
+    };
 
     // Limpeza quando a página for fechada
     window.addEventListener('beforeunload', function() {
-        if (animationInterval) clearInterval(animationInterval);
+        clearAnimationInterval();
         if (positionUpdateInterval) clearInterval(positionUpdateInterval);
     });
 </script>
