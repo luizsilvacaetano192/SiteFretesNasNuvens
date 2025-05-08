@@ -91,10 +91,13 @@
                                     <span id="current-position">
                                         @php
                                             $lastLocation = $freight->history()
-                                                ->orderBy('id', 'desc')
+                                                ->orderBy('date', 'desc')
                                                 ->first();
                                         @endphp
                                         {{ $lastLocation->address ?? 'Não disponível' }}
+                                    </span>
+                                    <span id="updating-indicator" class="d-none ms-2">
+                                        <i class="fas fa-sync-alt fa-spin"></i>
                                     </span>
                                 </div>
                                 <div>
@@ -374,6 +377,12 @@
         font-size: 0.875rem;
     }
     
+    /* Indicador de atualização */
+    #updating-indicator {
+        font-size: 0.8rem;
+        color: #4e73df;
+    }
+    
     /* Responsividade */
     @media (max-width: 768px) {
         #history-table_wrapper .dataTables_length,
@@ -403,7 +412,7 @@
     // Configurações do Mapa
     const ZOOM_STREET_LEVEL = 15;
     const ZOOM_ROUTE_LEVEL = 12;
-    const UPDATE_INTERVAL = 60000; // 1 minuto
+    const UPDATE_INTERVAL = 30000; // 30 segundos
     const MIN_DISTANCE_UPDATE = 100; // 100 metros
 
     // Variáveis globais do Mapa
@@ -415,6 +424,8 @@
     let isStreetView = true;
     let isTracking = true;
     let lastUpdateTime = null;
+    let positionUpdateInterval;
+    let historyTable;
 
     // Inicialização do Mapa
     function initMap() {
@@ -444,6 +455,10 @@
 
             initRoute();
             setupMapControls();
+            
+            // Iniciar atualização periódica
+            positionUpdateInterval = setInterval(updatePosition, UPDATE_INTERVAL);
+            updatePosition(); // Chamar imediatamente para primeira atualização
 
         } catch (error) {
             console.error("Erro ao inicializar o mapa:", error);
@@ -568,7 +583,7 @@
     function initLastPosition() {
         @php
             $lastLocation = $freight->history()
-                ->orderBy('id', 'desc')
+                ->orderBy('date', 'desc')
                 ->first();
         @endphp
 
@@ -727,9 +742,47 @@
         document.getElementById('last-update').textContent = updateText;
     }
 
+    // Função para atualizar a posição do caminhão
+    function updatePosition() {
+        $('#updating-indicator').removeClass('d-none');
+        
+        $.ajax({
+            url: '{{ route("freights.last-position", $freight->id) }}',
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                if (data.latitude && data.longitude) {
+                    const newPosition = new google.maps.LatLng(
+                        parseFloat(data.latitude), 
+                        parseFloat(data.longitude)
+                    );
+                    
+                    moveTruckTo(newPosition);
+                    
+                    // Atualiza o endereço exibido
+                    document.getElementById('current-position').textContent = data.address || 'Não disponível';
+                    
+                    // Atualiza o horário da última atualização
+                    lastUpdateTime = new Date(data.date);
+                    updateLastUpdateTime();
+                    
+                    // Se houver mudança de status, atualiza o histórico também
+                    if (data.status_changed) {
+                        updateHistory();
+                    }
+                }
+                $('#updating-indicator').addClass('d-none');
+            },
+            error: function(xhr) {
+                console.error('Erro ao atualizar posição:', xhr.responseText);
+                $('#updating-indicator').addClass('d-none');
+            }
+        });
+    }
+
     // Inicialização do DataTable
     $(document).ready(function() {
-        var historyTable = $('#history-table').DataTable({
+        historyTable = $('#history-table').DataTable({
             dom: '<"top"Bf>rt<"bottom"lip><"clear">',
             buttons: [
                 {
@@ -815,7 +868,7 @@
                     $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
                     
                     // Mantém a ordenação decrescente
-                    historyTable.order([0, 'desc'], [1, 'desc']).draw();
+                    historyTable.order([0, 'desc']).draw();
                 },
                 error: function(xhr) {
                     console.error('Erro ao carregar histórico:', xhr.responseText);
@@ -845,6 +898,7 @@
     // Limpeza quando a página for fechada
     window.addEventListener('beforeunload', function() {
         if (animationInterval) clearInterval(animationInterval);
+        if (positionUpdateInterval) clearInterval(positionUpdateInterval);
     });
 </script>
 @endpush

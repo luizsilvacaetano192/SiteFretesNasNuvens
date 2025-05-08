@@ -126,8 +126,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/save', [SettingController::class, 'save'])->name('settings.save');
     });
 
-    Route::get('/freights/{freight}/position', [FreightController::class, 'getPosition'])
-    ->name('freights.position');
 
     Route::get('freights/{freight}/history', [FreightController::class, 'history'])
     ->name('freights.history');
@@ -169,6 +167,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create', [FreightStatusController::class, 'create'])->name('freight_statuses.create');
         Route::post('/store', [FreightStatusController::class, 'store'])->name('freight-statuses.store');
     });
+
+    Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
+    ->name('freights.last-position');
 
     // Pending Tasks
     Route::prefix('pending-tasks')->group(function () {

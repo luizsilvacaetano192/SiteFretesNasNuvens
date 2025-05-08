@@ -306,6 +306,21 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
         ]);
     }
 
+    public function lastPosition(Freight $freight)
+    {
+        $lastLocation = $freight->history()
+            ->orderBy('date', 'desc')
+            ->first();
+
+        return response()->json([
+            'latitude' => $lastLocation->latitude ?? null,
+            'longitude' => $lastLocation->longitude ?? null,
+            'address' => $lastLocation->address ?? null,
+            'date' => $lastLocation->date ?? null,
+            'status_changed' => request('last_status') != $lastLocation->status
+        ]);
+    }
+
     public function history($id)
     {
         $freight = Freight::with(['history' => function($query) {
