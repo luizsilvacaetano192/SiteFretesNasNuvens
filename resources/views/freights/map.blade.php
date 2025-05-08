@@ -932,71 +932,9 @@ function updateHistory() {
         },
         success: function(response) {
             // Limpa os dados antigos
-            historyTable.clear().draw();
-            
-            // Verifica se a resposta contém dados
-            if (response.data && Array.isArray(response.data)) {
-                // Processa cada item do histórico
-                response.data.forEach(function(item) {
-                    // Formata a data para exibição
-                    const date = tem.date;
-                    
-                    const formattedDate = date;
-                    const formattedTime = item.time
-                    
-                    // Determina a classe do badge com base no status
-                    let badgeClass;
-                    switch(item.status) {
-                        case 'em_transito':
-                            badgeClass = 'info';
-                            break;
-                        case 'entregue':
-                            badgeClass = 'success';
-                            break;
-                        default:
-                            badgeClass = 'warning';
-                    }
-                    
-                    // Adiciona a linha à tabela
-                    historyTable.row.add([
-                        formattedDate,  // Coluna 0: Data formatada
-                        formattedTime,   // Coluna 1: Hora formatada
-                        item.address || 'N/A',  // Coluna 2: Endereço
-                        `<span class="badge bg-${badgeClass}">
-                            ${item.status.replace('_', ' ')}
-                        </span>`        // Coluna 3: Status com badge
-                    ]);
-                });
-            } else {
-                // Adiciona mensagem se não houver dados
-                historyTable.row.add([
-                    '',
-                    '',
-                    'Nenhum dado de histórico disponível',
-                    ''
-                ]);
-            }
-            
-            // Renderiza a tabela e mantém a ordenação
-            historyTable.draw();
-            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-            
-            // Força a ordenação pela primeira coluna (data) de forma decrescente
-            historyTable.order([0, 'desc']).draw();
-        },
-        error: function(xhr) {
-            console.error('Erro ao carregar histórico:', xhr.responseText);
-            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-            
-            // Mostra mensagem de erro na tabela
-            historyTable.clear().draw();
-            historyTable.row.add([
-                '',
-                '',
-                'Erro ao carregar dados. Tente novamente.',
-                '<span class="badge bg-danger">Erro</span>'
-            ]).draw();
+            historyTable.refresh();
         }
+        
     });
 }
 
