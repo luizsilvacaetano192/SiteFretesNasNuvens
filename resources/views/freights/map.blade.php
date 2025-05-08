@@ -946,42 +946,177 @@
     }
 
     // Atualiza o histórico via AJAX
-    function updateHistory() {
-        $.ajax({
-            url: '{{ route("freights.history", $freight->id) }}',
-            type: 'GET',
-            dataType: 'json',
-            beforeSend: function() {
-                $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i> Carregando...');
-            },
-            success: function(data) {
-                historyTable.clear();
-                
-                data.forEach(function(item) {
-                    var date = new Date(item.date);
-                    var formattedTime = date.toLocaleTimeString('pt-BR');
+   // Substitua a função updateHistory() pelo seguinte código:
+function updateHistory() {
+    $.ajax({
+        url: '{{ route("freights.history", $freight->id) }}',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function() {
+            $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i> Carregando...');
+        },
+        success: function(response) {
+            // Limpa os dados antigos
+            historyTable.clear().draw();
+            
+            // Verifica se a resposta contém dados
+            if (response.data && Array.isArray(response.data)) {
+                // Processa cada item do histórico
+                response.data.forEach(function(item) {
+                    // Formata a data para exibição
+                    const date = new Date(item.date);
+                    const formattedDate = date.toLocaleDateString('pt-BR');
+                    const formattedTime = date.toLocaleTimeString('pt-BR');
                     
+                    // Determina a classe do badge com base no status
+                    let badgeClass;
+                    switch(item.status) {
+                        case 'em_transito':
+                            badgeClass = 'info';
+                            break;
+                        case 'entregue':
+                            badgeClass = 'success';
+                            break;
+                        default:
+                            badgeClass = 'warning';
+                    }
+                    
+                    // Adiciona a linha à tabela
                     historyTable.row.add([
-                        item.date,
-                        formattedTime,
-                        item.address,
-                        '<span class="badge bg-' + 
-                            (item.status === 'em_transito' ? 'info' : 
-                            (item.status === 'entregue' ? 'success' : 'warning')) + 
-                        '">' + item.status.replace('_', ' ') + '</span>'
+                        formattedDate,  // Coluna 0: Data formatada
+                        formattedTime,   // Coluna 1: Hora formatada
+                        item.address || 'N/A',  // Coluna 2: Endereço
+                        `<span class="badge bg-${badgeClass}">
+                            ${item.status.replace('_', ' ')}
+                        </span>`        // Coluna 3: Status com badge
                     ]);
                 });
-                
-                historyTable.draw();
-                $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-                historyTable.order([0, 'desc']).draw();
-            },
-            error: function(xhr) {
-                console.error('Erro ao carregar histórico:', xhr.responseText);
-                $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+            } else {
+                // Adiciona mensagem se não houver dados
+                historyTable.row.add([
+                    '',
+                    '',
+                    'Nenhum dado de histórico disponível',
+                    ''
+                ]);
             }
-        });
-    }
+            
+            // Renderiza a tabela e mantém a ordenação
+            historyTable.draw();
+            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+            
+            // Força a ordenação pela primeira coluna (data) de forma decrescente
+            historyTable.order([0, 'desc']).draw();
+        },
+        error: function(xhr) {
+            console.error('Erro ao carregar histórico:', xhr.responseText);
+            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+            
+            // Mostra mensagem de erro na tabela
+            historyTable.clear().draw();
+            historyTable.row.add([
+                '',
+                '',
+                'Erro ao carregar dados. Tente novamente.',
+                '<span class="badge bg-danger">Erro</span>'
+            ]).draw();
+        }
+    });
+}
+
+// E atualize a inicialização do DataTable para:
+function initializeDataTable() {
+    historyTable = $('#history-table').DataTable({
+        dom: '<"top"<"d-flex justify-content-between align-items-center"<"me-3"l><"ms-auto"B>f>>rt<"bottom"ip><"clear">',
+        buttons: [
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel me-1"></i> Excel',
+                className: 'btn btn-success btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3],
+                    format: {
+                        body: function(data, row, column, node) {
+                            // Remove tags HTML para exportação
+                            return $(data).text() || data;
+                        }
+                    }
+                }
+            },
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf me-1"></i> PDF',
+                className: 'btn btn-danger btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3],
+                    format: {
+                        body: function(data, row, column, node) {
+                            return $(data).text() || data;
+                        }
+                    }
+                }
+            },
+            {
+                extend: 'print',
+                text: '<i class="fas fa-print me-1"></i> Imprimir',
+                className: 'btn btn-info btn-sm',
+                exportOptions: {
+                    columns: [0, 1, 2, 3],
+                    format: {
+                        body: function(data, row, column, node) {
+                            return $(data).text() || data;
+                        }
+                    }
+                }
+            }
+        ],
+        order: [[0, 'desc']], // Ordena pela coluna de data (índice 0) decrescente
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
+        responsive: true,
+        stateSave: true,
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+        },
+        columns: [
+            { 
+                title: "Data",
+                data: null,
+                render: function(data, type, row) {
+                    if (type === 'display' || type === 'filter') {
+                        return data[0]; // Data formatada
+                    }
+                    return new Date(data.date).toISOString(); // Para ordenação
+                }
+            },
+            { 
+                title: "Hora",
+                data: null,
+                render: function(data, type, row) {
+                    return data[1]; // Hora formatada
+                }
+            },
+            { 
+                title: "Endereço",
+                data: null,
+                render: function(data, type, row) {
+                    return data[2]; // Endereço
+                }
+            },
+            { 
+                title: "Status",
+                data: null,
+                render: function(data, type, row) {
+                    return data[3]; // Badge de status
+                },
+                orderable: false
+            }
+        ],
+        initComplete: function() {
+            $('.dt-buttons button').removeClass('dt-button');
+        }
+    });
+}
 
     // =============================================
     // GERENCIAMENTO DE EVENTOS E LIMPEZA
