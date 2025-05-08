@@ -405,7 +405,8 @@
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc
 9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places,geometry&callback=initMap" 
         async defer onerror="handleMapError()"></script>
-
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.1/js/jquery.dataTables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/v/bs5/dt-1.11.5/datatables.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/dataTables.buttons.min.js"></script>
 <script type="text/javascript" src="https://cdn.datatables.net/buttons/2.2.2/js/buttons.print.min.js"></script>
