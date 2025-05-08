@@ -145,7 +145,7 @@
                                         {{ \Carbon\Carbon::parse($location->date)->format('d/m/Y') }}
                                     </td>
                                     <td>
-                                        {{ $location->time }}
+                                        {{ \Carbon\Carbon::parse($location->date)->format('H:i:s') }}
                                     </td>
                                     <td>{{ $location->address }}</td>
                                     <td>
@@ -881,10 +881,8 @@
     function initializeDataTable() {
         historyTable = $('#history-table').DataTable({
             dom: '<"top"Bf>rt<"bottom"lip><"clear">',
-           
             order: [[0, 'desc']],
             pageLength: 10,
-            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
             responsive: true,
             stateSave: true,
             language: {
@@ -922,7 +920,7 @@
 
     // Atualiza o histórico via AJAX
    // Substitua a função updateHistory() pelo seguinte código:
-function updateHistory() {
+   function updateHistory() {
     $.ajax({
         url: '{{ route("freights.history", $freight->id) }}',
         type: 'GET',
@@ -932,11 +930,69 @@ function updateHistory() {
         },
         success: function(response) {
             // Limpa os dados antigos
-            historyTable.refresh();
+            historyTable.clear();
+            
+            // Verifica se a resposta contém dados
+            if (response.data && Array.isArray(response.data)) {
+                // Processa cada item do histórico
+                response.data.forEach(function(item) {
+                    // Formata a data para exibição
+                    const date = new Date(item.date);
+                    const formattedDate = date.toLocaleDateString('pt-BR');
+                    const formattedTime = date.toLocaleTimeString('pt-BR');
+                    
+                    // Determina a classe do badge com base no status
+                    let badgeClass;
+                    switch(item.status) {
+                        case 'em_transito':
+                            badgeClass = 'info';
+                            break;
+                        case 'entregue':
+                            badgeClass = 'success';
+                            break;
+                        default:
+                            badgeClass = 'warning';
+                    }
+                    
+                    // Adiciona a linha à tabela como um objeto
+                    historyTable.row.add({
+                        date: formattedDate,
+                        time: formattedTime,
+                        address: item.address || 'N/A',
+                        status: `<span class="badge bg-${badgeClass}">${item.status.replace('_', ' ')}</span>`,
+                        rawDate: date.toISOString() // Para ordenação
+                    });
+                });
+            } else {
+                // Adiciona mensagem se não houver dados
+                historyTable.row.add({
+                    date: '',
+                    time: '',
+                    address: 'Nenhum dado de histórico disponível',
+                    status: ''
+                });
+            }
+            
+            // Renderiza a tabela
+            historyTable.draw();
+            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+        },
+        error: function(xhr) {
+            console.error('Erro ao carregar histórico:', xhr.responseText);
+            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+            
+            // Mostra mensagem de erro na tabela
+            historyTable.clear();
+            historyTable.row.add({
+                date: '',
+                time: '',
+                address: 'Erro ao carregar dados. Tente novamente.',
+                status: '<span class="badge bg-danger">Erro</span>'
+            }).draw();
         }
-        
     });
 }
+
 
 // E atualize a inicialização do DataTable para:
 function initializeDataTable() {
@@ -984,7 +1040,7 @@ function initializeDataTable() {
                 }
             }
         ],
-        order: [[0, 'desc']], // Ordena pela coluna de data (índice 0) decrescente
+        order: [[0, 'desc']], // Ordena pela primeira coluna (data) decrescente
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
         responsive: true,
@@ -994,34 +1050,26 @@ function initializeDataTable() {
         },
         columns: [
             { 
+                data: 'date',
                 title: "Data",
-                data: null,
                 render: function(data, type, row) {
-                   
-                        return data[0]; // Data formatada
-                    
+                    if (type === 'sort') {
+                        return row.rawDate; // Usa a data ISO para ordenação
+                    }
+                    return data; // Retorna a data formatada para exibição
                 }
             },
             { 
-                title: "Hora",
-                data: null,
-                render: function(data, type, row) {
-                    return data[1]; // Hora formatada
-                }
+                data: 'time',
+                title: "Hora"
             },
             { 
-                title: "Endereço",
-                data: null,
-                render: function(data, type, row) {
-                    return data[2]; // Endereço
-                }
+                data: 'address',
+                title: "Endereço"
             },
             { 
+                data: 'status',
                 title: "Status",
-                data: null,
-                render: function(data, type, row) {
-                    return data[3]; // Badge de status
-                },
                 orderable: false
             }
         ],
