@@ -170,9 +170,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/store', [FreightStatusController::class, 'store'])->name('freight-statuses.store');
     });
 
-    // History
-    Route::get('/freights/{freight}/history', [HistoryController::class, 'getHistory']);
-
     // Pending Tasks
     Route::prefix('pending-tasks')->group(function () {
         Route::get('/', function () {
