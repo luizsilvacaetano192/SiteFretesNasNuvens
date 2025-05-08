@@ -145,7 +145,7 @@
                                         {{ \Carbon\Carbon::parse($location->date)->format('d/m/Y') }}
                                     </td>
                                     <td>
-                                        {{ \Carbon\Carbon::parse($location->time)->format('H:i:s') }}
+                                        {{ $location->time }}
                                     </td>
                                     <td>{{ $location->address }}</td>
                                     <td>
@@ -940,9 +940,9 @@ function updateHistory() {
                 response.data.forEach(function(item) {
                     // Formata a data para exibição
                     const date = new Date(item.date);
-                    const time = new Date(item.time);
+                    
                     const formattedDate = date.toLocaleDateString('pt-BR');
-                    const formattedTime = time.toLocaleTimeString('pt-BR');
+                    const formattedTime = item.time
                     
                     // Determina a classe do badge com base no status
                     let badgeClass;
