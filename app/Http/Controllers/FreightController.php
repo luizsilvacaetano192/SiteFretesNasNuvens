@@ -316,7 +316,8 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
             'latitude' => $lastLocation->latitude ?? null,
             'longitude' => $lastLocation->longitude ?? null,
             'address' => $lastLocation->address ?? null,
-            'date' => $lastLocation->date ?? null,
+            'date' => $lastLocation->date ? $lastLocation->date->format('d/m/Y') : null,
+            'time' => $lastLocation->time ? $lastLocation->time->format('H:i:s') : null,
             'status_changed' => request('last_status') != $lastLocation->status
         ]);
     }
@@ -329,7 +330,8 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
         $history = $freight->history->map(function($item) {
             return [
-                'date' => $item->date,
+                'date' => $item->date ? $item->date->format('d/m/Y') : null,
+                'time' => $item->time ? $item->time->format('H:i:s') : null,
                 'address' => $item->address,
                 'status' => $item->status,
                 'latitude' => $item->latitude,
