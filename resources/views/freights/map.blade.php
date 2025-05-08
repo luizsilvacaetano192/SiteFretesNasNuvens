@@ -145,7 +145,7 @@
                                         {{ \Carbon\Carbon::parse($location->date)->format('d/m/Y') }}
                                     </td>
                                     <td>
-                                        {{ \Carbon\Carbon::parse($location->date)->format('H:i:s') }}
+                                        {{ \Carbon\Carbon::parse($location->time)->format('H:i:s') }}
                                     </td>
                                     <td>{{ $location->address }}</td>
                                     <td>
@@ -881,32 +881,7 @@
     function initializeDataTable() {
         historyTable = $('#history-table').DataTable({
             dom: '<"top"Bf>rt<"bottom"lip><"clear">',
-            buttons: [
-                {
-                    extend: 'excel',
-                    text: '<i class="fas fa-file-excel"></i> Excel',
-                    className: 'btn btn-success btn-sm',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3]
-                    }
-                },
-                {
-                    extend: 'pdf',
-                    text: '<i class="fas fa-file-pdf"></i> PDF',
-                    className: 'btn btn-danger btn-sm',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3]
-                    }
-                },
-                {
-                    extend: 'print',
-                    text: '<i class="fas fa-print"></i> Imprimir',
-                    className: 'btn btn-info btn-sm',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3]
-                    }
-                }
-            ],
+           
             order: [[0, 'desc']],
             pageLength: 10,
             lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
@@ -965,8 +940,9 @@ function updateHistory() {
                 response.data.forEach(function(item) {
                     // Formata a data para exibição
                     const date = new Date(item.date);
+                    const time = new Date(item.time);
                     const formattedDate = date.toLocaleDateString('pt-BR');
-                    const formattedTime = date.toLocaleTimeString('pt-BR');
+                    const formattedTime = time.toLocaleTimeString('pt-BR');
                     
                     // Determina a classe do badge com base no status
                     let badgeClass;
