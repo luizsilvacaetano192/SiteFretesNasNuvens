@@ -854,7 +854,6 @@
 
     // Atualiza a posição do caminhão
     function updatePosition() {
-        console.log('atualizando a posicao')
         fetch(`/freights/{{ $freight->id }}/position`)
             .then(response => {
                 if (!response.ok) {
@@ -863,16 +862,23 @@
                 return response.json();
             })
             .then(data => {
-                if (data.latitude && data.longitude) {
+                console.log('Dados recebidos:', data);
+                
+                // Atualiza a posição atual se existir
+                if (data.current_position && data.current_position.latitude && data.current_position.longitude) {
                     const newPosition = new google.maps.LatLng(
-                        parseFloat(data.latitude),
-                        parseFloat(data.longitude)
+                        parseFloat(data.current_position.latitude),
+                        parseFloat(data.current_position.longitude)
                     );
                     
-                    // Atualiza a posição atual
-                    updateCurrentPosition(data.address, newPosition, data.created_at);
+                    updateCurrentPosition(
+                        data.current_position.address, 
+                        newPosition, 
+                        data.current_position.created_at
+                    );
                 }
                 
+                // Atualiza o histórico se existir
                 if (data.history && data.history.length > 0) {
                     updateHistoryTable(data.history);
                 }
@@ -886,7 +892,9 @@
 
     // Atualiza a posição atual e informações
     function updateCurrentPosition(address, newPosition, created_at) {
-        console.log('atualiza a descriçao do endereço')
+        console.log('Atualizando posição atual para:', address);
+        
+        // Atualiza o endereço exibido
         document.getElementById('current-position').textContent = address || 'Posição atual';
         
         // Atualiza o horário da última atualização
@@ -922,13 +930,13 @@
         const historyTable = document.getElementById('activity-history');
         if (!historyTable) return;
         
-        // Ordena do mais antigo para o mais recente (ordem crescente)
-        const sortedHistory = [...history].sort((a, b) =>b.id -  a.id);
+        // Ordena do mais recente para o mais antigo (ordem decrescente)
+        const sortedHistory = [...history].sort((a, b) => b.id - a.id);
         
         // Limpa a tabela
         historyTable.innerHTML = '';
         
-        // Adiciona os registros em ordem crescente
+        // Adiciona os registros em ordem decrescente (mais recente primeiro)
         sortedHistory.forEach(item => {
             const dateObj = new Date(item.date);
             const formattedDate = dateObj.toLocaleDateString('pt-BR');
@@ -952,8 +960,8 @@
                 </td>
             `;
             
-            // Adiciona no final da tabela (ordem crescente)
-            historyTable.appendChild(row);
+            // Adiciona no início da tabela para manter ordem cronológica inversa
+            historyTable.insertBefore(row, historyTable.firstChild);
         });
     }
 
