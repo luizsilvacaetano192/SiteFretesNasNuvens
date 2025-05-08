@@ -1059,10 +1059,9 @@ function initializeDataTable() {
                 title: "Data",
                 data: null,
                 render: function(data, type, row) {
-                    if (type === 'display' || type === 'filter') {
+                   
                         return data[0]; // Data formatada
-                    }
-                    return data.date; // Para ordenação
+                    
                 }
             },
             { 
