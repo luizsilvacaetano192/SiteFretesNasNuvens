@@ -306,6 +306,25 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
         ]);
     }
 
+    public function history($id)
+    {
+        $freight = Freight::with(['history' => function($query) {
+            $query->orderBy('date', 'desc');
+        }])->findOrFail($id);
+
+        $history = $freight->history->map(function($item) {
+            return [
+                'date' => $item->date,
+                'address' => $item->address,
+                'status' => $item->status,
+                'latitude' => $item->latitude,
+                'longitude' => $item->longitude
+            ];
+        });
+
+        return response()->json($history);
+    }
+
     public function getPosition(Freight $freight)
     {
         // Busca o histórico de posições ordenado por data decrescente
