@@ -420,7 +420,7 @@
     // =============================================
     const ZOOM_STREET_LEVEL = 15;
     const ZOOM_ROUTE_LEVEL = 12;
-    const UPDATE_INTERVAL = 30000; // 30 segundos
+    const UPDATE_INTERVAL = 10000; // 30 segundos
     const MIN_DISTANCE_UPDATE = 100; // 100 metros
     const MAX_MAP_LOAD_ATTEMPTS = 5;
 
