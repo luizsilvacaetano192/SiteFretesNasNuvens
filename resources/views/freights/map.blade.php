@@ -1052,12 +1052,7 @@ function initializeDataTable() {
             { 
                 data: 'date',
                 title: "Data",
-                render: function(data, type, row) {
-                    if (type === 'sort') {
-                        return row.rawDate; // Usa a data ISO para ordenação
-                    }
-                    return data; // Retorna a data formatada para exibição
-                }
+               
             },
             { 
                 data: 'time',
