@@ -1062,7 +1062,7 @@ function initializeDataTable() {
                     if (type === 'display' || type === 'filter') {
                         return data[0]; // Data formatada
                     }
-                    return new Date(data.date).toISOString(); // Para ordenação
+                    return data.date; // Para ordenação
                 }
             },
             { 
