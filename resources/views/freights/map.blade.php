@@ -939,9 +939,9 @@ function updateHistory() {
                 // Processa cada item do histórico
                 response.data.forEach(function(item) {
                     // Formata a data para exibição
-                    const date = new Date(item.date);
+                    const date = tem.date;
                     
-                    const formattedDate = date.toLocaleDateString('pt-BR');
+                    const formattedDate = date;
                     const formattedTime = item.time
                     
                     // Determina a classe do badge com base no status
