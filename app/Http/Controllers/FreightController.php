@@ -339,33 +339,9 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
                 return 'warning';
         }
     }
-}
 
-    public function getPosition(Freight $freight)
-    {
-        // Busca o histórico de posições ordenado por data decrescente
-        $history = $freight->history()
-            ->orderBy('date', 'desc')->orderBy('time', 'desc')
-            ->get()
-            ->map(function ($item) {
-                return [
-                    'id' => $item->id,
-                    'date'  => $item->date,
-                    'time'  => $item->time,
-                    'address'  => $item->address,
-                    'latitude'  => $item->latitude,
-                    'longitude'  => $item->longitude,
-                 
-                    'status'  => $item->status
-                ];
-            });
 
-        return response()->json([
-            'history' => $history
-        ]);
-    }
-
-    public function edit(Freight $freight)
+       public function edit(Freight $freight)
     {
         $companies = Company::all();
         $drivers = Driver::all();
