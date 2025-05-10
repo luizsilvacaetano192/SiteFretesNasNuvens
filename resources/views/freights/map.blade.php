@@ -29,8 +29,8 @@
     </div>
 
     <div class="row">
-        <!-- Coluna do Mapa - Reduzida para 7 colunas -->
-        <div class="col-lg-7">
+        <!-- Coluna do Mapa - Reduzida para 6 colunas -->
+        <div class="col-lg-6">
             <!-- Card do Mapa -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
@@ -75,6 +75,7 @@
                                         @php
                                             $lastLocation = $freight->history()
                                                 ->orderBy('date', 'desc')
+                                                ->orderBy('time', 'desc')
                                                 ->first();
                                         @endphp
                                         {{ $lastLocation->address ?? 'Não disponível' }}
@@ -87,7 +88,8 @@
                                     <strong>🔄 Atualizado em:</strong> 
                                     <span id="last-update">
                                         @if($lastLocation)
-                                            {{ \Carbon\Carbon::parse($lastLocation->date)->format('d/m/Y H:i:s') }}
+                                            {{ \Carbon\Carbon::parse($lastLocation->date)->format('d/m/Y') }} às 
+                                            {{ \Carbon\Carbon::parse($lastLocation->time)->format('H:i:s') }}
                                         @else
                                             N/A
                                         @endif
@@ -103,8 +105,8 @@
             </div>
         </div>
 
-        <!-- Coluna do Histórico - Aumentada para 5 colunas -->
-        <div class="col-lg-5">
+        <!-- Coluna do Histórico - Aumentada para 6 colunas -->
+        <div class="col-lg-6">
             <!-- Card de Status -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white py-3">
@@ -119,7 +121,6 @@
                                 <i class="fas fa-truck me-1"></i> {{ $freight->freightStatus->name }}
                             </span>
                         </div>
-                    
                     </div>
                     
                     <div class="row">
@@ -149,33 +150,37 @@
                     <h6 class="mb-0">
                         <i class="fas fa-history me-2"></i>Histórico de Localização
                     </h6>
-                    <button id="refresh-history" class="btn btn-sm btn-primary">
-                        <i class="fas fa-sync-alt me-1"></i> Atualizar
-                    </button>
+                    <div>
+                        <button id="refresh-history" class="btn btn-sm btn-primary">
+                            <i class="fas fa-sync-alt me-1"></i> Atualizar
+                        </button>
+                    </div>
                 </div>
                 <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="history-table">
+                        <table class="table table-hover mb-0" id="history-table" style="width: 100%;">
                             <thead class="thead-light sticky-top" style="top: 0;">
                                 <tr>
-                                    <th width="25%">Data/Hora</th>
-                                    <th width="60%">Localização</th>
-                                    <th width="15%">Status</th>
+                                    <th width="20%">Data/Hora</th>
+                                    <th width="70%">Localização</th>
+                                    <th width="10%">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($freight->history()->orderBy('date', 'desc')->get() as $location)
+                                @forelse($freight->history()->orderBy('date', 'desc')->orderBy('time', 'desc')->get() as $location)
                                 <tr data-lat="{{ $location->latitude }}" data-lng="{{ $location->longitude }}">
                                     <td>
-                                        <small>{{ \Carbon\Carbon::parse($location->date)->format('d/m/Y') }}</small><br>
-                                        <small>{{ \Carbon\Carbon::parse($location->time)->format('H:i:s') }}</small>
-                                    </td>
-                                    <td>
-                                        <div class="text-truncate" style="max-width: 250px;" title="{{ $location->address }}">
-                                            {{ $location->address }}
+                                        <div class="d-flex flex-column">
+                                            <small>{{ \Carbon\Carbon::parse($location->date)->format('d/m/Y') }}</small>
+                                            <small>{{ \Carbon\Carbon::parse($location->time)->format('H:i:s') }}</small>
                                         </div>
                                     </td>
                                     <td>
+                                        <div class="text-truncate" style="max-width: 350px;" title="{{ $location->address }}">
+                                            {{ $location->address }}
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
                                         <span class="badge bg-{{ $location->status === 'em_transito' ? 'info' : ($location->status === 'entregue' ? 'success' : 'warning') }}">
                                             {{ ucfirst(str_replace('_', ' ', $location->status)) }}
                                         </span>
@@ -208,10 +213,15 @@
         min-height: 550px;
     }
     
+    #history-table {
+        width: 100% !important;
+    }
+    
     #history-table thead th {
         background-color: #f8f9fa;
         position: sticky;
         z-index: 10;
+        white-space: nowrap;
     }
     
     #history-table tbody tr {
@@ -220,6 +230,10 @@
     
     #history-table tbody tr:hover {
         background-color: rgba(0,0,0,0.03);
+    }
+    
+    #history-table tbody td {
+        vertical-align: middle;
     }
     
     #updating-indicator {
@@ -249,9 +263,14 @@
             min-height: 400px;
         }
         
-        .col-lg-7, .col-lg-5 {
+        .col-lg-6 {
             flex: 0 0 100%;
             max-width: 100%;
+        }
+        
+        #history-table td, #history-table th {
+            padding: 8px 5px;
+            font-size: 0.9rem;
         }
     }
 </style>
@@ -264,7 +283,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <!-- API do Google Maps -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=geometry"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=SUA_CHAVE_DE_API&libraries=geometry"></script>
 
 <script>
 // Configurações iniciais
@@ -355,7 +374,7 @@ function initRoute() {
     @endif
     
     // Adicionar marcador da posição atual
-    @if($lastLocation = $freight->history()->orderBy('date', 'desc')->first())
+    @if($lastLocation = $freight->history()->orderBy('date', 'desc')->orderBy('time', 'desc')->first())
         lastPosition = { lat: {{ $lastLocation->latitude }}, lng: {{ $lastLocation->longitude }} };
         updateCurrentPosition(lastPosition, "{{ $lastLocation->address }}");
     @endif
@@ -499,7 +518,11 @@ function initHistoryTable() {
         },
         columnDefs: [
             { targets: [2], orderable: false }
-        ]
+        ],
+        createdRow: function(row, data, dataIndex) {
+            // Adiciona tooltip para a coluna de localização
+            $('td:eq(1)', row).attr('title', $('td:eq(1) div', row).attr('title'));
+        }
     });
     
     // Evento de clique nas linhas da tabela
@@ -520,17 +543,29 @@ function updateHistory() {
     $.get('{{ route("freights.history", $freight->id) }}', function(data) {
         historyTable.clear();
         
+        // Ordenar por data e hora decrescente
+        data.sort((a, b) => {
+            const dateA = new Date(`${a.date}T${a.time}`);
+            const dateB = new Date(`${b.date}T${b.time}`);
+            return dateB - dateA;
+        });
+        
         data.forEach(item => {
             historyTable.row.add([
-                `<small>${new Date(item.date).toLocaleDateString('pt-BR')}</small><br>
-                 <small>${new Date(item.time).toLocaleTimeString('pt-BR')}</small>`,
-                `<div class="text-truncate" style="max-width: 250px;" title="${item.address}">
+                `<div class="d-flex flex-column">
+                    <small>${new Date(item.date).toLocaleDateString('pt-BR')}</small>
+                    <small>${new Date(item.time).toLocaleTimeString('pt-BR')}</small>
+                </div>`,
+                `<div class="text-truncate" style="max-width: 350px;" title="${item.address}">
                     ${item.address}
-                 </div>`,
+                </div>`,
                 `<span class="badge bg-${item.status === 'em_transito' ? 'info' : (item.status === 'entregue' ? 'success' : 'warning')}">
                     ${item.status.replace('_', ' ')}
                 </span>`
-            ]).nodes().to$().attr('data-lat', item.latitude).attr('data-lng', item.longitude);
+            ]).nodes().to$()
+                .attr('data-lat', item.latitude)
+                .attr('data-lng', item.longitude)
+                .attr('title', item.address);
         });
         
         historyTable.draw();
