@@ -163,7 +163,7 @@
                                 <tr>
                                     <th width="20%">Data/Hora</th>
                                     <th width="50%">Localização</th>
-                                    <th width="10%">Status</th>
+                                    <th width="30%">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -176,12 +176,13 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="text-truncate" style="max-width: 350px;" title="{{ $location->address }}">
+                                        <div class="text-truncate" style="max-width: 250px;" title="{{ $location->address }}">
                                             {{ $location->address }}
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge bg-{{ $location->status === 'em_transito' ? 'info' : ($location->status === 'entregue' ? 'success' : 'warning') }}">
+                                        <span class="badge bg-{{ $location->status === 'em_transito' ? 
+                                        'info' : ($location->status === 'entregue' ? 'success' : 'warning') }}">
                                             {{ ucfirst(str_replace('_', ' ', $location->status)) }}
                                         </span>
                                     </td>
