@@ -365,7 +365,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
     {
         // Busca o histórico de posições ordenado por data decrescente
         $history = $freight->history()
-            ->orderBy('id', 'desc')
+            ->orderBy('date', 'desc')
             ->get()
             ->map(function ($item) {
                 return [
@@ -468,7 +468,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
     {
         $history = DB::table('freight_positions')
             ->where('freight_id', $freight->id)
-            ->orderBy('created_at', 'desc')
+            ->orderBy('date', 'desc')
             ->get(['address', 'lat', 'lng', 'status', 'created_at']);
             
         return response()->json($history);
