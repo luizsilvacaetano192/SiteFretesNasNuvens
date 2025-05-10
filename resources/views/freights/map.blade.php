@@ -874,23 +874,7 @@
    function initializeDataTable() {
     historyTable = $('#history-table').DataTable({
         dom: '<"top"<"d-flex justify-content-between align-items-center"<"me-3"l><"ms-auto"B>f>>rt<"bottom"ip><"clear">',
-        buttons: [
-            {
-                extend: 'excel',
-                text: '<i class="fas fa-file-excel me-1"></i> Excel',
-                className: 'btn btn-success btn-sm'
-            },
-            {
-                extend: 'pdf',
-                text: '<i class="fas fa-file-pdf me-1"></i> PDF',
-                className: 'btn btn-danger btn-sm'
-            },
-            {
-                extend: 'print',
-                text: '<i class="fas fa-print me-1"></i> Imprimir',
-                className: 'btn btn-info btn-sm'
-            }
-        ],
+       
         order: [[0, 'desc']],
         pageLength: 10,
         lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
@@ -922,74 +906,7 @@
     // Atualiza o histórico via AJAX
    // Atualiza o histórico via AJAX
 function updateHistory() {
-    $.ajax({
-        url: '{{ route("freights.history", $freight->id) }}',
-        type: 'GET',
-        dataType: 'json',
-        beforeSend: function() {
-            $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i> Carregando...');
-        },
-        success: function(response) {
-            // Limpa os dados antigos
-            historyTable.clear();
-            
-            // Verifica se a resposta contém dados
-            if (response && Array.isArray(response)) {
-                // Processa cada item do histórico
-                response.forEach(function(item) {
-                    // Formata a data para exibição
-                    const date = new Date(item.date);
-                    const formattedDate = date.toLocaleDateString('pt-BR');
-                    const formattedTime = date.toLocaleTimeString('pt-BR');
-                    
-                    // Determina a classe do badge com base no status
-                    let badgeClass = 'warning';
-                    let statusText = item.status || 'desconhecido';
-                    
-                    if (item.status === 'em_transito') {
-                        badgeClass = 'info';
-                        statusText = 'em trânsito';
-                    } else if (item.status === 'entregue') {
-                        badgeClass = 'success';
-                    }
-                    
-                    // Adiciona a linha à tabela como um objeto
-                    historyTable.row.add({
-                        date: formattedDate,
-                        time: formattedTime,
-                        address: item.address || 'N/A',
-                        status: `<span class="badge bg-${badgeClass}">${statusText}</span>`,
-                        rawDate: date.getTime() // Para ordenação
-                    });
-                });
-            } else {
-                // Adiciona mensagem se não houver dados
-                historyTable.row.add({
-                    date: '',
-                    time: '',
-                    address: 'Nenhum dado de histórico disponível',
-                    status: ''
-                });
-            }
-            
-            // Renderiza a tabela e mantém a ordenação
-            historyTable.order([0, 'desc']).draw();
-            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-        },
-        error: function(xhr) {
-            console.error('Erro ao carregar histórico:', xhr.responseText);
-            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-            
-            // Mostra mensagem de erro na tabela
-            historyTable.clear().draw();
-            historyTable.row.add({
-                date: '',
-                time: '',
-                address: 'Erro ao carregar dados. Tente novamente.',
-                status: '<span class="badge bg-danger">Erro</span>'
-            }).draw();
-        }
-    });
+    historyTable.ajax.reload(null, false);
 }
 
     // =============================================
