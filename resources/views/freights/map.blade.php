@@ -116,14 +116,7 @@
                                 <i class="fas fa-truck me-1"></i> {{ $freight->freightStatus->name }}
                             </span>
                         </div>
-                        <div class="flex-grow-1 ms-3">
-                            <div class="text-muted small">Progresso</div>
-                            <div class="progress" style="height: 8px;">
-                                <div class="progress-bar bg-{{ $statusBadgeClass }}" role="progressbar" 
-                                     style="width: {{ $progress }}%" 
-                                     aria-valuenow="{{ $progress }}" aria-valuemin="0" aria-valuemax="100"></div>
-                            </div>
-                        </div>
+                    
                     </div>
                     
                     <div class="row">
