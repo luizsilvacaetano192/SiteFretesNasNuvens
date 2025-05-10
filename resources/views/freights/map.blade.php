@@ -871,83 +871,42 @@
     });
 
     // Inicializa a tabela de histórico
-    function initializeDataTable() {
-        historyTable = $('#history-table').DataTable({
-            dom: '<"top"<"d-flex justify-content-between align-items-center"<"me-3"l><"ms-auto"B>f>>rt<"bottom"ip><"clear">',
-            buttons: [
-                {
-                    extend: 'excel',
-                    text: '<i class="fas fa-file-excel me-1"></i> Excel',
-                    className: 'btn btn-success btn-sm',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3],
-                        format: {
-                            body: function(data, row, column, node) {
-                                // Remove tags HTML para exportação
-                                return $(data).text() || data;
-                            }
-                        }
-                    }
-                },
-                {
-                    extend: 'pdf',
-                    text: '<i class="fas fa-file-pdf me-1"></i> PDF',
-                    className: 'btn btn-danger btn-sm',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3],
-                        format: {
-                            body: function(data, row, column, node) {
-                                return $(data).text() || data;
-                            }
-                        }
-                    }
-                },
-                {
-                    extend: 'print',
-                    text: '<i class="fas fa-print me-1"></i> Imprimir',
-                    className: 'btn btn-info btn-sm',
-                    exportOptions: {
-                        columns: [0, 1, 2, 3],
-                        format: {
-                            body: function(data, row, column, node) {
-                                return $(data).text() || data;
-                            }
-                        }
-                    }
-                }
-            ],
-            order: [[0, 'desc']], // Ordena pela primeira coluna (data) decrescente
-            pageLength: 10,
-            lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
-            responsive: true,
-            stateSave: true,
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+   function initializeDataTable() {
+    historyTable = $('#history-table').DataTable({
+        dom: '<"top"<"d-flex justify-content-between align-items-center"<"me-3"l><"ms-auto"B>f>>rt<"bottom"ip><"clear">',
+        buttons: [
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel me-1"></i> Excel',
+                className: 'btn btn-success btn-sm'
             },
-            columns: [
-                { 
-                    data: 'date',
-                    title: "Data",
-                },
-                { 
-                    data: 'time',
-                    title: "Hora"
-                },
-                { 
-                    data: 'address',
-                    title: "Endereço"
-                },
-                { 
-                    data: 'status',
-                    title: "Status",
-                    orderable: false
-                }
-            ],
-            initComplete: function() {
-                $('.dt-buttons button').removeClass('dt-button');
+            {
+                extend: 'pdf',
+                text: '<i class="fas fa-file-pdf me-1"></i> PDF',
+                className: 'btn btn-danger btn-sm'
+            },
+            {
+                extend: 'print',
+                text: '<i class="fas fa-print me-1"></i> Imprimir',
+                className: 'btn btn-info btn-sm'
             }
-        });
-    }
+        ],
+        order: [[0, 'desc']],
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
+        responsive: true,
+        stateSave: true,
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+        },
+        columnDefs: [
+            { targets: [3], orderable: false } // Desabilita ordenação na coluna de status
+        ],
+        initComplete: function() {
+            $('.dt-buttons button').removeClass('dt-button');
+        }
+    });
+}
 
     // Configura os listeners de eventos
     function setupEventListeners() {
@@ -961,78 +920,77 @@
     }
 
     // Atualiza o histórico via AJAX
-    function updateHistory() {
-        $.ajax({
-            url: '{{ route("freights.history", $freight->id) }}',
-            type: 'GET',
-            dataType: 'json',
-            beforeSend: function() {
-                $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i> Carregando...');
-            },
-            success: function(response) {
-                // Limpa os dados antigos
-                historyTable.clear();
-                
-                // Verifica se a resposta contém dados
-                if (response.data && Array.isArray(response.data)) {
-                    // Processa cada item do histórico
-                    response.data.forEach(function(item) {
-                        // Formata a data para exibição
-                        const date = new Date(item.date);
-                        const formattedDate = date.toLocaleDateString('pt-BR');
-                        const formattedTime = item.time.toLocaleTimeString('pt-BR');
-                        
-                        // Determina a classe do badge com base no status
-                        let badgeClass;
-                        switch(item.status) {
-                            case 'em_transito':
-                                badgeClass = 'info';
-                                break;
-                            case 'entregue':
-                                badgeClass = 'success';
-                                break;
-                            default:
-                                badgeClass = 'warning';
-                        }
-                        
-                        // Adiciona a linha à tabela como um objeto
-                        historyTable.row.add({
-                            date: formattedDate,
-                            time: formattedTime,
-                            address: item.address || 'N/A',
-                            status: `<span class="badge bg-${badgeClass}">${item.status.replace('_', ' ')}</span>`,
-                            rawDate: date.toISOString() // Para ordenação
-                        });
-                    });
-                } else {
-                    // Adiciona mensagem se não houver dados
+   // Atualiza o histórico via AJAX
+function updateHistory() {
+    $.ajax({
+        url: '{{ route("freights.history", $freight->id) }}',
+        type: 'GET',
+        dataType: 'json',
+        beforeSend: function() {
+            $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i> Carregando...');
+        },
+        success: function(response) {
+            // Limpa os dados antigos
+            historyTable.clear();
+            
+            // Verifica se a resposta contém dados
+            if (response && Array.isArray(response)) {
+                // Processa cada item do histórico
+                response.forEach(function(item) {
+                    // Formata a data para exibição
+                    const date = new Date(item.date);
+                    const formattedDate = date.toLocaleDateString('pt-BR');
+                    const formattedTime = date.toLocaleTimeString('pt-BR');
+                    
+                    // Determina a classe do badge com base no status
+                    let badgeClass = 'warning';
+                    let statusText = item.status || 'desconhecido';
+                    
+                    if (item.status === 'em_transito') {
+                        badgeClass = 'info';
+                        statusText = 'em trânsito';
+                    } else if (item.status === 'entregue') {
+                        badgeClass = 'success';
+                    }
+                    
+                    // Adiciona a linha à tabela como um objeto
                     historyTable.row.add({
-                        date: '',
-                        time: '',
-                        address: 'Nenhum dado de histórico disponível',
-                        status: ''
+                        date: formattedDate,
+                        time: formattedTime,
+                        address: item.address || 'N/A',
+                        status: `<span class="badge bg-${badgeClass}">${statusText}</span>`,
+                        rawDate: date.getTime() // Para ordenação
                     });
-                }
-                
-                // Renderiza a tabela
-                historyTable.draw();
-                $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-            },
-            error: function(xhr) {
-                console.error('Erro ao carregar histórico:', xhr.responseText);
-                $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-                
-                // Mostra mensagem de erro na tabela
-                historyTable.clear();
+                });
+            } else {
+                // Adiciona mensagem se não houver dados
                 historyTable.row.add({
                     date: '',
                     time: '',
-                    address: 'Erro ao carregar dados. Tente novamente.',
-                    status: '<span class="badge bg-danger">Erro</span>'
-                }).draw();
+                    address: 'Nenhum dado de histórico disponível',
+                    status: ''
+                });
             }
-        });
-    }
+            
+            // Renderiza a tabela e mantém a ordenação
+            historyTable.order([0, 'desc']).draw();
+            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+        },
+        error: function(xhr) {
+            console.error('Erro ao carregar histórico:', xhr.responseText);
+            $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+            
+            // Mostra mensagem de erro na tabela
+            historyTable.clear().draw();
+            historyTable.row.add({
+                date: '',
+                time: '',
+                address: 'Erro ao carregar dados. Tente novamente.',
+                status: '<span class="badge bg-danger">Erro</span>'
+            }).draw();
+        }
+    });
+}
 
     // =============================================
     // GERENCIAMENTO DE EVENTOS E LIMPEZA
