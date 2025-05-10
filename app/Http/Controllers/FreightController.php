@@ -312,12 +312,27 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
             ->orderBy('date', 'desc')
             ->first();
 
+        if (!$lastLocation) {
+            return response()->json([
+                'latitude' => null,
+                'longitude' => null,
+                'address' => null,
+                'date' => null,
+                'time' => null,
+                'status_changed' => false
+            ]);
+        }
+
+        // Convert strings to Carbon if needed
+        $date = is_string($lastLocation->date) ? \Carbon\Carbon::parse($lastLocation->date) : $lastLocation->date;
+        $time = is_string($lastLocation->time) ? \Carbon\Carbon::parse($lastLocation->time) : $lastLocation->time;
+
         return response()->json([
             'latitude' => $lastLocation->latitude ?? null,
             'longitude' => $lastLocation->longitude ?? null,
             'address' => $lastLocation->address ?? null,
-            'date' => $lastLocation->date ? $lastLocation->date->format('d/m/Y') : null,
-            'time' => $lastLocation->time ? $lastLocation->time->format('H:i:s') : null,
+            'date' => $date ? $date->format('d/m/Y') : null,
+            'time' => $time ? $time->format('H:i:s') : null,
             'status_changed' => request('last_status') != $lastLocation->status
         ]);
     }
@@ -329,9 +344,13 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
         }])->findOrFail($id);
 
         $history = $freight->history->map(function($item) {
+            // Convert date strings to Carbon instances if they aren't already
+            $date = is_string($item->date) ? \Carbon\Carbon::parse($item->date) : $item->date;
+            $time = is_string($item->time) ? \Carbon\Carbon::parse($item->time) : $item->time;
+            
             return [
-                'date' => $item->date ? $item->date->format('d/m/Y') : null,
-                'time' => $item->time ? $item->time->format('H:i:s') : null,
+                'date' => $date ? $date->format('d/m/Y') : null,
+                'time' => $time ? $time->format('H:i:s') : null,
                 'address' => $item->address,
                 'status' => $item->status,
                 'latitude' => $item->latitude,

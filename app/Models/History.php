@@ -19,6 +19,11 @@ class History extends Model
         'status',
     ];
 
+    protected $casts = [
+        'date' => 'datetime',
+        'time' => 'datetime',
+    ];
+
     public function freight()
     {
         return $this->belongsTo(Freight::class);
