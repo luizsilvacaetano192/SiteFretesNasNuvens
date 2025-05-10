@@ -40,3 +40,9 @@ Route::get('/freights', [FreightController::class, 'getFreights']);
 Route::post('/freights/{id}/update-position', [FreightController::class, 'updatePosition']);
 
 Route::post('/create-asaas-account', [DriverController::class, 'createAsaasAccount']);
+
+Route::group(['middleware' => ['auth']], function() {
+    Route::get('/freights/{id}/route', [FreightController::class, 'showRoute'])->name('freights.route');
+    Route::get('/freights/{id}/history', [FreightController::class, 'getHistory'])->name('freights.history');
+    Route::get('/freights/{id}/last-position', [FreightController::class, 'getLastPosition'])->name('freights.last-position');
+});

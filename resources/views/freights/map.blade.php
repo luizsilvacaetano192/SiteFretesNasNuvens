@@ -29,7 +29,7 @@
     </div>
 
     <div class="row">
-        <!-- Coluna do Mapa - Reduzida para 6 colunas -->
+        <!-- Coluna do Mapa -->
         <div class="col-lg-6">
             <!-- Card do Mapa -->
             <div class="card shadow-sm mb-4">
@@ -74,8 +74,7 @@
                                     <span id="current-position">
                                         @php
                                             $lastLocation = $freight->history()
-                                                ->orderBy('date', 'desc')
-                                                ->orderBy('time', 'desc')
+                                                ->orderBy('created_at', 'desc')
                                                 ->first();
                                         @endphp
                                         {{ $lastLocation->address ?? 'Não disponível' }}
@@ -88,8 +87,7 @@
                                     <strong>🔄 Atualizado em:</strong> 
                                     <span id="last-update">
                                         @if($lastLocation)
-                                            {{ \Carbon\Carbon::parse($lastLocation->date)->format('d/m/Y') }} às 
-                                            {{ \Carbon\Carbon::parse($lastLocation->time)->format('H:i:s') }}
+                                            {{ $lastLocation->created_at->format('d/m/Y H:i:s') }}
                                         @else
                                             N/A
                                         @endif
@@ -105,7 +103,7 @@
             </div>
         </div>
 
-        <!-- Coluna do Histórico - Aumentada para 6 colunas -->
+        <!-- Coluna do Histórico -->
         <div class="col-lg-6">
             <!-- Card de Status -->
             <div class="card shadow-sm mb-4">
@@ -144,7 +142,7 @@
                 </div>
             </div>
 
-            <!-- Card de Histórico - Com mais espaço agora -->
+            <!-- Card de Histórico -->
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">
@@ -162,27 +160,26 @@
                             <thead class="thead-light sticky-top" style="top: 0;">
                                 <tr>
                                     <th width="20%">Data/Hora</th>
-                                    <th width="50%">Localização</th>
-                                    <th width="30%">Status</th>
+                                    <th width="70%">Localização</th>
+                                    <th width="10%">Status</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse($freight->history()->orderBy('date', 'desc')->orderBy('time', 'desc')->get() as $location)
+                                @forelse($freight->history()->orderBy('created_at', 'desc')->get() as $location)
                                 <tr data-lat="{{ $location->latitude }}" data-lng="{{ $location->longitude }}">
                                     <td>
                                         <div class="d-flex flex-column">
-                                            <small>{{ \Carbon\Carbon::parse($location->date)->format('d/m/Y') }}</small>
-                                            <small>{{ \Carbon\Carbon::parse($location->time)->format('H:i:s') }}</small>
+                                            <small>{{ $location->created_at->format('d/m/Y') }}</small>
+                                            <small>{{ $location->created_at->format('H:i:s') }}</small>
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="text-truncate" style="max-width: 250px;" title="{{ $location->address }}">
+                                        <div class="text-truncate" style="max-width: 350px;" title="{{ $location->address }}">
                                             {{ $location->address }}
                                         </div>
                                     </td>
                                     <td class="text-center">
-                                        <span class="badge bg-{{ $location->status === 'em_transito' ? 
-                                        'info' : ($location->status === 'entregue' ? 'success' : 'warning') }}">
+                                        <span class="badge bg-{{ $location->status === 'em_transito' ? 'info' : ($location->status === 'entregue' ? 'success' : 'warning') }}">
                                             {{ ucfirst(str_replace('_', ' ', $location->status)) }}
                                         </span>
                                     </td>
@@ -375,7 +372,7 @@ function initRoute() {
     @endif
     
     // Adicionar marcador da posição atual
-    @if($lastLocation = $freight->history()->orderBy('date', 'desc')->orderBy('time', 'desc')->first())
+    @if($lastLocation = $freight->history()->orderBy('created_at', 'desc')->first())
         lastPosition = { lat: {{ $lastLocation->latitude }}, lng: {{ $lastLocation->longitude }} };
         updateCurrentPosition(lastPosition, "{{ $lastLocation->address }}");
     @endif
@@ -544,18 +541,18 @@ function updateHistory() {
     $.get('{{ route("freights.history", $freight->id) }}', function(data) {
         historyTable.clear();
         
-        // Ordenar por data e hora decrescente
+        // Ordenar por created_at decrescente (mesmo critério do backend)
         data.sort((a, b) => {
-            const dateA = new Date(`${a.date}T${a.time}`);
-            const dateB = new Date(`${b.date}T${b.time}`);
-            return dateB - dateA;
+            return new Date(b.created_at) - new Date(a.created_at);
         });
         
         data.forEach(item => {
+            const createdAt = new Date(item.created_at);
+            
             historyTable.row.add([
                 `<div class="d-flex flex-column">
-                    <small>${new Date(item.date).toLocaleDateString('pt-BR')}</small>
-                    <small>${new Date(item.time).toLocaleTimeString('pt-BR')}</small>
+                    <small>${createdAt.toLocaleDateString('pt-BR')}</small>
+                    <small>${createdAt.toLocaleTimeString('pt-BR')}</small>
                 </div>`,
                 `<div class="text-truncate" style="max-width: 350px;" title="${item.address}">
                     ${item.address}
@@ -572,11 +569,16 @@ function updateHistory() {
         historyTable.draw();
         $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
         
-        // Atualizar última posição se houver dados
+        // Atualizar última posição com o primeiro item da lista ordenada
         if (data.length > 0) {
-            const last = data[0];
+            const last = data[0]; // Já está ordenado por created_at desc
             lastPosition = { lat: last.latitude, lng: last.longitude };
             updateCurrentPosition(lastPosition, last.address);
+            
+            // Atualizar também o texto exibido
+            const lastUpdate = new Date(last.created_at);
+            $('#current-position').text(last.address || 'Não disponível');
+            $('#last-update').text(lastUpdate.toLocaleDateString('pt-BR') + ' ' + lastUpdate.toLocaleTimeString('pt-BR'));
         }
     }).fail(() => {
         $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');

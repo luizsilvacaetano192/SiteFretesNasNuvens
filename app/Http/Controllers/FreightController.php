@@ -306,60 +306,40 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
         ]);
     }
 
-    public function lastPosition(Freight $freight)
+   public function getHistory($id)
     {
-        $lastLocation = $freight->history()
-            ->orderBy('date', 'desc')->orderBy('time', 'desc')
-            ->first();
-
-        if (!$lastLocation) {
-            return response()->json([
-                'latitude' => null,
-                'longitude' => null,
-                'address' => null,
-                'date' => null,
-                'time' => null,
-                'status_changed' => false
-            ]);
-        }
-
-        // Convert strings to Carbon if needed
-        $date = is_string($lastLocation->date) ? \Carbon\Carbon::parse($lastLocation->date) : $lastLocation->date;
-        $time = is_string($lastLocation->time) ? \Carbon\Carbon::parse($lastLocation->time) : $lastLocation->time;
-
-        return response()->json([
-            'latitude' => $lastLocation->latitude ?? null,
-            'longitude' => $lastLocation->longitude ?? null,
-            'address' => $lastLocation->address ?? null,
-            'date' => $date ? $date->format('d/m/Y') : null,
-            'time' => $time ? $time->format('H:i:s') : null,
-            'status_changed' => request('last_status') != $lastLocation->status
-        ]);
-    }
-
-    public function history($id)
-    {
-        $freight = Freight::with(['history' => function($query) {
-            $query->orderBy('date', 'desc')->orderBy('time', 'desc');
-        }])->findOrFail($id);
-
-        $history = $freight->history->map(function($item) {
-            // Convert date strings to Carbon instances if they aren't already
-            $date = is_string($item->date) ? \Carbon\Carbon::parse($item->date) : $item->date;
-            $time = is_string($item->time) ? \Carbon\Carbon::parse($item->time) : $item->time;
+        $freight = Freight::findOrFail($id);
+        $history = $freight->history()
+            ->orderBy('created_at', 'desc')
+            ->get();
             
-            return [
-                'date' => $date ? $date->format('d/m/Y') : null,
-                'time' => $time ? $time->format('H:i:s') : null,
-                'address' => $item->address,
-                'status' => $item->status,
-                'latitude' => $item->latitude,
-                'longitude' => $item->longitude
-            ];
-        });
-
         return response()->json($history);
     }
+    
+    public function getLastPosition($id)
+    {
+        $freight = Freight::findOrFail($id);
+        $lastPosition = $freight->history()
+            ->orderBy('created_at', 'desc')
+            ->first();
+            
+        return response()->json($lastPosition);
+    }
+    
+    private function getStatusBadgeClass($statusName)
+    {
+        switch (strtolower($statusName)) {
+            case 'em transito':
+                return 'info';
+            case 'entregue':
+                return 'success';
+            case 'cancelado':
+                return 'danger';
+            default:
+                return 'warning';
+        }
+    }
+}
 
     public function getPosition(Freight $freight)
     {
