@@ -358,7 +358,7 @@
 
                         <!-- Botões de Ação -->
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4 pt-3 border-top">
-                            <a href="{{ route('companies.index') }}" class="btn btn-outline-secondary px-4 py-2 me-md-2">
+                            <a href="{{ route('/') }}" class="btn btn-outline-secondary px-4 py-2 me-md-2">
                                 <i class="fas fa-arrow-left me-2"></i>Cancelar
                             </a>
                             <button type="submit" class="btn btn-primary px-4 py-2">
