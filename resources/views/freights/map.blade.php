@@ -63,6 +63,9 @@
                                 <button id="center-route" class="btn btn-sm btn-primary">
                                     <i class="fas fa-expand"></i> Ver Rota
                                 </button>
+                                <button id="toggle-auto-update" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-power-off me-1"></i> Auto-Update
+                                </button>
                             </div>
                         </div>
                         
@@ -258,6 +261,19 @@
         box-shadow: 0 1px 5px rgba(0,0,0,0.4);
     }
     
+    /* Status badges */
+    .badge.bg-info { background-color: #17a2b8 !important; }
+    .badge.bg-success { background-color: #28a745 !important; }
+    .badge.bg-warning { background-color: #ffc107 !important; color: #212529; }
+    .badge.bg-danger { background-color: #dc3545 !important; }
+    .badge.bg-secondary { background-color: #6c757d !important; }
+    
+    /* Auto-update button */
+    #toggle-auto-update.btn-primary {
+        background-color: #4e73df;
+        border-color: #4e73df;
+    }
+    
     @media (max-width: 992px) {
         #map {
             min-height: 400px;
@@ -271,6 +287,16 @@
         #history-table td, #history-table th {
             padding: 8px 5px;
             font-size: 0.9rem;
+        }
+        
+        #map-controls .btn-group-vertical {
+            flex-direction: row;
+        }
+        
+        #map-controls .btn {
+            margin: 2px;
+            font-size: 0.8rem;
+            padding: 0.25rem 0.4rem;
         }
     }
 </style>
@@ -287,9 +313,7 @@
 
 <script>
 // Configurações iniciais
-const UPDATE_INTERVAL = 10000; // 10 segundos
-const ZOOM_DEFAULT = 12;
-const ZOOM_CLOSE = 15;
+const UPDATE_INTERVAL = 30000; // 30 segundos
 let map, directionsService, directionsRenderer;
 let currentMarker, routePolyline;
 let isTracking = true;
@@ -297,6 +321,7 @@ let mapType = 'roadmap';
 let lastPosition = null;
 let updateInterval;
 let historyTable;
+let isAutoUpdateActive = true;
 
 // Inicialização do mapa
 function initMap() {
@@ -306,7 +331,7 @@ function initMap() {
     // Criar o mapa
     map = new google.maps.Map(document.getElementById('map'), {
         center: defaultCenter,
-        zoom: ZOOM_DEFAULT,
+        zoom: 12,
         mapTypeId: 'roadmap',
         streetViewControl: false,
         fullscreenControl: false,
@@ -428,6 +453,24 @@ function updateCurrentPosition(position, address) {
         zIndex: 1000
     });
     
+    // Criar janela de informações
+    const infoWindow = new google.maps.InfoWindow({
+        content: `
+            <div class="p-2">
+                <h6 class="mb-1">Posição Atual</h6>
+                <p class="mb-1"><strong>Endereço:</strong> ${address || 'Não disponível'}</p>
+                <p class="mb-1"><strong>Latitude:</strong> ${position.lat.toFixed(6)}</p>
+                <p class="mb-0"><strong>Longitude:</strong> ${position.lng.toFixed(6)}</p>
+            </div>
+        `
+    });
+    
+    // Abrir janela de informações
+    infoWindow.open(map, currentMarker);
+    
+    // Fechar automaticamente após 5 segundos
+    setTimeout(() => infoWindow.close(), 5000);
+    
     // Atualizar informações na interface
     $('#current-position').text(address || 'Não disponível');
     $('#last-update').text(new Date().toLocaleString('pt-BR'));
@@ -435,6 +478,7 @@ function updateCurrentPosition(position, address) {
     // Centralizar no marcador se o rastreamento estiver ativado
     if (isTracking) {
         map.setCenter(position);
+        map.setZoom(15);
     }
     
     lastPosition = position;
@@ -451,16 +495,17 @@ function setupMapEvents() {
         
         if (isTracking && lastPosition) {
             map.setCenter(lastPosition);
+            map.setZoom(15);
         }
     });
     
     // Botão de alternar zoom
     $('#zoom-toggle').click(function() {
-        if (map.getZoom() >= ZOOM_CLOSE) {
-            map.setZoom(ZOOM_DEFAULT);
+        if (map.getZoom() >= 15) {
+            map.setZoom(12);
             $(this).html('<i class="fas fa-search-plus"></i> Zoom');
         } else {
-            map.setZoom(ZOOM_CLOSE);
+            map.setZoom(15);
             $(this).html('<i class="fas fa-search-minus"></i> Zoom');
         }
     });
@@ -507,6 +552,19 @@ function setupMapEvents() {
     $('#refresh-history').click(function() {
         updateHistory();
     });
+    
+    // Botão de ligar/desligar atualização automática
+    $('#toggle-auto-update').click(function() {
+        isAutoUpdateActive = !isAutoUpdateActive;
+        $(this).toggleClass('btn-outline-primary btn-primary');
+        $(this).html(isAutoUpdateActive ? 
+            '<i class="fas fa-power-off me-1"></i> Auto-Update ON' : 
+            '<i class="fas fa-power-off me-1"></i> Auto-Update OFF');
+        
+        if (isAutoUpdateActive && !updateInterval) {
+            startAutoUpdate();
+        }
+    });
 }
 
 // Inicializar tabela de histórico
@@ -533,20 +591,20 @@ function initHistoryTable() {
         const lat = $(this).data('lat') || 0;
         const lng = $(this).data('lng') || 0;
         map.setCenter({ lat: lat, lng: lng });
-        map.setZoom(ZOOM_CLOSE);
+        map.setZoom(15);
     });
 }
 
 // Atualizar histórico via AJAX
 function updateHistory() {
     $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i> Atualizando');
+    $('#updating-indicator').removeClass('d-none');
     
     $.get('{{ route("freights.history", $freight->id) }}', function(data) {
         historyTable.clear();
         
-        // Ordenar por date e time decrescente (mesmo critério do backend)
+        // Ordenar por date e time decrescente
         data.sort((a, b) => {
-            // Combina date e time para cada registro
             const dateTimeA = (a.date && a.time) ? new Date(`${a.date}T${a.time}`).getTime() : 0;
             const dateTimeB = (b.date && b.time) ? new Date(`${b.date}T${b.time}`).getTime() : 0;
             return dateTimeB - dateTimeA;
@@ -564,7 +622,7 @@ function updateHistory() {
                 `<div class="text-truncate" style="max-width: 250px;" title="${item.address || 'N/A'}">
                     ${item.address || 'N/A'}
                 </div>`,
-                `<span class="badge bg-${item.status === 'em_transito' ? 'info' : (item.status === 'entregue' ? 'success' : 'warning')}">
+                `<span class="badge bg-${getStatusClass(item.status)}">
                     ${item.status ? item.status.replace('_', ' ') : 'N/A'}
                 </span>`
             ]).nodes().to$()
@@ -575,6 +633,7 @@ function updateHistory() {
         
         historyTable.draw();
         $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+        $('#updating-indicator').addClass('d-none');
         
         // Atualizar última posição com o primeiro item da lista ordenada
         if (data.length > 0) {
@@ -585,45 +644,113 @@ function updateHistory() {
             };
             updateCurrentPosition(lastPosition, last.address || 'N/A');
             
-            // Atualizar também o texto exibido
-            const dateFormatted = last.date ? new Date(last.date).toLocaleDateString('pt-BR') : 'N/A';
-            const timeFormatted = last.time ? new Date(`1970-01-01T${last.time}`).toLocaleTimeString('pt-BR') : 'N/A';
-            
-            $('#current-position').text(last.address || 'N/A');
-            $('#last-update').text(
-                last.date && last.time ? 
-                `${dateFormatted} às ${timeFormatted}` : 
-                'N/A'
-            );
+            // Atualizar status do frete
+            updateFreightStatus();
         }
     }).fail(() => {
         $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+        $('#updating-indicator').addClass('d-none');
         alert('Erro ao atualizar histórico');
     });
 }
 
+// Atualizar status do frete
+function updateFreightStatus() {
+    $.get('{{ route("freights.status", $freight->id) }}', function(data) {
+        if (data.status) {
+            const statusBadge = $('.card-body .badge');
+            statusBadge.removeClass('bg-info bg-success bg-warning bg-danger bg-secondary')
+                      .addClass(`bg-${getStatusClass(data.status)}`)
+                      .html(`<i class="fas fa-truck me-1"></i> ${data.status}`);
+        }
+    }).fail(() => {
+        console.error("Falha ao atualizar status");
+    });
+}
+
+// Função auxiliar para classes de status
+function getStatusClass(status) {
+    if (!status) return 'secondary';
+    
+    const statusLower = status.toLowerCase();
+    if (statusLower.includes('transito')) return 'info';
+    if (statusLower.includes('entregue')) return 'success';
+    if (statusLower.includes('cancelado')) return 'danger';
+    if (statusLower.includes('pendente')) return 'warning';
+    return 'secondary';
+}
+
 // Iniciar atualização automática
 function startAutoUpdate() {
-    updateInterval = setInterval(() => {
+    // Função para executar a atualização completa
+    const performUpdate = () => {
+        if (!isAutoUpdateActive) return;
+        
         $('#updating-indicator').removeClass('d-none');
         
-        $.get('{{ route("freights.last-position", $freight->id) }}', function(data) {
-            if (data.latitude && data.longitude) {
-                const position = { lat: data.latitude, lng: data.longitude };
-                updateCurrentPosition(position, data.address || 'N/A');
+        // Atualiza a última posição E o histórico completo
+        Promise.all([
+            $.get('{{ route("freights.last-position", $freight->id) }}'),
+            $.get('{{ route("freights.history", $freight->id) }}')
+        ]).then(([positionData, historyData]) => {
+            // 1. Atualiza a posição no mapa
+            if (positionData.latitude && positionData.longitude) {
+                const position = { 
+                    lat: positionData.latitude, 
+                    lng: positionData.longitude 
+                };
+                updateCurrentPosition(position, positionData.address || 'N/A');
                 
-                // Atualizar data/hora se disponível
-                if (data.date && data.time) {
-                    const dateFormatted = new Date(data.date).toLocaleDateString('pt-BR');
-                    const timeFormatted = new Date(`1970-01-01T${data.time}`).toLocaleTimeString('pt-BR');
+                if (positionData.date && positionData.time) {
+                    const dateFormatted = new Date(positionData.date).toLocaleDateString('pt-BR');
+                    const timeFormatted = new Date(`1970-01-01T${positionData.time}`).toLocaleTimeString('pt-BR');
                     $('#last-update').text(`${dateFormatted} às ${timeFormatted}`);
                 }
             }
-            $('#updating-indicator').addClass('d-none');
-        }).fail(() => {
+            
+            // 2. Atualiza o histórico
+            historyTable.clear();
+            historyData.sort((a, b) => {
+                const dateTimeA = (a.date && a.time) ? new Date(`${a.date}T${a.time}`).getTime() : 0;
+                const dateTimeB = (b.date && b.time) ? new Date(`${b.date}T${b.time}`).getTime() : 0;
+                return dateTimeB - dateTimeA;
+            });
+            
+            historyData.forEach(item => {
+                const dateFormatted = item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A';
+                const timeFormatted = item.time ? new Date(`1970-01-01T${item.time}`).toLocaleTimeString('pt-BR') : 'N/A';
+                
+                historyTable.row.add([
+                    `<div class="d-flex flex-column">
+                        <small>${dateFormatted}</small>
+                        <small>${timeFormatted}</small>
+                    </div>`,
+                    `<div class="text-truncate" style="max-width: 250px;" title="${item.address || 'N/A'}">
+                        ${item.address || 'N/A'}
+                    </div>`,
+                    `<span class="badge bg-${getStatusClass(item.status)}">
+                        ${item.status ? item.status.replace('_', ' ') : 'N/A'}
+                    </span>`
+                ]).nodes().to$()
+                    .attr('data-lat', item.latitude || 0)
+                    .attr('data-lng', item.longitude || 0);
+            });
+            
+            historyTable.draw();
+            
+            // 3. Atualiza o status do frete
+            updateFreightStatus();
+            
+        }).catch(error => {
+            console.error("Erro na atualização:", error);
+        }).finally(() => {
             $('#updating-indicator').addClass('d-none');
         });
-    }, UPDATE_INTERVAL);
+    };
+    
+    // Executa imediatamente e depois a cada intervalo
+    performUpdate();
+    updateInterval = setInterval(performUpdate, UPDATE_INTERVAL);
 }
 
 // Exportar mapa para PDF

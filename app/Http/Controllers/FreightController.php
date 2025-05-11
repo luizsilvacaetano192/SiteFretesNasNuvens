@@ -306,6 +306,73 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
         ]);
     }
 
+    public function showRoute(Freight $freight)
+{
+    $this->authorize('view', $freight);
+    
+    $statusBadgeClass = match($freight->freightStatus->name) {
+        'Em Trânsito' => 'info',
+        'Entregue' => 'success',
+        'Cancelado' => 'danger',
+        default => 'warning'
+    };
+    
+    return view('freights.route', [
+        'freight' => $freight,
+        'statusBadgeClass' => $statusBadgeClass
+    ]);
+}
+
+public function lastPosition(Freight $freight)
+{
+    $this->authorize('view', $freight);
+    
+    $lastLocation = $freight->history()
+        ->orderBy('date', 'desc')
+        ->orderBy('time', 'desc')
+        ->first();
+    
+    return response()->json([
+        'latitude' => $lastLocation->latitude ?? null,
+        'longitude' => $lastLocation->longitude ?? null,
+        'address' => $lastLocation->address ?? null,
+        'date' => $lastLocation->date ?? null,
+        'time' => $lastLocation->time ?? null,
+        'status' => $lastLocation->status ?? null
+    ]);
+}
+
+public function history(Freight $freight)
+{
+    $this->authorize('view', $freight);
+    
+    $history = $freight->history()
+        ->orderBy('date', 'desc')
+        ->orderBy('time', 'desc')
+        ->get()
+        ->map(function($item) {
+            return [
+                'latitude' => $item->latitude,
+                'longitude' => $item->longitude,
+                'address' => $item->address,
+                'date' => $item->date,
+                'time' => $item->time,
+                'status' => $item->status
+            ];
+        });
+    
+    return response()->json($history);
+}
+
+public function currentStatus(Freight $freight)
+{
+    $this->authorize('view', $freight);
+    
+    return response()->json([
+        'status' => $freight->freightStatus->name
+    ]);
+}
+
    public function getHistory($id)
     {
         $freight = Freight::findOrFail($id);
