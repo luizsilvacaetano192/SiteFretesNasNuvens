@@ -581,7 +581,7 @@
                     <li><a href="#para-motoristas">Para Motoristas</a></li>
                     <li><a href="#contato">Contato</a></li>
                     <li><a href="/login" class="btn btn-outline">Entrar</a></li>
-                    <li><a href="cadastro.html" class="btn btn-primary">Cadastre-se</a></li>
+                    <li><a href="/cadastro" class="btn btn-primary">Cadastre-se</a></li>
                 </ul>
             </nav>
         </div>
