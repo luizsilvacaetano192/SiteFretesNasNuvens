@@ -39,6 +39,8 @@ Route::middleware(['guest', 'throttle:5,1'])->group(function () {
     Route::get('/login', [AuthController::class, 'index'])->name('login.form');
     Route::post('/login', [AuthController::class, 'handleLogin'])->name('login');
 
+    Route::get('/cadastro', [CompanyController::class, 'cadastro_externo']);
+
     
     // Redireciona raiz para login
     Route::redirect('/', '/login');

@@ -9,6 +9,13 @@ use Yajra\DataTables\Facades\DataTables;
 
 class CompanyController extends Controller
 {
+
+
+    
+    public function cadastro_externo()
+    {
+        return view('companies.create_externo.blade');
+    }
     public function index()
     {
         return view('companies.index');
