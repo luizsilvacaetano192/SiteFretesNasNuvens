@@ -168,11 +168,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/store', [FreightStatusController::class, 'store'])->name('freight-statuses.store');
     });
 
+      Route::get('freights/{freight}/status', [FreightController::class, 'currentStatus']);
+
      Route::get('freights/{freight}/route', [FreightController::class, 'showRoute'])->name('freights.route');
     Route::get('freights/{freight}/last-position', [FreightController::class, 'lastPosition']);
     Route::get('freights/{freight}/history', [FreightController::class, 'history']);
-    Route::get('freights/{freight}/status', [FreightController::class, 'currentStatus']);
-
+  
     Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
     ->name('freights.last-position');
 
