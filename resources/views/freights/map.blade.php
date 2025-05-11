@@ -656,7 +656,7 @@ function updateHistory() {
 
 // Atualizar status do frete
 function updateFreightStatus() {
-    $.get('{{ route("freights.status", $freight->id) }}', function(data) {
+    $.get('{{ route("currentStatus", $freight->id) }}', function(data) {
         if (data.status) {
             const statusBadge = $('.card-body .badge');
             statusBadge.removeClass('bg-info bg-success bg-warning bg-danger bg-secondary')
