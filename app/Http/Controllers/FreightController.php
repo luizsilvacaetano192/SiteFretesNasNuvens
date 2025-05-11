@@ -345,7 +345,7 @@ public function lastPosition(Freight $freight)
 
 public function history(Freight $freight)
 {
-    $this->authorize('view', $freight);
+   // $this->authorize('view', $freight);
     
     $history = $freight->history()
         ->orderBy('date', 'desc')
