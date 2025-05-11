@@ -176,7 +176,7 @@
                                         </div>
                                     </td>
                                     <td>
-                                        <div class="text-truncate" style="max-width: 350px;" title="{{ $location->address ?? 'N/A' }}">
+                                        <div class="text-truncate" style="max-width: 250px;" title="{{ $location->address ?? 'N/A' }}">
                                             {{ $location->address ?? 'N/A' }}
                                         </div>
                                     </td>
@@ -561,7 +561,7 @@ function updateHistory() {
                     <small>${dateFormatted}</small>
                     <small>${timeFormatted}</small>
                 </div>`,
-                `<div class="text-truncate" style="max-width: 350px;" title="${item.address || 'N/A'}">
+                `<div class="text-truncate" style="max-width: 250px;" title="${item.address || 'N/A'}">
                     ${item.address || 'N/A'}
                 </div>`,
                 `<span class="badge bg-${item.status === 'em_transito' ? 'info' : (item.status === 'entregue' ? 'success' : 'warning')}">
