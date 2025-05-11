@@ -126,10 +126,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/save', [SettingController::class, 'save'])->name('settings.save');
     });
 
-
-    Route::get('freights/{freight}/history', [FreightController::class, 'history'])
-    ->name('freights.history');
-
     // Trucks
     Route::prefix('trucks')->group(function () {
         Route::get('/', function(Request $request) {
