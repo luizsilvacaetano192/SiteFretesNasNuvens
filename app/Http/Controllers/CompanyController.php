@@ -14,7 +14,7 @@ class CompanyController extends Controller
     
     public function cadastro_externo()
     {
-        return view('companies.create_externo.blade');
+        return view('companies.create_externo');
     }
     public function index()
     {
