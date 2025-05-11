@@ -464,7 +464,7 @@ function updateCurrentPosition(position, address) {
         map: map,
         icon: {
             url: "{{ asset('images/icon-truck.png') }}", // ou "./assets/images/my-icon.png"
-            scaledSize: new google.maps.Size(30, 30)
+            scaledSize: new google.maps.Size(64, 64)
         },
         title: "Posição atual: " + (address || 'Não disponível')
     });
