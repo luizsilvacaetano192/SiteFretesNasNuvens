@@ -50,25 +50,7 @@
                     </div>
                 </div>
                 <div class="card-body p-0">
-                    <div id="map-container" style="position: relative;">
-                        <!-- Controles do Mapa -->
-                        <div id="map-controls" class="position-absolute top-0 end-0 mt-2 me-2" style="z-index: 1000;">
-                            <div class="btn-group-vertical shadow-sm">
-                                <button id="track-toggle" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-lock"></i> Travar Mapa
-                                </button>
-                                <button id="zoom-toggle" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-search-plus"></i> Zoom
-                                </button>
-                                <button id="center-route" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-expand"></i> Ver Rota
-                                </button>
-                                <button id="toggle-auto-update" class="btn btn-sm btn-primary">
-                                    <i class="fas fa-power-off me-1"></i> Auto-Update
-                                </button>
-                            </div>
-                        </div>
-                        
+                    <div id="map-container">
                         <!-- Informações de Localização -->
                         <div id="location-info" class="p-3 bg-light border-bottom">
                             <div class="d-flex justify-content-between">
@@ -101,8 +83,26 @@
                             </div>
                         </div>
                         
+                        <!-- Controles do Mapa -->
+                        <div id="map-controls" class="d-flex justify-content-end pe-3 pt-2 bg-white">
+                            <div class="btn-group shadow-sm">
+                                <button id="track-toggle" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-lock"></i> Travar
+                                </button>
+                                <button id="zoom-toggle" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-search-plus"></i> Zoom
+                                </button>
+                                <button id="center-route" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-expand"></i> Rota
+                                </button>
+                                <button id="toggle-auto-update" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-power-off"></i> Auto
+                                </button>
+                            </div>
+                        </div>
+                        
                         <!-- Mapa Google -->
-                        <div id="map" style="height: 550px;"></div>
+                        <div id="map"></div>
                     </div>
                 </div>
             </div>
@@ -161,8 +161,8 @@
                 </div>
                 <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
                     <div class="table-responsive">
-                        <table class="table table-hover mb-0" id="history-table" style="width: 100%;">
-                            <thead class="thead-light sticky-top" style="top: 0;">
+                        <table class="table table-hover mb-0" id="history-table">
+                            <thead class="thead-light sticky-top">
                                 <tr>
                                     <th width="20%">Data/Hora</th>
                                     <th width="70%">Localização</th>
@@ -210,12 +210,33 @@
 @push('styles')
 <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 <style>
-    #map { 
-        width: 100%;
-        height: 100%;
-        min-height: 550px;
+    /* Estilos do Mapa */
+    #map-container {
+        display: flex;
+        flex-direction: column;
+        height: 550px;
+        position: relative;
     }
     
+    #location-info {
+        order: 1;
+        z-index: 10;
+    }
+    
+    #map-controls {
+        order: 2;
+        background: white;
+        padding: 5px 0;
+        z-index: 10;
+    }
+    
+    #map {
+        order: 3;
+        flex-grow: 1;
+        width: 100%;
+    }
+    
+    /* Estilos da Tabela */
     #history-table {
         width: 100% !important;
     }
@@ -223,8 +244,8 @@
     #history-table thead th {
         background-color: #f8f9fa;
         position: sticky;
+        top: 0;
         z-index: 10;
-        white-space: nowrap;
     }
     
     #history-table tbody tr {
@@ -235,48 +256,35 @@
         background-color: rgba(0,0,0,0.03);
     }
     
-    #history-table tbody td {
-        vertical-align: middle;
+    /* Estilos dos Botões */
+    .btn-group-vertical .btn,
+    .btn-group .btn {
+        margin: 2px;
     }
     
+    /* Indicador de Atualização */
     #updating-indicator {
         font-size: 0.8rem;
         color: #4e73df;
     }
     
+    /* Janela de Informações do Mapa */
     .gm-style .gm-style-iw-c {
         padding: 12px !important;
         max-width: 300px !important;
     }
     
-    .gm-style .gm-style-iw-d {
-        overflow: auto !important;
-    }
-    
-    .map-controls {
-        margin: 10px;
-        padding: 5px;
-        background: white;
-        border-radius: 5px;
-        box-shadow: 0 1px 5px rgba(0,0,0,0.4);
-    }
-    
-    /* Status badges */
+    /* Badges de Status */
     .badge.bg-info { background-color: #17a2b8 !important; }
     .badge.bg-success { background-color: #28a745 !important; }
     .badge.bg-warning { background-color: #ffc107 !important; color: #212529; }
     .badge.bg-danger { background-color: #dc3545 !important; }
     .badge.bg-secondary { background-color: #6c757d !important; }
     
-    /* Auto-update button */
-    #toggle-auto-update.btn-primary {
-        background-color: #4e73df;
-        border-color: #4e73df;
-    }
-    
+    /* Responsividade */
     @media (max-width: 992px) {
-        #map {
-            min-height: 400px;
+        #map-container {
+            height: 400px;
         }
         
         .col-lg-6 {
@@ -284,19 +292,14 @@
             max-width: 100%;
         }
         
-        #history-table td, #history-table th {
-            padding: 8px 5px;
-            font-size: 0.9rem;
-        }
-        
-        #map-controls .btn-group-vertical {
-            flex-direction: row;
+        #map-controls .btn-group {
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
         
         #map-controls .btn {
-            margin: 2px;
             font-size: 0.8rem;
-            padding: 0.25rem 0.4rem;
+            padding: 0.25rem 0.5rem;
         }
     }
 </style>
@@ -308,40 +311,31 @@
 <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-<!-- API do Google Maps -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=geometry"></script>
 
 <script>
-// Configurações iniciais
+// Configurações globais
 const UPDATE_INTERVAL = 30000; // 30 segundos
 let map, directionsService, directionsRenderer;
 let currentMarker, routePolyline;
 let isTracking = true;
-let mapType = 'roadmap';
-let lastPosition = null;
+let isAutoUpdateActive = true;
 let updateInterval;
 let historyTable;
-let isAutoUpdateActive = true;
+let lastPosition = null;
 
-// Inicialização do mapa
+// Inicialização do Mapa
 function initMap() {
-    // Coordenadas padrão (centro do Brasil)
-    const defaultCenter = { lat: -15.7801, lng: -47.9292 };
+    const defaultCenter = { lat: -15.7801, lng: -47.9292 }; // Centro do Brasil
     
-    // Criar o mapa
     map = new google.maps.Map(document.getElementById('map'), {
         center: defaultCenter,
         zoom: 12,
         mapTypeId: 'roadmap',
         streetViewControl: false,
-        fullscreenControl: false,
-        mapTypeControlOptions: {
-            style: google.maps.MapTypeControlStyle.HORIZONTAL_BAR,
-            position: google.maps.ControlPosition.TOP_RIGHT
-        }
+        fullscreenControl: false
     });
     
-    // Serviço de rotas
     directionsService = new google.maps.DirectionsService();
     directionsRenderer = new google.maps.DirectionsRenderer({
         suppressMarkers: true,
@@ -354,20 +348,13 @@ function initMap() {
     });
     directionsRenderer.setMap(map);
     
-    // Configurar rota
     initRoute();
-    
-    // Configurar eventos
     setupMapEvents();
-    
-    // Inicializar tabela de histórico
     initHistoryTable();
-    
-    // Iniciar atualização automática
     startAutoUpdate();
 }
 
-// Inicializar a rota
+// Inicializar Rota
 function initRoute() {
     @if($freight->start_lat && $freight->start_lng && $freight->destination_lat && $freight->destination_lng)
         const startPoint = { 
@@ -379,13 +366,7 @@ function initRoute() {
             lng: parseFloat({{ $freight->destination_lng }}) 
         };
         
-        // Validar coordenadas
-        if (isNaN(startPoint.lat) || isNaN(startPoint.lng) || isNaN(endPoint.lat) || isNaN(endPoint.lng)) {
-            console.error('Coordenadas inválidas:', { startPoint, endPoint });
-            return;
-        }
-        
-        // Adicionar marcadores de origem e destino
+        // Marcadores de origem e destino
         new google.maps.Marker({
             position: startPoint,
             map: map,
@@ -406,11 +387,9 @@ function initRoute() {
             title: "Destino: {{ $freight->destination_address }}"
         });
         
-        // Configurar rota
         calculateAndDisplayRoute(startPoint, endPoint);
     @endif
     
-    // Adicionar marcador da posição atual
     @if($lastLocation = $freight->history()->orderBy('date', 'desc')->orderBy('time', 'desc')->first())
         const lat = parseFloat({{ $lastLocation->latitude ?? 0 }});
         const lng = parseFloat({{ $lastLocation->longitude ?? 0 }});
@@ -423,135 +402,63 @@ function initRoute() {
 }
 
 // Calcular e exibir rota
-// Calcular e exibir rota
 function calculateAndDisplayRoute(startPoint, endPoint) {
     directionsService.route({
         origin: startPoint,
         destination: endPoint,
-        travelMode: 'DRIVING',
-        provideRouteAlternatives: false
+        travelMode: 'DRIVING'
     }, (response, status) => {
         if (status === 'OK') {
             directionsRenderer.setDirections(response);
             
             try {
-                // Ajustar visualização para mostrar toda a rota
                 const bounds = new google.maps.LatLngBounds();
                 const route = response.routes[0];
                 
-                // Verificar se existem legs na rota
-                if (route.legs && route.legs.length > 0) {
-                    // Primeiro expande os bounds para incluir origem e destino
-                    bounds.extend(startPoint);
-                    bounds.extend(endPoint);
-                    
-                    // Depois adiciona todos os pontos da rota
-                    for (let i = 0; i < route.legs.length; i++) {
-                        const leg = route.legs[i];
-                        
-                        // Verifica se o leg tem bounds válidos
-                        if (leg && leg.start_location && leg.end_location) {
-                            bounds.extend(leg.start_location);
-                            bounds.extend(leg.end_location);
-                        }
-                        
-                        // Adiciona todos os passos da rota
-                        if (leg.steps && leg.steps.length > 0) {
-                            for (let j = 0; j < leg.steps.length; j++) {
-                                const step = leg.steps[j];
-                                if (step.path && step.path.length > 0) {
-                                    for (let k = 0; k < step.path.length; k++) {
-                                        bounds.extend(step.path[k]);
-                                    }
+                bounds.extend(startPoint);
+                bounds.extend(endPoint);
+                
+                if (route.legs) {
+                    route.legs.forEach(leg => {
+                        if (leg.steps) {
+                            leg.steps.forEach(step => {
+                                if (step.path) {
+                                    step.path.forEach(point => {
+                                        bounds.extend(point);
+                                    });
                                 }
-                            }
+                            });
                         }
-                    }
-                    
-                    // Ajusta o zoom para mostrar toda a rota com um pouco de padding
-                    map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
-                } else {
-                    // Se não houver legs, mostra apenas origem e destino
-                    const bounds = new google.maps.LatLngBounds();
-                    bounds.extend(startPoint);
-                    bounds.extend(endPoint);
-                    map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
+                    });
                 }
+                
+                map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
             } catch (error) {
-                console.error('Erro ao ajustar visualização da rota:', error);
-                // Fallback: centraliza no ponto médio entre origem e destino
-                const midLat = (startPoint.lat + endPoint.lat) / 2;
-                const midLng = (startPoint.lng + endPoint.lng) / 2;
-                map.setCenter({lat: midLat, lng: midLng});
-                map.setZoom(8);
+                console.error('Erro ao ajustar rota:', error);
+                map.setCenter(startPoint);
+                map.setZoom(10);
             }
         } else {
-            console.error('Falha ao calcular rota: ' + status);
-            // Fallback: mostra origem e destino mesmo sem rota
+            console.error('Falha ao calcular rota:', status);
             const bounds = new google.maps.LatLngBounds();
             bounds.extend(startPoint);
             bounds.extend(endPoint);
-            map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
+            map.fitBounds(bounds);
         }
     });
 }
 
-// Função para centralizar a rota (corrigida)
-function centerRoute() {
-    if (directionsRenderer.getDirections()) {
-        try {
-            const bounds = new google.maps.LatLngBounds();
-            const route = directionsRenderer.getDirections().routes[0];
-            
-            // Adiciona todos os pontos da rota aos bounds
-            for (let i = 0; i < route.legs.length; i++) {
-                const leg = route.legs[i];
-                if (leg && leg.start_location && leg.end_location) {
-                    bounds.extend(leg.start_location);
-                    bounds.extend(leg.end_location);
-                }
-                
-                if (leg.steps && leg.steps.length > 0) {
-                    for (let j = 0; j < leg.steps.length; j++) {
-                        const step = leg.steps[j];
-                        if (step.path && step.path.length > 0) {
-                            for (let k = 0; k < step.path.length; k++) {
-                                bounds.extend(step.path[k]);
-                            }
-                        }
-                    }
-                }
-            }
-            
-            map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
-        } catch (error) {
-            console.error('Erro ao centralizar rota:', error);
-            // Fallback: usa zoom padrão
-            map.setZoom(10);
-        }
-    }
-}
-
-// Atualize o evento do botão de centralizar rota
-$('#center-route').click(function() {
-    centerRoute();
-});
-
 // Atualizar posição atual
 function updateCurrentPosition(position, address) {
-    // Validar a posição
-    if (!position || typeof position.lat !== 'number' || typeof position.lng !== 'number' || 
-        isNaN(position.lat) || isNaN(position.lng)) {
+    if (!position || typeof position.lat !== 'number' || typeof position.lng !== 'number') {
         console.error('Posição inválida:', position);
         return;
     }
     
-    // Remover marcador anterior se existir
     if (currentMarker) {
         currentMarker.setMap(null);
     }
     
-    // Criar novo marcador
     currentMarker = new google.maps.Marker({
         position: position,
         map: map,
@@ -559,33 +466,26 @@ function updateCurrentPosition(position, address) {
             url: "https://maps.google.com/mapfiles/ms/icons/blue-dot.png",
             scaledSize: new google.maps.Size(30, 30)
         },
-        title: "Posição atual: " + (address || 'Não disponível'),
-        zIndex: 1000
+        title: "Posição atual: " + (address || 'Não disponível')
     });
     
-    // Criar janela de informações
     const infoWindow = new google.maps.InfoWindow({
         content: `
             <div class="p-2">
                 <h6 class="mb-1">Posição Atual</h6>
-                <p class="mb-1"><strong>Endereço:</strong> ${address || 'Não disponível'}</p>
+                <p class="mb-1"><strong>Endereço:</strong> ${address || 'N/A'}</p>
                 <p class="mb-1"><strong>Latitude:</strong> ${position.lat.toFixed(6)}</p>
                 <p class="mb-0"><strong>Longitude:</strong> ${position.lng.toFixed(6)}</p>
             </div>
         `
     });
     
-    // Abrir janela de informações
     infoWindow.open(map, currentMarker);
-    
-    // Fechar automaticamente após 5 segundos
     setTimeout(() => infoWindow.close(), 5000);
     
-    // Atualizar informações na interface
-    $('#current-position').text(address || 'Não disponível');
+    $('#current-position').text(address || 'N/A');
     $('#last-update').text(new Date().toLocaleString('pt-BR'));
     
-    // Centralizar no marcador se o rastreamento estiver ativado
     if (isTracking) {
         map.setCenter(position);
         map.setZoom(15);
@@ -596,11 +496,10 @@ function updateCurrentPosition(position, address) {
 
 // Configurar eventos do mapa
 function setupMapEvents() {
-    // Botão de alternar rastreamento
     $('#track-toggle').click(function() {
         isTracking = !isTracking;
         $(this).html(isTracking ? 
-            '<i class="fas fa-lock"></i> Travar Mapa' : 
+            '<i class="fas fa-lock"></i> Travar' : 
             '<i class="fas fa-lock-open"></i> Acompanhar');
         
         if (isTracking && lastPosition) {
@@ -609,7 +508,6 @@ function setupMapEvents() {
         }
     });
     
-    // Botão de alternar zoom
     $('#zoom-toggle').click(function() {
         if (map.getZoom() >= 15) {
             map.setZoom(12);
@@ -620,60 +518,55 @@ function setupMapEvents() {
         }
     });
     
-    // Botão de centralizar rota
     $('#center-route').click(function() {
         if (directionsRenderer.getDirections()) {
-            const bounds = new google.maps.LatLngBounds();
-            const route = directionsRenderer.getDirections().routes[0];
-            
-            for (let i = 0; i < route.legs.length; i++) {
-                bounds.union(route.legs[i].bounds);
+            try {
+                const bounds = new google.maps.LatLngBounds();
+                const route = directionsRenderer.getDirections().routes[0];
+                
+                route.legs.forEach(leg => {
+                    leg.steps.forEach(step => {
+                        step.path.forEach(point => {
+                            bounds.extend(point);
+                        });
+                    });
+                });
+                
+                map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
+            } catch (error) {
+                console.error('Erro ao centralizar rota:', error);
             }
-            
-            map.fitBounds(bounds);
         }
     });
     
-    // Botões de alternar tipo de mapa
     $('#map-type-road').click(function() {
         map.setMapTypeId('roadmap');
-        $(this).addClass('active');
-        $('#map-type-satellite, #map-type-hybrid').removeClass('active');
+        $(this).addClass('active').siblings().removeClass('active');
     });
     
     $('#map-type-satellite').click(function() {
         map.setMapTypeId('satellite');
-        $(this).addClass('active');
-        $('#map-type-road, #map-type-hybrid').removeClass('active');
+        $(this).addClass('active').siblings().removeClass('active');
     });
     
     $('#map-type-hybrid').click(function() {
         map.setMapTypeId('hybrid');
-        $(this).addClass('active');
-        $('#map-type-road, #map-type-satellite').removeClass('active');
+        $(this).addClass('active').siblings().removeClass('active');
     });
     
-    // Botão de exportar rota
-    $('#export-route').click(function() {
-        exportMapToPDF();
-    });
+    $('#export-route').click(exportMapToPDF);
+    $('#refresh-history').click(updateHistory);
     
-    // Botão de atualizar histórico
-    $('#refresh-history').click(function() {
-        updateHistory();
-    });
-    
-    // Botão de ligar/desligar atualização automática
     $('#toggle-auto-update').click(function() {
         isAutoUpdateActive = !isAutoUpdateActive;
-        $(this).toggleClass('btn-outline-primary btn-primary');
-        $(this).html(isAutoUpdateActive ? 
-            '<i class="fas fa-power-off me-1"></i> Auto-Update ON' : 
-            '<i class="fas fa-power-off me-1"></i> Auto-Update OFF');
+        $(this).toggleClass('btn-primary btn-outline-primary')
+               .html(isAutoUpdateActive ? 
+                   '<i class="fas fa-power-off"></i> Auto' : 
+                   '<i class="fas fa-power-off"></i> Auto');
         
         if (isAutoUpdateActive) {
             startAutoUpdate();
-        } else {
+        } else if (updateInterval) {
             clearInterval(updateInterval);
             updateInterval = null;
         }
@@ -689,69 +582,47 @@ function initHistoryTable() {
         scrollCollapse: true,
         language: {
             url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
-        },
-        columnDefs: [
-            { targets: [2], orderable: false }
-        ],
-        createdRow: function(row, data, dataIndex) {
-            // Adiciona tooltip para a coluna de localização
-            $('td:eq(1)', row).attr('title', $('td:eq(1) div', row).attr('title'));
         }
     });
     
-    // Evento de clique nas linhas da tabela
     $('#history-table tbody').on('click', 'tr', function() {
         const lat = parseFloat($(this).data('lat')) || 0;
         const lng = parseFloat($(this).data('lng')) || 0;
         
         if (!isNaN(lat) && !isNaN(lng)) {
-            map.setCenter({ lat: lat, lng: lng });
+            map.setCenter({ lat, lng });
             map.setZoom(15);
         }
     });
 }
 
-// Atualizar histórico via AJAX
+// Atualizar histórico
 function updateHistory() {
-    $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i> Atualizando');
+    $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i>');
     $('#updating-indicator').removeClass('d-none');
     
     $.get('{{ route("freights.history", $freight->id) }}', function(data) {
         historyTable.clear();
         
-        // Ordenar por date e time decrescente
         data.sort((a, b) => {
-            const dateTimeA = (a.date && a.time) ? new Date(`${a.date}T${a.time}`).getTime() : 0;
-            const dateTimeB = (b.date && b.time) ? new Date(`${b.date}T${b.time}`).getTime() : 0;
-            return dateTimeB - dateTimeA;
-        });
-        
-        data.forEach(item => {
-            const dateFormatted = item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A';
-            const timeFormatted = item.time ? new Date(`1970-01-01T${item.time}`).toLocaleTimeString('pt-BR') : 'N/A';
-            
+            const dateA = a.date && a.time ? new Date(`${a.date}T${a.time}`) : 0;
+            const dateB = b.date && b.time ? new Date(`${b.date}T${b.time}`) : 0;
+            return dateB - dateA;
+        }).forEach(item => {
             historyTable.row.add([
-                `<div class="d-flex flex-column">
-                    <small>${dateFormatted}</small>
-                    <small>${timeFormatted}</small>
+                `<div>
+                    <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
+                    <small>${item.time ? new Date('1970-01-01T' + item.time).toLocaleTimeString('pt-BR') : 'N/A'}</small>
                 </div>`,
-                `<div class="text-truncate" style="max-width: 250px;" title="${item.address || 'N/A'}">
-                    ${item.address || 'N/A'}
-                </div>`,
-                `<span class="badge bg-${getStatusClass(item.status)}">
-                    ${item.status ? item.status.replace('_', ' ') : 'N/A'}
-                </span>`
+                `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
+                `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
             ]).nodes().to$()
-                .attr('data-lat', item.latitude || 0)
-                .attr('data-lng', item.longitude || 0)
-                .attr('title', item.address || 'N/A');
+              .attr('data-lat', item.latitude || 0)
+              .attr('data-lng', item.longitude || 0);
         });
         
         historyTable.draw();
-        $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
-        $('#updating-indicator').addClass('d-none');
         
-        // Atualizar última posição com o primeiro item da lista ordenada
         if (data.length > 0) {
             const last = data[0];
             const lat = parseFloat(last.latitude) || 0;
@@ -762,13 +633,11 @@ function updateHistory() {
                 updateCurrentPosition(lastPosition, last.address || 'N/A');
             }
             
-            // Atualizar status do frete
             updateFreightStatus();
         }
-    }).fail(() => {
+    }).always(() => {
         $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
         $('#updating-indicator').addClass('d-none');
-        alert('Erro ao atualizar histórico');
     });
 }
 
@@ -776,142 +645,97 @@ function updateHistory() {
 function updateFreightStatus() {
     $.get('{{ route("freights.status", $freight->id) }}', function(data) {
         if (data.status) {
-            const statusBadge = $('.card-body .badge');
-            statusBadge.removeClass('bg-info bg-success bg-warning bg-danger bg-secondary')
-                      .addClass(`bg-${getStatusClass(data.status)}`)
-                      .html(`<i class="fas fa-truck me-1"></i> ${data.status}`);
+            $('.card-body .badge')
+                .removeClass('bg-info bg-success bg-warning bg-danger bg-secondary')
+                .addClass(`bg-${getStatusClass(data.status)}`)
+                .html(`<i class="fas fa-truck me-1"></i> ${data.status}`);
         }
-    }).fail(() => {
-        console.error("Falha ao atualizar status");
     });
 }
 
-// Função auxiliar para classes de status
+// Helper para classes de status
 function getStatusClass(status) {
     if (!status) return 'secondary';
-    
-    const statusLower = status.toLowerCase();
-    if (statusLower.includes('transito')) return 'info';
-    if (statusLower.includes('entregue')) return 'success';
-    if (statusLower.includes('cancelado')) return 'danger';
-    if (statusLower.includes('pendente')) return 'warning';
+    status = status.toLowerCase();
+    if (status.includes('transito')) return 'info';
+    if (status.includes('entregue')) return 'success';
+    if (status.includes('cancelado')) return 'danger';
+    if (status.includes('pendente')) return 'warning';
     return 'secondary';
 }
 
 // Iniciar atualização automática
 function startAutoUpdate() {
-    // Parar qualquer intervalo existente
-    if (updateInterval) {
-        clearInterval(updateInterval);
-    }
+    if (updateInterval) clearInterval(updateInterval);
     
-    // Função para executar a atualização completa
-    const performUpdate = () => {
+    const update = () => {
         if (!isAutoUpdateActive) return;
         
         $('#updating-indicator').removeClass('d-none');
         
-        // Atualiza a última posição E o histórico completo
         Promise.all([
             $.get('{{ route("freights.last-position", $freight->id) }}'),
             $.get('{{ route("freights.history", $freight->id) }}')
-        ]).then(([positionData, historyData]) => {
-            // 1. Atualiza a posição no mapa
-            if (positionData && positionData.latitude && positionData.longitude) {
-                const lat = parseFloat(positionData.latitude);
-                const lng = parseFloat(positionData.longitude);
+        ]).then(([position, history]) => {
+            if (position && position.latitude && position.longitude) {
+                const lat = parseFloat(position.latitude);
+                const lng = parseFloat(position.longitude);
                 
                 if (!isNaN(lat) && !isNaN(lng)) {
-                    const position = { lat, lng };
-                    updateCurrentPosition(position, positionData.address || 'N/A');
-                    
-                    if (positionData.date && positionData.time) {
-                        const dateFormatted = new Date(positionData.date).toLocaleDateString('pt-BR');
-                        const timeFormatted = new Date(`1970-01-01T${positionData.time}`).toLocaleTimeString('pt-BR');
-                        $('#last-update').text(`${dateFormatted} às ${timeFormatted}`);
-                    }
+                    updateCurrentPosition({ lat, lng }, position.address || 'N/A');
                 }
             }
             
-            // 2. Atualiza o histórico
-            historyTable.clear();
-            historyData.sort((a, b) => {
-                const dateTimeA = (a.date && a.time) ? new Date(`${a.date}T${a.time}`).getTime() : 0;
-                const dateTimeB = (b.date && b.time) ? new Date(`${b.date}T${b.time}`).getTime() : 0;
-                return dateTimeB - dateTimeA;
-            });
-            
-            historyData.forEach(item => {
-                const dateFormatted = item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A';
-                const timeFormatted = item.time ? new Date(`1970-01-01T${item.time}`).toLocaleTimeString('pt-BR') : 'N/A';
-                
-                historyTable.row.add([
-                    `<div class="d-flex flex-column">
-                        <small>${dateFormatted}</small>
-                        <small>${timeFormatted}</small>
+            if (history && history.length) {
+                historyTable.clear().rows.add(history.map(item => [
+                    `<div>
+                        <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
+                        <small>${item.time ? new Date('1970-01-01T' + item.time).toLocaleTimeString('pt-BR') : 'N/A'}</small>
                     </div>`,
-                    `<div class="text-truncate" style="max-width: 250px;" title="${item.address || 'N/A'}">
-                        ${item.address || 'N/A'}
-                    </div>`,
-                    `<span class="badge bg-${getStatusClass(item.status)}">
-                        ${item.status ? item.status.replace('_', ' ') : 'N/A'}
-                    </span>`
-                ]).nodes().to$()
-                    .attr('data-lat', item.latitude || 0)
-                    .attr('data-lng', item.longitude || 0);
-            });
+                    `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
+                    `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
+                ])).draw();
+            }
             
-            historyTable.draw();
-            
-            // 3. Atualiza o status do frete
             updateFreightStatus();
-            
-        }).catch(error => {
-            console.error("Erro na atualização:", error);
         }).finally(() => {
             $('#updating-indicator').addClass('d-none');
         });
     };
     
-    // Executa imediatamente e depois a cada intervalo
-    performUpdate();
-    updateInterval = setInterval(performUpdate, UPDATE_INTERVAL);
+    update();
+    updateInterval = setInterval(update, UPDATE_INTERVAL);
 }
 
 // Exportar mapa para PDF
 function exportMapToPDF() {
     const { jsPDF } = window.jspdf;
-    const mapContainer = document.getElementById('map-container');
+    $('#export-route').html('<i class="fas fa-spinner fa-spin me-1"></i>');
     
-    $('#export-route').html('<i class="fas fa-spinner fa-spin me-1"></i> Gerando...');
-    
-    html2canvas(mapContainer, {
+    html2canvas(document.querySelector('#map-container'), {
         scale: 2,
         logging: false,
-        useCORS: true,
-        allowTaint: true
+        useCORS: true
     }).then(canvas => {
-        const imgData = canvas.toDataURL('image/png');
         const pdf = new jsPDF('landscape');
-        const imgProps = pdf.getImageProperties(imgData);
+        const imgData = canvas.toDataURL('image/png');
         const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
         
         pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
         pdf.save(`rota-frete-{{ $freight->id }}.pdf`);
-        $('#export-route').html('<i class="fas fa-file-pdf me-1"></i> Exportar Rota');
-    }).catch(err => {
-        console.error(err);
-        alert('Erro ao exportar mapa');
-        $('#export-route').html('<i class="fas fa-file-pdf me-1"></i> Exportar Rota');
+    }).catch(error => {
+        console.error('Erro ao exportar:', error);
+        alert('Erro ao gerar PDF');
+    }).finally(() => {
+        $('#export-route').html('<i class="fas fa-file-pdf me-1"></i> Exportar');
     });
 }
 
-// Inicializar o mapa quando a página carregar
+// Inicializar quando o documento estiver pronto
 $(document).ready(function() {
     initMap();
     
-    // Parar atualização quando a página for fechada
     $(window).on('beforeunload', function() {
         if (updateInterval) {
             clearInterval(updateInterval);
