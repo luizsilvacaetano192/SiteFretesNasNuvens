@@ -423,6 +423,7 @@ function initRoute() {
 }
 
 // Calcular e exibir rota
+// Calcular e exibir rota
 function calculateAndDisplayRoute(startPoint, endPoint) {
     directionsService.route({
         origin: startPoint,
@@ -433,20 +434,108 @@ function calculateAndDisplayRoute(startPoint, endPoint) {
         if (status === 'OK') {
             directionsRenderer.setDirections(response);
             
-            // Ajustar visualização para mostrar toda a rota
-            const bounds = new google.maps.LatLngBounds();
-            const route = response.routes[0];
-            
-            for (let i = 0; i < route.legs.length; i++) {
-                bounds.union(route.legs[i].bounds);
+            try {
+                // Ajustar visualização para mostrar toda a rota
+                const bounds = new google.maps.LatLngBounds();
+                const route = response.routes[0];
+                
+                // Verificar se existem legs na rota
+                if (route.legs && route.legs.length > 0) {
+                    // Primeiro expande os bounds para incluir origem e destino
+                    bounds.extend(startPoint);
+                    bounds.extend(endPoint);
+                    
+                    // Depois adiciona todos os pontos da rota
+                    for (let i = 0; i < route.legs.length; i++) {
+                        const leg = route.legs[i];
+                        
+                        // Verifica se o leg tem bounds válidos
+                        if (leg && leg.start_location && leg.end_location) {
+                            bounds.extend(leg.start_location);
+                            bounds.extend(leg.end_location);
+                        }
+                        
+                        // Adiciona todos os passos da rota
+                        if (leg.steps && leg.steps.length > 0) {
+                            for (let j = 0; j < leg.steps.length; j++) {
+                                const step = leg.steps[j];
+                                if (step.path && step.path.length > 0) {
+                                    for (let k = 0; k < step.path.length; k++) {
+                                        bounds.extend(step.path[k]);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    
+                    // Ajusta o zoom para mostrar toda a rota com um pouco de padding
+                    map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
+                } else {
+                    // Se não houver legs, mostra apenas origem e destino
+                    const bounds = new google.maps.LatLngBounds();
+                    bounds.extend(startPoint);
+                    bounds.extend(endPoint);
+                    map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
+                }
+            } catch (error) {
+                console.error('Erro ao ajustar visualização da rota:', error);
+                // Fallback: centraliza no ponto médio entre origem e destino
+                const midLat = (startPoint.lat + endPoint.lat) / 2;
+                const midLng = (startPoint.lng + endPoint.lng) / 2;
+                map.setCenter({lat: midLat, lng: midLng});
+                map.setZoom(8);
             }
-            
-            map.fitBounds(bounds);
         } else {
             console.error('Falha ao calcular rota: ' + status);
+            // Fallback: mostra origem e destino mesmo sem rota
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend(startPoint);
+            bounds.extend(endPoint);
+            map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
         }
     });
 }
+
+// Função para centralizar a rota (corrigida)
+function centerRoute() {
+    if (directionsRenderer.getDirections()) {
+        try {
+            const bounds = new google.maps.LatLngBounds();
+            const route = directionsRenderer.getDirections().routes[0];
+            
+            // Adiciona todos os pontos da rota aos bounds
+            for (let i = 0; i < route.legs.length; i++) {
+                const leg = route.legs[i];
+                if (leg && leg.start_location && leg.end_location) {
+                    bounds.extend(leg.start_location);
+                    bounds.extend(leg.end_location);
+                }
+                
+                if (leg.steps && leg.steps.length > 0) {
+                    for (let j = 0; j < leg.steps.length; j++) {
+                        const step = leg.steps[j];
+                        if (step.path && step.path.length > 0) {
+                            for (let k = 0; k < step.path.length; k++) {
+                                bounds.extend(step.path[k]);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
+        } catch (error) {
+            console.error('Erro ao centralizar rota:', error);
+            // Fallback: usa zoom padrão
+            map.setZoom(10);
+        }
+    }
+}
+
+// Atualize o evento do botão de centralizar rota
+$('#center-route').click(function() {
+    centerRoute();
+});
 
 // Atualizar posição atual
 function updateCurrentPosition(position, address) {
