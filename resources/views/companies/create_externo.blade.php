@@ -17,7 +17,7 @@
         }
         .main-container {
             display: flex;
-            height: 200vh;
+            height: 130vh;
         }
         .form-column {
             flex: 1;
