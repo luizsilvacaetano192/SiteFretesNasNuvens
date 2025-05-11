@@ -139,7 +139,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/toggle-status', [TruckController::class, 'toggleStatus'])->name('trucks.toggleStatus');
     });
 
-    Route::group(['middleware' => ['auth']], function() {
+  
         Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
         ->name('freights.last-position');
 
@@ -148,7 +148,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('freights/{freight}/status', [FreightController::class, 'currentStatus'])->name('freights.status');
 
         Route::get('freights/{freight}/route', [FreightController::class, 'showRoute'])->name('freights.route');
-    });
+    
 
     // Freights
     Route::prefix('freights')->group(function () {
