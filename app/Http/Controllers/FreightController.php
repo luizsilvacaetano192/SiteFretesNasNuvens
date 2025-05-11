@@ -374,16 +374,7 @@ public function currentStatus(Freight $freight)
     ]);
 }
 
-   public function getHistory($id)
-    {
-        $freight = Freight::findOrFail($id);
-        $history = $freight->history()
-            ->orderBy('created_at', 'desc')
-            ->get();
-            
-        return response()->json($history);
-    }
-    
+
     public function getLastPosition($id)
     {
         $freight = Freight::findOrFail($id);
