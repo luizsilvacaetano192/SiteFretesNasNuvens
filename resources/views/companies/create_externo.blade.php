@@ -381,8 +381,8 @@
             <p>Transforme a gestão da sua empresa com nossa plataforma completa e intuitiva.</p>
             
             <ul class="benefits-list list-unstyled">
-                <li><i class="fas fa-check-circle text-success me-2"></i> Gestão integrada de clientes e fornecedores</li>
-                <li><i class="fas fa-check-circle text-success me-2"></i> Relatórios financeiros em tempo real</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i> Gestão integrada de empresa e motorista de frete</li>
+                <li><i class="fas fa-check-circle text-success me-2"></i> Acompanhe o seu frete em tempo real</li>
                 <li><i class="fas fa-check-circle text-success me-2"></i> Suporte especializado 24 horas</li>
                 <li><i class="fas fa-check-circle text-success me-2"></i> Ambiente seguro e em conformidade</li>
                 <li><i class="fas fa-check-circle text-success me-2"></i> Acesso multiplataforma</li>
