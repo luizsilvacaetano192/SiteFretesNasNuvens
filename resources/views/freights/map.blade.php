@@ -370,8 +370,20 @@ function initMap() {
 // Inicializar a rota
 function initRoute() {
     @if($freight->start_lat && $freight->start_lng && $freight->destination_lat && $freight->destination_lng)
-        const startPoint = { lat: {{ $freight->start_lat }}, lng: {{ $freight->start_lng }} };
-        const endPoint = { lat: {{ $freight->destination_lat }}, lng: {{ $freight->destination_lng }} };
+        const startPoint = { 
+            lat: parseFloat({{ $freight->start_lat }}), 
+            lng: parseFloat({{ $freight->start_lng }}) 
+        };
+        const endPoint = { 
+            lat: parseFloat({{ $freight->destination_lat }}), 
+            lng: parseFloat({{ $freight->destination_lng }}) 
+        };
+        
+        // Validar coordenadas
+        if (isNaN(startPoint.lat) || isNaN(startPoint.lng) || isNaN(endPoint.lat) || isNaN(endPoint.lng)) {
+            console.error('Coordenadas inválidas:', { startPoint, endPoint });
+            return;
+        }
         
         // Adicionar marcadores de origem e destino
         new google.maps.Marker({
@@ -400,11 +412,13 @@ function initRoute() {
     
     // Adicionar marcador da posição atual
     @if($lastLocation = $freight->history()->orderBy('date', 'desc')->orderBy('time', 'desc')->first())
-        lastPosition = { 
-            lat: {{ $lastLocation->latitude ?? 0 }}, 
-            lng: {{ $lastLocation->longitude ?? 0 }} 
-        };
-        updateCurrentPosition(lastPosition, "{{ $lastLocation->address ?? 'N/A' }}");
+        const lat = parseFloat({{ $lastLocation->latitude ?? 0 }});
+        const lng = parseFloat({{ $lastLocation->longitude ?? 0 }});
+        
+        if (!isNaN(lat) && !isNaN(lng)) {
+            lastPosition = { lat, lng };
+            updateCurrentPosition(lastPosition, "{{ $lastLocation->address ?? 'N/A' }}");
+        }
     @endif
 }
 
@@ -436,6 +450,13 @@ function calculateAndDisplayRoute(startPoint, endPoint) {
 
 // Atualizar posição atual
 function updateCurrentPosition(position, address) {
+    // Validar a posição
+    if (!position || typeof position.lat !== 'number' || typeof position.lng !== 'number' || 
+        isNaN(position.lat) || isNaN(position.lng)) {
+        console.error('Posição inválida:', position);
+        return;
+    }
+    
     // Remover marcador anterior se existir
     if (currentMarker) {
         currentMarker.setMap(null);
@@ -561,8 +582,11 @@ function setupMapEvents() {
             '<i class="fas fa-power-off me-1"></i> Auto-Update ON' : 
             '<i class="fas fa-power-off me-1"></i> Auto-Update OFF');
         
-        if (isAutoUpdateActive && !updateInterval) {
+        if (isAutoUpdateActive) {
             startAutoUpdate();
+        } else {
+            clearInterval(updateInterval);
+            updateInterval = null;
         }
     });
 }
@@ -588,10 +612,13 @@ function initHistoryTable() {
     
     // Evento de clique nas linhas da tabela
     $('#history-table tbody').on('click', 'tr', function() {
-        const lat = $(this).data('lat') || 0;
-        const lng = $(this).data('lng') || 0;
-        map.setCenter({ lat: lat, lng: lng });
-        map.setZoom(15);
+        const lat = parseFloat($(this).data('lat')) || 0;
+        const lng = parseFloat($(this).data('lng')) || 0;
+        
+        if (!isNaN(lat) && !isNaN(lng)) {
+            map.setCenter({ lat: lat, lng: lng });
+            map.setZoom(15);
+        }
     });
 }
 
@@ -638,11 +665,13 @@ function updateHistory() {
         // Atualizar última posição com o primeiro item da lista ordenada
         if (data.length > 0) {
             const last = data[0];
-            lastPosition = { 
-                lat: last.latitude || 0, 
-                lng: last.longitude || 0 
-            };
-            updateCurrentPosition(lastPosition, last.address || 'N/A');
+            const lat = parseFloat(last.latitude) || 0;
+            const lng = parseFloat(last.longitude) || 0;
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                lastPosition = { lat, lng };
+                updateCurrentPosition(lastPosition, last.address || 'N/A');
+            }
             
             // Atualizar status do frete
             updateFreightStatus();
@@ -682,6 +711,11 @@ function getStatusClass(status) {
 
 // Iniciar atualização automática
 function startAutoUpdate() {
+    // Parar qualquer intervalo existente
+    if (updateInterval) {
+        clearInterval(updateInterval);
+    }
+    
     // Função para executar a atualização completa
     const performUpdate = () => {
         if (!isAutoUpdateActive) return;
@@ -694,17 +728,19 @@ function startAutoUpdate() {
             $.get('{{ route("freights.history", $freight->id) }}')
         ]).then(([positionData, historyData]) => {
             // 1. Atualiza a posição no mapa
-            if (positionData.latitude && positionData.longitude) {
-                const position = { 
-                    lat: positionData.latitude, 
-                    lng: positionData.longitude 
-                };
-                updateCurrentPosition(position, positionData.address || 'N/A');
+            if (positionData && positionData.latitude && positionData.longitude) {
+                const lat = parseFloat(positionData.latitude);
+                const lng = parseFloat(positionData.longitude);
                 
-                if (positionData.date && positionData.time) {
-                    const dateFormatted = new Date(positionData.date).toLocaleDateString('pt-BR');
-                    const timeFormatted = new Date(`1970-01-01T${positionData.time}`).toLocaleTimeString('pt-BR');
-                    $('#last-update').text(`${dateFormatted} às ${timeFormatted}`);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    const position = { lat, lng };
+                    updateCurrentPosition(position, positionData.address || 'N/A');
+                    
+                    if (positionData.date && positionData.time) {
+                        const dateFormatted = new Date(positionData.date).toLocaleDateString('pt-BR');
+                        const timeFormatted = new Date(`1970-01-01T${positionData.time}`).toLocaleTimeString('pt-BR');
+                        $('#last-update').text(`${dateFormatted} às ${timeFormatted}`);
+                    }
                 }
             }
             
