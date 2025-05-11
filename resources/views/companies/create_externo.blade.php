@@ -1,6 +1,70 @@
-@section('title', 'Cadastrar Empresa')
-
-@section('content')
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cadastrar Empresa</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <style>
+        body {
+            background-color: #f8f9fa;
+            color: #212529;
+        }
+        .card {
+            border-radius: 10px;
+            border: none;
+            box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+        }
+        .card-header {
+            border-radius: 10px 10px 0 0 !important;
+            padding: 1.25rem 1.5rem;
+        }
+        .form-control:focus {
+            border-color: #0d6efd;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+        }
+        .bg-light {
+            background-color: #f8f9fa !important;
+        }
+        .invalid-feedback {
+            display: none;
+            width: 100%;
+            margin-top: 0.25rem;
+            font-size: 0.875em;
+            color: #dc3545;
+        }
+        .was-validated .form-control:invalid ~ .invalid-feedback,
+        .was-validated .form-control:valid ~ .invalid-feedback {
+            display: block;
+        }
+        .text-primary {
+            color: #0d6efd !important;
+        }
+        .border-bottom {
+            border-bottom: 1px solid #dee2e6 !important;
+        }
+        .input-group-text {
+            min-width: 40px;
+            justify-content: center;
+        }
+        .btn-outline-secondary:hover {
+            background-color: #f8f9fa;
+        }
+        .toggle-password {
+            cursor: pointer;
+        }
+        .toggle-password:hover {
+            background-color: #e9ecef;
+        }
+        .container {
+            padding: 2rem 0;
+        }
+    </style>
+</head>
+<body>
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-10">
@@ -10,19 +74,13 @@
                 </div>
 
                 <div class="card-body">
-                    @if ($errors->any())
-                    <div class="alert alert-danger alert-dismissible fade show">
+                    <div id="error-alert" class="alert alert-danger alert-dismissible fade show" style="display: none;">
                         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                         <strong>Erros encontrados:</strong>
-                        <ul class="mb-0">
-                            @foreach ($errors->all() as $error)
-                                <li>{{ $error }}</li>
-                            @endforeach
-                        </ul>
+                        <ul id="error-list" class="mb-0"></ul>
                     </div>
-                    @endif
 
-                    <form action="{{ route('companies.store') }}" method="POST" class="needs-validation" novalidate>
+                    <form id="company-form" action="{{ route('companies.store') }}" method="POST" class="needs-validation" novalidate>
                         @csrf
 
                         <div class="mb-4">
@@ -231,8 +289,9 @@
     </div>
 </div>
 
-<!-- Scripts -->
+<!-- jQuery first, then Bootstrap, then outros -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery.mask/1.14.16/jquery.mask.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/js/all.min.js"></script>
 
@@ -240,7 +299,6 @@
 // Global variable for autocomplete
 let autocomplete;
 
-// Initialize form masks and validation
 $(document).ready(function(){
     // Apply masks
     $('#cnpj').mask('00.000.000/0000-00');
@@ -297,6 +355,21 @@ $(document).ready(function(){
                     if (!form.checkValidity()) {
                         event.preventDefault()
                         event.stopPropagation()
+                        
+                        // Show error messages
+                        const errors = [];
+                        form.querySelectorAll(':invalid').forEach(function(element) {
+                            errors.push(element.validationMessage);
+                        });
+                        
+                        if (errors.length > 0) {
+                            const errorList = $('#error-list');
+                            errorList.empty();
+                            errors.forEach(function(error) {
+                                errorList.append(`<li>${error}</li>`);
+                            });
+                            $('#error-alert').show();
+                        }
                     }
                     form.classList.add('was-validated')
                 }, false)
@@ -367,51 +440,5 @@ window.initAutocomplete = initAutocomplete;
 
 <!-- Load Google Maps API -->
 <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initAutocomplete" async defer></script>
-
-<style>
-    .card {
-        border-radius: 10px;
-        border: none;
-    }
-    .card-header {
-        border-radius: 10px 10px 0 0 !important;
-    }
-    .form-control:focus {
-        border-color: #0d6efd;
-        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
-    }
-    .bg-light {
-        background-color: #f8f9fa !important;
-    }
-    .invalid-feedback {
-        display: none;
-        width: 100%;
-        margin-top: 0.25rem;
-        font-size: 0.875em;
-        color: #dc3545;
-    }
-    .was-validated .form-control:invalid ~ .invalid-feedback,
-    .was-validated .form-control:valid ~ .invalid-feedback {
-        display: block;
-    }
-    .text-primary {
-        color: #0d6efd !important;
-    }
-    .border-bottom {
-        border-bottom: 1px solid #dee2e6 !important;
-    }
-    .input-group-text {
-        min-width: 40px;
-        justify-content: center;
-    }
-    .btn-outline-secondary:hover {
-        background-color: #f8f9fa;
-    }
-    .toggle-password {
-        cursor: pointer;
-    }
-    .toggle-password:hover {
-        background-color: #e9ecef;
-    }
-</style>
-@endsection
+</body>
+</html>
