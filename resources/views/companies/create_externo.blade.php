@@ -374,7 +374,7 @@
     <!-- Coluna Direita - Imagem com Logo -->
     <div class="image-column">
         <div class="logo-container">
-            <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo" class="logo">
+            <img src="{{ asset('images/mascote-fretes-em-nuvens.png') }}" alt="Logo" class="logo">
         </div>
         <div class="image-content">
             <h1>Junte-se a Nós</h1>
