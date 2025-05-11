@@ -143,6 +143,15 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/toggle-status', [TruckController::class, 'toggleStatus'])->name('trucks.toggleStatus');
     });
 
+     Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
+    ->name('freights.last-position');
+
+    Route::get('freights/{freight}/history', [FreightController::class, 'history']);
+
+    Route::get('freights/{freight}/status', [FreightController::class, 'currentStatus'])->name('freights.status');
+
+    Route::get('freights/{freight}/route', [FreightController::class, 'showRoute'])->name('freights.route');
+
     // Freights
     Route::prefix('freights')->group(function () {
         Route::get('/data', [FreightController::class, 'getDataTable'])->name('freights.data');
@@ -159,7 +168,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{freightId}/transport', [FreightController::class, 'transport'])->name('freights.transport');
     });
 
-   
     // Freight Statuses
     Route::prefix('freight-statuses')->group(function () {
         Route::get('/', [FreightStatusController::class, 'index'])->name('freight_statuses.index');
@@ -168,14 +176,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/store', [FreightStatusController::class, 'store'])->name('freight-statuses.store');
     });
 
-    Route::get('freights/{freight}/status', [FreightController::class, 'currentStatus'])->name('freights.status');
-
-     Route::get('freights/{freight}/route', [FreightController::class, 'showRoute'])->name('freights.route');
-    Route::get('freights/{freight}/last-position', [FreightController::class, 'lastPosition']);
-    Route::get('freights/{freight}/history', [FreightController::class, 'history']);
   
-    Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
-    ->name('freights.last-position');
+  
+   
+  
 
     // Pending Tasks
     Route::prefix('pending-tasks')->group(function () {
