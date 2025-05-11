@@ -308,7 +308,8 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
     public function showRoute(Freight $freight)
 {
-    $this->authorize('view', $freight);
+     $this->authorize('view', $freight);
+   // $this->authorize('view', $freight);
     
     $statusBadgeClass = match($freight->freightStatus->name) {
         'Em Trânsito' => 'info',
@@ -325,7 +326,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
 public function lastPosition(Freight $freight)
 {
-    $this->authorize('view', $freight);
+  //  $this->authorize('view', $freight);
     
     $lastLocation = $freight->history()
         ->orderBy('date', 'desc')
@@ -344,7 +345,7 @@ public function lastPosition(Freight $freight)
 
 public function history(Freight $freight)
 {
-    $this->authorize('view', $freight);
+   // $this->authorize('view', $freight);
     
     $history = $freight->history()
         ->orderBy('date', 'desc')
