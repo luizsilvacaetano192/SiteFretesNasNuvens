@@ -164,7 +164,7 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0"><i class="fas fa-building me-2"></i>Cadastro de Empresa</h4>
                     <div class="form-logo-container">
-                        <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo Empresa" class="form-logo">
+                        <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" alt="Logo Empresa" class="form-logo">
                     </div>
                 </div>
 
