@@ -80,23 +80,23 @@
             margin: 0 auto;
         }
        
-      .card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 1rem 1.5rem;
-}
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+        }
 
-.form-logo {
-    max-height: 40px; /* Ajuste conforme necessário */
-    width: auto;
-}
+        .form-logo {
+            max-height: 250px; /* Ajuste conforme necessário */
+            width: auto;
+        }
 
-@media (max-width: 768px) {
-    .form-logo {
-        max-height: 30px; /* Tamanho menor para mobile */
-    }
-}
+        @media (max-width: 768px) {
+            .form-logo {
+                max-height: 250px; /* Tamanho menor para mobile */
+            }
+        }
         .form-control:focus {
             border-color: #0d6efd;
             box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
