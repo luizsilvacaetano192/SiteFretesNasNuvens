@@ -9,6 +9,19 @@
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
     <style>
+        .form-logo-container {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .form-logo {
+            max-width: 180px;
+        }
+
+        @media (max-width: 992px) {
+            .form-logo {
+                max-width: 150px;
+            }
+        }
         body, html {
             height: 100%;
             margin: 0;
