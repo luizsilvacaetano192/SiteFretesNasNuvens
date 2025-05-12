@@ -96,7 +96,7 @@
         .form-logo {
             max-height: 250px; /* Ajuste conforme necessário */
             width: auto;
-             filter: brightness(0) invert(1); /* Opcional: transforma logo em branco */
+             
         }
 
         @media (max-width: 768px) {
