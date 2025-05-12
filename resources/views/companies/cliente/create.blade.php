@@ -157,11 +157,11 @@
         <div class="form-container">
             <div class="card shadow-lg">
                 <div class="card-header">
-                    <div class="header-title">
-                        <h4 class="mb-0"><i class="fas fa-building me-2"></i>Cadastro de Empresa</h4>
-                        <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo" class="header-logo">
-                    </div>
-                </div>           
+                <div class="header-title">
+                    <h4 class="mb-0"><i class="fas fa-building me-2"></i>Cadastro de Empresa</h4>
+                    <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo" class="header-logo">
+                </div>
+            </div>           
             </div>
         </div>
 
