@@ -138,10 +138,11 @@
 </head>
 <body>
 <div class="main-container">
-    <div class="form-logo-container">
-        <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo Empresa" class="form-logo">
-    </div>
+   
     <div class="form-column">
+        <div class="form-logo-container">
+            <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo Empresa" class="form-logo">
+        </div>
         <div class="form-container">
             <div class="card shadow-lg">
                 <div class="card-header">
