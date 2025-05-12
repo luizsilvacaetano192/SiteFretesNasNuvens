@@ -81,15 +81,22 @@
         }
        
         .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+           background-color: #001a33; /* Azul muito escuro */
+            border-bottom: 1px solid #000d1a; /* Borda mais escura para contraste */
+            color: white; /* Texto branco para contraste */
             padding: 1rem 1.5rem;
+            border-radius: 15px 15px 0 0 !important;
+        }
+
+        .card-header h4 {
+            color: white !important; /* Garante que o texto fique branco */
+            margin-bottom: 0;
         }
 
         .form-logo {
             max-height: 250px; /* Ajuste conforme necessário */
             width: auto;
+             filter: brightness(0) invert(1); /* Opcional: transforma logo em branco */
         }
 
         @media (max-width: 768px) {
