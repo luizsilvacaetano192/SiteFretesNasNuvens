@@ -153,13 +153,14 @@
 <div class="main-container">
    
     <div class="form-column">
-        <div class="form-logo-container">
-            <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo Empresa" class="form-logo">
-        </div>
+        
         <div class="form-container">
             <div class="card shadow-lg">
                 <div class="card-header">
                     <h4 class="mb-0"><i class="fas fa-building me-2"></i>Cadastro de Empresa</h4>
+                    <div class="form-logo-container">
+            <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo Empresa" class="form-logo">
+        </div>
                 </div>
 
                 <div class="card-body p-4">
