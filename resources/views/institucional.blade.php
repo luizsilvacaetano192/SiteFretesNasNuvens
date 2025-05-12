@@ -568,21 +568,21 @@
 </head>
 <body>
     <!-- Cabeçalho -->
-   <header class="main-header" style="background-color: #f0f8ff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+   <header class="main-header" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
     <div class="container">
         <div class="logo">
             <a href="/">
-                <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" alt="Fretes em Nuvens - Plataforma de Fretes" width="180">
+                <img src="{{ asset('images/logo_fretes2.png') }}" alt="Fretes em Nuvens - Plataforma de Fretes" width="180" style="filter: brightness(0) invert(1);">
             </a>
         </div>
         <nav class="main-nav">
             <ul>
-                <li><a href="#como-funciona" style="color: #2a5bdd;">Como Funciona</a></li>
-                <li><a href="#para-empresas" style="color: #2a5bdd;">Para Empresas</a></li>
-                <li><a href="#para-motoristas" style="color: #2a5bdd;">Para Motoristas</a></li>
-                <li><a href="#contato" style="color: #2a5bdd;">Contato</a></li>
-                <li><a href="/login" class="btn btn-outline" style="border-color: #2a5bdd; color: #2a5bdd;">Entrar</a></li>
-                <li><a href="/cadastro" class="btn btn-primary" style="background-color: #2a5bdd; border-color: #2a5bdd;">Cadastre-se</a></li>
+                <li><a href="#como-funciona" style="color: white;">Como Funciona</a></li>
+                <li><a href="#para-empresas" style="color: white;">Para Empresas</a></li>
+                <li><a href="#para-motoristas" style="color: white;">Para Motoristas</a></li>
+                <li><a href="#contato" style="color: white;">Contato</a></li>
+                <li><a href="/login" class="btn btn-outline" style="border-color: white; color: white;">Entrar</a></li>
+                <li><a href="/cadastro" class="btn btn-primary" style="background-color: white; color: #3498db; border-color: white;">Cadastre-se</a></li>
             </ul>
         </nav>
     </div>
