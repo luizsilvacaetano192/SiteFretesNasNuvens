@@ -93,11 +93,24 @@
             box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
         }
-        .card-header {
-            border-radius: 15px 15px 0 0 !important;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-            color: white;
+       .card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 1rem 1.5rem;
+        }
+        .header-title {
+            display: flex;
+            align-items: center;
+        }
+        .header-logo {
+            max-width: 40px;
+            margin-left: 15px;
+        }
+        @media (max-width: 992px) {
+            .header-logo {
+                max-width: 30px;
+            }
         }
         .form-control:focus {
             border-color: #0d6efd;
@@ -157,11 +170,13 @@
         <div class="form-container">
             <div class="card shadow-lg">
                 <div class="card-header">
-                    <h4 class="mb-0"><i class="fas fa-building me-2"></i>Cadastro de Empresa</h4>
-                    <div class="form-logo-container">
-            <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo Empresa" class="form-logo">
+                    <div class="header-title">
+                        <h4 class="mb-0"><i class="fas fa-building me-2"></i>Cadastro de Empresa</h4>
+                        <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo" class="header-logo">
+                    </div>
+                </div>           
+            </div>
         </div>
-                </div>
 
                 <div class="card-body p-4">
                     <div id="error-alert" class="alert alert-danger alert-dismissible fade show" style="display: none;">
