@@ -25,7 +25,7 @@
         }
         .form-column {
             flex: 1;
-            padding: 2rem;
+            padding: 1rem;
             background: #f8f9fa;
             overflow-y: auto;
         }
@@ -76,7 +76,7 @@
             font-size: 0.95rem;
         }
         .form-container {
-            max-width: 1000px;
+            max-width: 800px;
             margin: 0 auto;
         }
        
