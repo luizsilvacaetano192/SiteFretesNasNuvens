@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\cliente;
 
 use App\Models\Freight;
 use App\Models\Shipment;
@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Http\Controllers\Controller;
 
 class CliFreightController extends Controller
 {
@@ -122,7 +123,8 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
     public function getDataTable(Request $request)
     {
         $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver.driver'])
-                ->select('freights.*');
+        ->where('company_id', auth()->id()) // Filtra pelo cliente logado        
+        ->select('freights.*');
     
         // Aplica os filtros antes de passar para o DataTables
         if ($request->status_filter) {

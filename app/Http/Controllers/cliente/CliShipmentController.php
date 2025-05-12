@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\cliente;
 
 use App\Models\Shipment;
 use App\Models\Company;
@@ -8,6 +8,7 @@ use App\Models\Driver;
 use App\Models\Setting;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
+use App\Http\Controllers\Controller;
 
 class CliShipmentController extends Controller
 {
@@ -39,7 +40,8 @@ class CliShipmentController extends Controller
     public function getShipments(Request $request)
     {
         $shipments = Shipment::with(['company', 'freight'])
-            ->select('shipments.*');
+         ->where('company_id', auth()->id()) // Filtra pelo cliente logado  
+        ->select('shipments.*');
     
         return DataTables::of($shipments)
             ->addColumn('company_name', function($shipment) {
