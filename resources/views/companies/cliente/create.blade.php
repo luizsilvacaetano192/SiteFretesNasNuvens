@@ -13,11 +13,10 @@
             height: 100%;
             margin: 0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            overflow-x: hidden;
         }
         .main-container {
             display: flex;
-            height: 120vh;
+            height: 100vh;
         }
         .form-column {
             flex: 1;
@@ -34,6 +33,7 @@
             display: flex;
             flex-direction: column;
             position: relative;
+            overflow: hidden;
         }
         .logo-container {
             padding: 2rem;
