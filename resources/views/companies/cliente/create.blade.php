@@ -68,7 +68,7 @@
         }
         .benefits-list li {
             margin-bottom: 0.8rem;
-            font-size: 0.100rem;
+            font-size: 0.95rem;
         }
         .form-container {
             max-width: 800px;
