@@ -795,7 +795,7 @@
     <footer class="main-footer">
         <div class="container">
             <div class="footer-logo">
-                <img src="{{ asset('images/logo-pequeno-fretes-em-nuvens.png') }}" alt="Fretes em Nuvens" width="150">
+                <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" alt="Fretes em Nuvens" width="150">
                 <p>Conectando empresas e motoristas de forma inteligente</p>
             </div>
             
