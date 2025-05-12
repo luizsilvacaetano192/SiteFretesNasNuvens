@@ -43,8 +43,8 @@ Route::middleware(['guest', 'throttle:5,1'])->group(function () {
     Route::get('/cadastro', [CliCompanyController::class, 'cadastro_externo']);
 
 //======================================================================================================    
-    // Redireciona raiz para login
-    Route::redirect('/', '/login');
+    // Redireciona raiz para institucional
+    Route::redirect('/', '/institucional');
 });
 
 Route::middleware(['auth'])->group(function () {
@@ -221,9 +221,4 @@ Route::middleware(['auth', 'verified'])->group(function () {
         $shipments = Shipment::all();
         return view('shipments.index', compact('shipments'));
     });
-});
-
-Route::get('/institucional', function () {
-   
-    return view('institucional');
 });
