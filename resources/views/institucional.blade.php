@@ -164,6 +164,7 @@
 
         /* Header */
         .main-header {
+          background-color: #f0f8ff; /* Azul Alice - bem clarinho */
           position: fixed;
           top: 0;
           left: 0;
@@ -567,25 +568,25 @@
 </head>
 <body>
     <!-- Cabeçalho -->
-    <header class="main-header">
-        <div class="container">
-            <div class="logo">
-                <a href="/">
-                    <img src="{{ asset('images/logo_fretes2.png') }}" alt="Fretes em Nuvens - Plataforma de Fretes" width="180">
-                </a>
-            </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="#como-funciona">Como Funciona</a></li>
-                    <li><a href="#para-empresas">Para Empresas</a></li>
-                    <li><a href="#para-motoristas">Para Motoristas</a></li>
-                    <li><a href="#contato">Contato</a></li>
-                    <li><a href="/login" class="btn btn-outline">Entrar</a></li>
-                    <li><a href="/cadastro" class="btn btn-primary">Cadastre-se</a></li>
-                </ul>
-            </nav>
+   <header class="main-header" style="background-color: #f0f8ff; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+    <div class="container">
+        <div class="logo">
+            <a href="/">
+                <img src="{{ asset('images/logo_fretes2.png') }}" alt="Fretes em Nuvens - Plataforma de Fretes" width="180">
+            </a>
         </div>
-    </header>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="#como-funciona" style="color: #2a5bdd;">Como Funciona</a></li>
+                <li><a href="#para-empresas" style="color: #2a5bdd;">Para Empresas</a></li>
+                <li><a href="#para-motoristas" style="color: #2a5bdd;">Para Motoristas</a></li>
+                <li><a href="#contato" style="color: #2a5bdd;">Contato</a></li>
+                <li><a href="/login" class="btn btn-outline" style="border-color: #2a5bdd; color: #2a5bdd;">Entrar</a></li>
+                <li><a href="/cadastro" class="btn btn-primary" style="background-color: #2a5bdd; border-color: #2a5bdd;">Cadastre-se</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
 
     <!-- Hero Section -->
     <section class="hero">
