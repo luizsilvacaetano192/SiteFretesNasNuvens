@@ -25,7 +25,7 @@
         }
         .form-column {
             flex: 1;
-            padding: 0rem;
+            padding: 1rem;
             background: #f8f9fa;
             overflow-y: auto;
         }
@@ -81,7 +81,7 @@
         }
        
         .card-header {
-            background-color: #001a33; /* Azul muito escuro */
+            background-color: #2A5BDD; /* Azul muito escuro */
             border-bottom: 2px solid #000d1a; /* Borda mais escura para contraste */
             color: white; /* Texto branco para contraste */
             padding: 1rem 1.5rem;
