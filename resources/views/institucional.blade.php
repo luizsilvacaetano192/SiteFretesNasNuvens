@@ -572,7 +572,9 @@
     <div class="container">
         <div class="logo">
             <a href="/">
-                <img src="{{ asset('images/logo_fretes2.png') }}" alt="Fretes em Nuvens - Plataforma de Fretes" width="180" style="filter: brightness(0) invert(1);">
+                <img src="{{ asset('images/logo_fretes2.png') }}" 
+                alt="Fretes em Nuvens - Plataforma de Fretes" width="180"
+                >
             </a>
         </div>
         <nav class="main-nav">
