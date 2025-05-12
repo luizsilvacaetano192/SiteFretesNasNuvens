@@ -4,10 +4,12 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MapaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ShipmentController;
+use App\Http\Controllers\cliente\CliShipmentController;
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\cliente\CliCompanyController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\FreightController;
+use App\Http\Controllers\cliente\CliFreightController;
 use App\Http\Controllers\FreightStatusController;
 use App\Models\Shipment;
 use App\Models\Freight;
@@ -155,18 +157,18 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         // Freights cliente
     Route::prefix('freights/cliente')->middleware('auth')->group(function () {
-        Route::get('/data', [FreightController::class, 'getDataTable'])->name('freights.data');
-        Route::get('/stats', [FreightController::class, 'getStats'])->name('freights.stats');
-        Route::get('/statuses', [FreightController::class, 'getStatuses'])->name('freights.statuses');
-        Route::get('/{id}', [FreightController::class, 'show'])->name('freights.show');
-        Route::get('/', [FreightController::class, 'index'])->name('freights.index');
-        Route::post('/store', [FreightController::class, 'store'])->name('freights.store');
-        Route::get('/create', [FreightController::class, 'create'])->name('freights.create');
-        Route::delete('/delete-all', [FreightController::class, 'deleteAll'])->name('freights.deleteAll');
-        Route::delete('/{id}', [FreightController::class, 'destroy'])->name('freights.destroy');
-        Route::put('/{freightsDriver}/update-status', [FreightController::class, 'updateStatus'])->name('freights.update-status');
-        Route::get('/mapa-frete-app', [FreightController::class, 'map'])->name('freights.map');
-        Route::get('/{freightId}/transport', [FreightController::class, 'transport'])->name('freights.transport');
+        Route::get('/data', [CliFreightController::class, 'getDataTable'])->name('freights.data');
+        Route::get('/stats', [CliFreightController::class, 'getStats'])->name('freights.stats');
+        Route::get('/statuses', [CliFreightController::class, 'getStatuses'])->name('freights.statuses');
+        Route::get('/{id}', [CliFreightController::class, 'show'])->name('freights.show');
+        Route::get('/', [CliFreightController::class, 'index'])->name('freights.index');
+        Route::post('/store', [CliFreightController::class, 'store'])->name('freights.store');
+        Route::get('/create', [CliFreightController::class, 'create'])->name('freights.create');
+        Route::delete('/delete-all', [CliFreightController::class, 'deleteAll'])->name('freights.deleteAll');
+        Route::delete('/{id}', [CliFreightController::class, 'destroy'])->name('freights.destroy');
+        Route::put('/{freightsDriver}/update-status', [CliFreightController::class, 'updateStatus'])->name('freights.update-status');
+        Route::get('/mapa-frete-app', [CliFreightController::class, 'map'])->name('freights.map');
+        Route::get('/{freightId}/transport', [CliFreightController::class, 'transport'])->name('freights.transport');
     });
 
     // Freights
