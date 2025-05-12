@@ -40,7 +40,7 @@ Route::middleware(['guest', 'throttle:5,1'])->group(function () {
     Route::get('/login', [AuthController::class, 'index'])->name('login.form');
     Route::post('/login', [AuthController::class, 'handleLogin'])->name('login');
 //=============== acessos clientes =====================================================================
-    Route::get('/cadastro', [CliCompanyController::class, 'cadastro_externo']);
+    Route::get('/cadastro', [CliCompanyController::class, 'create']);
 
 //======================================================================================================    
     // Redireciona raiz para login

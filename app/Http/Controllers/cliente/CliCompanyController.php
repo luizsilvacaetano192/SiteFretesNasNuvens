@@ -10,9 +10,9 @@ use App\Http\Controllers\Controller;
 
 class CliCompanyController extends Controller
 {    
-    public function cadastro_externo()
+    public function create()
     {
-        return view('companies.cliente.create_externo');
+        return view('companies.cliente.create');
     }
   
     public function store(Request $request)
