@@ -5,7 +5,7 @@ use App\Http\Controllers\MapaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\CompanyController;
-use App\Http\Controllers\CliCompanyController;
+use App\Http\Controllers\cliente\CliCompanyController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\FreightController;
 use App\Http\Controllers\FreightStatusController;
