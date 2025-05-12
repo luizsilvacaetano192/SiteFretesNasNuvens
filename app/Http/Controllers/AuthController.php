@@ -66,7 +66,7 @@ class AuthController extends Controller
         $token = $request->user()->createToken('auth_token')->plainTextToken;
         
         return response()->json([
-            'redirect_to' => $request->user()->isAdmin() ? '/freights' : '/cliente',
+            'redirect_to' => $request->user()->isAdmin() ? '/freights' : '/freights/cliente',
             'access_token' => $token
         ]);
     }
