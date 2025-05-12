@@ -5,6 +5,7 @@ use App\Http\Controllers\MapaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ShipmentController;
 use App\Http\Controllers\CompanyController;
+use App\Http\Controllers\CliCompanyController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\FreightController;
 use App\Http\Controllers\FreightStatusController;
@@ -38,10 +39,10 @@ Route::middleware(['guest', 'throttle:5,1'])->group(function () {
     // Rota única para exibir o formulário e processar login
     Route::get('/login', [AuthController::class, 'index'])->name('login.form');
     Route::post('/login', [AuthController::class, 'handleLogin'])->name('login');
+//=============== acessos clientes =====================================================================
+    Route::get('/cadastro', [CliCompanyController::class, 'cadastro_externo']);
 
-    Route::get('/cadastro', [CompanyController::class, 'cadastro_externo']);
-
-    
+//======================================================================================================    
     // Redireciona raiz para login
     Route::redirect('/', '/login');
 });
