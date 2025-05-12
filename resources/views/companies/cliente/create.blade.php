@@ -93,24 +93,11 @@
             box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
             margin-bottom: 2rem;
         }
-       .card-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem 1.5rem;
-        }
-        .header-title {
-            display: flex;
-            align-items: center;
-        }
-        .header-logo {
-            max-width: 40px;
-            margin-left: 15px;
-        }
-        @media (max-width: 992px) {
-            .header-logo {
-                max-width: 30px;
-            }
+        .card-header {
+            border-radius: 15px 15px 0 0 !important;
+            padding: 1.5rem;
+            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
+            color: white;
         }
         .form-control:focus {
             border-color: #0d6efd;
