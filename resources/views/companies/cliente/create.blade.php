@@ -13,15 +13,7 @@
             text-align: center;
             margin-bottom: 2rem;
         }
-        .form-logo {
-            max-width: 180px;
-        }
 
-        @media (max-width: 992px) {
-            .form-logo {
-                max-width: 150px;
-            }
-        }
         body, html {
             height: 100%;
             margin: 0;
@@ -87,18 +79,24 @@
             max-width: 800px;
             margin: 0 auto;
         }
-        .card {
-            border-radius: 15px;
-            border: none;
-            box-shadow: 0 0.5rem 1.5rem rgba(0, 0, 0, 0.1);
-            margin-bottom: 2rem;
-        }
-        .card-header {
-            border-radius: 15px 15px 0 0 !important;
-            padding: 1.5rem;
-            background: linear-gradient(135deg, #0d6efd, #0b5ed7);
-            color: white;
-        }
+       
+      .card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 1.5rem;
+}
+
+.form-logo {
+    max-height: 40px; /* Ajuste conforme necessário */
+    width: auto;
+}
+
+@media (max-width: 768px) {
+    .form-logo {
+        max-height: 30px; /* Tamanho menor para mobile */
+    }
+}
         .form-control:focus {
             border-color: #0d6efd;
             box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
@@ -155,12 +153,12 @@
     <div class="form-column">
         
         <div class="form-container">
-            <div class="card shadow-lg">
-                <div class="card-header">
+           <div class="card shadow-lg">
+                <div class="card-header d-flex justify-content-between align-items-center">
                     <h4 class="mb-0"><i class="fas fa-building me-2"></i>Cadastro de Empresa</h4>
                     <div class="form-logo-container">
-            <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo Empresa" class="form-logo">
-        </div>
+                        <img src="{{ asset('images/logo_fretes2.png') }}" alt="Logo Empresa" class="form-logo">
+                    </div>
                 </div>
 
                 <div class="card-body p-4">
