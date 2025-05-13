@@ -48,7 +48,7 @@
         }
 
         .sidebar-header img {
-            max-height: 250px;
+            max-height: 150px;
             width: auto;
         }
 
