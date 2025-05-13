@@ -43,10 +43,8 @@
         }
 
         .sidebar-logo {
-            padding: 10px;
+            padding: 15px 10px;
             text-align: center;
-            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
         .sidebar-logo img {
