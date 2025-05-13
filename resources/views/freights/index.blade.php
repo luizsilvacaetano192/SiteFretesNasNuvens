@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.cliente.app')
 
 @section('title', 'Gestão de Fretes')
 
@@ -812,7 +812,7 @@ function initializeDataTable() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: '{{ route('freights.data') }}',
+            url: '{{ route('freights.cliente.data') }}',
             type: 'GET',
             data: function(d) {
                 d.status_filter = $('#status-filter').val();
@@ -1120,7 +1120,7 @@ function confirmDeleteAll() {
 
 function deleteAllFreights() {
     $.ajax({
-        url: '{{ route('freights.deleteAll') }}',
+        url: '{{ route('freights.cliente.deleteAll') }}',
         type: 'DELETE',
         data: {
             _token: '{{ csrf_token() }}'
