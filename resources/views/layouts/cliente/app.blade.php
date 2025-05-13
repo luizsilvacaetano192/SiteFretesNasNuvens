@@ -52,24 +52,22 @@
             width: auto;
         }
 
-        .sidebar-nav {
+       .sidebar-nav {
             flex-grow: 1;
             overflow-y: auto;
-           
+            padding: 10px 0; /* Reduzi o padding vertical */
         }
-
         .sidebar-footer {
-            
+            padding: 5px 0; /* Reduzi o padding vertical */
             text-align: center;
-           
+            border-top: 1px solid rgba(255,255,255,0.1);
         }
 
         .sidebar-footer img {
-            max-height: 250px;
+            max-height: 180px; /* Reduzi um pouco a altura máxima */
             width: auto;
-          
+            margin-bottom: 5px; /* Adicionei uma pequena margem na parte inferior */
         }
-
         .sidebar-link {
             display: flex;
             align-items: center;
