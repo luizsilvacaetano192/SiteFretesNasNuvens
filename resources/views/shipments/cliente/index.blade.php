@@ -50,7 +50,7 @@
                             <th width="40"></th>
                             <th class="ps-4">ID</th>
                             <th>Frete</th>
-                            <th>Empresa</th>
+                         
                             <th>Peso</th>
                             <th>Tipo de Carga</th>
                             <th>Status</th>
@@ -335,11 +335,7 @@ $(document).ready(function() {
                 name: 'freight_id',
                 render: data => data || 'Sem Frete'
             },
-            { 
-                data: 'company.name',
-                name: 'company_id',
-                render: data => data || 'N/A'
-            },
+          
             { 
                 data: 'weight',
                 render: data => data ? `${data} kg` : '0 kg'

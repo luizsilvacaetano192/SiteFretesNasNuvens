@@ -384,7 +384,6 @@
                         <thead class="table-light">
                             <tr>
                                 <th>ID</th>
-                                <th>Empresa</th>
                                 <th style="width:10px">Origem</th>
                                 <th>Destino</th>
                                 <th>Motorista</th>
@@ -834,18 +833,7 @@ function initializeDataTable() {
                 name: 'id',
                 className: 'fw-semibold'
             },
-            { 
-                data: 'company_name', 
-                name: 'company.name',
-                render: function(data, type, row) {
-                    if (!data) return 'N/A';
-                    return `
-                        <div class="text-truncate-container" title="${data}">
-                            <span class="fw-semibold">${data}</span>
-                        </div>
-                    `;
-                }
-            },
+            
             { 
                 data: 'start_address', 
                 name: 'start_address',
