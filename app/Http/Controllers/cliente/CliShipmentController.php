@@ -18,7 +18,7 @@ class CliShipmentController extends Controller
             return $this->getShipments($request);
         }
         
-        return view('shipments.index');
+        return view('shipments.cliente.index');
     }
 
     public function show(Shipment $shipment)
@@ -119,7 +119,7 @@ class CliShipmentController extends Controller
     {
         $companies = Company::all();
         $drivers = Driver::all();
-        return view('shipments.create', compact('companies', 'drivers'));
+        return view('shipments.cliente.create', compact('companies', 'drivers'));
     }
 
     public function store(Request $request)
@@ -161,7 +161,7 @@ class CliShipmentController extends Controller
         // Create the shipment
         $shipment = Shipment::create($validated);
 
-        return redirect()->route('shipments.index')
+        return redirect()->route('shipments.cliente.index')
             ->with('success', 'Carga cadastrada com sucesso!');
     }
 
