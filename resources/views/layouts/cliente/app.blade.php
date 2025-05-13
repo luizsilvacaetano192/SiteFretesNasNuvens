@@ -55,13 +55,13 @@
         .sidebar-nav {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 15px 0;
+           
         }
 
         .sidebar-footer {
             
             text-align: center;
-            border-top: 1px solid rgba(255,255,255,0.1);
+           
         }
 
         .sidebar-footer img {
