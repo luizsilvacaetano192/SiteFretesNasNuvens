@@ -1,4 +1,4 @@
-@extends('layouts.app')
+@extends('layouts.clientes.app')
 
 @section('title', 'Lista de Cargas')
 
@@ -11,7 +11,7 @@
             </h1>
         </div>
         <div class="col-md-6 text-end">
-            <a href="{{ route('shipments.create') }}" class="btn btn-primary btn-lg">
+            <a href="{{ route('shipments.cliente.create') }}" class="btn btn-primary btn-lg">
                 <i class="fas fa-plus-circle me-2"></i>Nova Carga
             </a>
         </div>
@@ -310,7 +310,7 @@ $(document).ready(function() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: "{{ route('shipments.index') }}",
+            url: "{{ route('shipments.cliente.index') }}",
             type: "GET",
             error: function(xhr, error, thrown) {
                 console.error("Erro ao carregar dados:", error);
