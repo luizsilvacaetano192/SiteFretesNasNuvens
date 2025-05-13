@@ -38,10 +38,7 @@
             </div>
             <div class="card-body">
                 <div class="row">
-                    <div class="col-md-4 mb-3">
-                        <label class="form-label fw-bold">Empresa Contratante</label>
-                        <input type="text" class="form-control-plaintext" value="{{ $shipment->company->name }}" readonly>
-                    </div>
+               
                     <div class="col-md-4 mb-3">
                         <label class="form-label fw-bold">Tipo de Carga</label>
                         <input type="text" class="form-control-plaintext" value="{{ ucfirst($shipment->cargo_type) }}" readonly>

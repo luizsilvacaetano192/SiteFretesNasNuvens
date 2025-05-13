@@ -17,24 +17,6 @@
     <form action="{{ route('shipments.store') }}" method="POST">
         @csrf
 
-        <div class="card mb-4">
-            <div class="card-header bg-primary text-white">
-                <h5>Informações da Empresa</h5>
-            </div>
-            <div class="card-body">
-                <div class="mb-3">
-                    <label class="form-label">Empresa Contratante*</label>
-                    <select name="company_id" class="form-control" required>
-                        <option value="">Selecione uma empresa</option>
-                        @foreach($companies as $company)
-                            <option value="{{ $company->id }}" {{ old('company_id') == $company->id ? 'selected' : '' }}>
-                                {{ $company->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                </div>
-            </div>
-        </div>
 
         <div class="card mb-4">
             <div class="card-header bg-primary text-white">
