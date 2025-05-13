@@ -65,7 +65,7 @@
         }
 
         .sidebar-footer img {
-            max-height: 250;/* Reduzi um pouco a altura máxima */
+            max-height: 200;/* Reduzi um pouco a altura máxima */
             width: auto;
             margin-bottom: 5px; /* Adicionei uma pequena margem na parte inferior */
         }
