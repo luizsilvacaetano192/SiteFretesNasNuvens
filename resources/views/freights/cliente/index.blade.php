@@ -903,7 +903,7 @@ function initializeDataTable() {
                 render: function(data, type, row) {
                     return `
                     <div class="d-flex gap-2">
-                        <a href="/freights/${row.id}" class="btn btn-sm btn-primary view-freight" data-id="${row.id}" title="Visualizar">
+                        <a href="/freights/cliente/${row.id}" class="btn btn-sm btn-primary view-freight" data-id="${row.id}" title="Visualizar">
                             <i class="fas fa-eye"></i>
                         </a>
                         <button class="btn btn-sm btn-danger delete-freight" data-id="${row.id}" title="Excluir">
