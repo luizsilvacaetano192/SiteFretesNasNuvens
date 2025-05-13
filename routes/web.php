@@ -245,11 +245,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return response()->json(['success' => false, 'position' => null]);
     });
 
-    // Additional Shipments Route
-    Route::get('/shipments', function () {
-        $shipments = Shipment::all();
-        return view('shipments.index', compact('shipments'));
-    });
+ 
 });
 
 Route::get('/institucial', function () {
