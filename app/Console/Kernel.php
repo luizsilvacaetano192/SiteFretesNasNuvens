@@ -12,9 +12,9 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        protected $commands = [
+       /*  protected $commands = [
             \App\Console\Commands\cron_push_notication::class,
-        ];
+        ]; */
 
     }
 
@@ -28,9 +28,9 @@ class Kernel extends ConsoleKernel
         require base_path('routes/console.php');
     }
 
-    protected function schedule(Schedule $schedule)
+   /*  protected function schedule(Schedule $schedule)
     {
         $schedule->command('app:cron_push_notication')->everyMinute();
-    }
+    } */
 
 }
