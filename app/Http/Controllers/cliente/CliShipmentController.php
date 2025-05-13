@@ -62,7 +62,7 @@ class CliShipmentController extends Controller
                 // Botão Solicitar Frete (só aparece se não tiver frete associado)
                 $btnFreight = '';
                 if (!$shipment->freight) {
-                    $btnFreight = '<a href="'.route('shipments.requestFreight', $shipment->id).'" 
+                    $btnFreight = '<a href="'.route('shipments.cliente.requestFreight', $shipment->id).'" 
                                  class="btn btn-outline-success btn-action" 
                                  data-bs-toggle="tooltip" title="Solicitar Frete">
                                  <i class="fas fa-truck"></i></a>';
@@ -206,6 +206,6 @@ class CliShipmentController extends Controller
         $shipment = Shipment::findOrFail($id);
         $companies = Company::findOrFail($shipment->company_id);
         $settings =  Setting::first();
-        return view('shipments.requestFreight', compact('shipment', 'companies','settings'));
+        return view('shipments.cliente.requestFreight', compact('shipment', 'companies','settings'));
     }
 }

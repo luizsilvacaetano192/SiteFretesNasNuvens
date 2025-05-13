@@ -1,4 +1,4 @@
-@extends('layouts.cliente.app')
+@extends('layouts.app')
 
 @section('title', 'Solicitar Frete')
 
