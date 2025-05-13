@@ -57,7 +57,7 @@
             overflow-y: auto;
             padding: 10px 0; /* Reduzi o padding vertical */
         }
-        
+
         .sidebar-footer {
             padding: 5px 0; /* Reduzi o padding vertical */
             text-align: center;
@@ -65,7 +65,7 @@
         }
 
         .sidebar-footer img {
-            max-height: 250 /* Reduzi um pouco a altura máxima */
+            max-height: 250;/* Reduzi um pouco a altura máxima */
             width: auto;
             margin-bottom: 5px; /* Adicionei uma pequena margem na parte inferior */
         }
