@@ -59,7 +59,7 @@
         }
 
         .sidebar-footer {
-            padding: 1px 10px;
+            
             text-align: center;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
@@ -67,7 +67,7 @@
         .sidebar-footer img {
             max-height: 250px;
             width: auto;
-            opacity: 0.8;
+          
         }
 
         .sidebar-link {
