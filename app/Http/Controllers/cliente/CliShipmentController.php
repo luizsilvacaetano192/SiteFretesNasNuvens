@@ -14,7 +14,6 @@ class CliShipmentController extends Controller
 {
     public function index(Request $request)
     {
-        die('fdfd');
         if ($request->ajax()) {
             return $this->getShipments($request);
         }

@@ -4,12 +4,13 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\MapaController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ShipmentController;
-use App\Http\Controllers\cliente\CliShipmentController;
+
 use App\Http\Controllers\CompanyController;
 use App\Http\Controllers\cliente\CliCompanyController;
 use App\Http\Controllers\DriverController;
 use App\Http\Controllers\FreightController;
 use App\Http\Controllers\cliente\CliFreightController;
+use App\Http\Controllers\cliente\CliShipmentController;
 use App\Http\Controllers\FreightStatusController;
 use App\Models\Shipment;
 use App\Models\Freight;
@@ -253,11 +254,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return response()->json(['success' => false, 'position' => null]);
     });
 
-    // Additional Shipments Route
-    Route::get('/shipments', function () {
-        $shipments = Shipment::all();
-        return view('shipments.index', compact('shipments'));
-    });
+  
 });
 
 Route::get('/institucial', function () {
