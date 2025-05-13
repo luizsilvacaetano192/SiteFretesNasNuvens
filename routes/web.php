@@ -69,7 +69,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
     // Shipments cliente
-    Route::prefix('shipments/cliente')->group(function () {
+    Route::prefix('shipments/cliente')->middleware('auth')->group(function () {
         Route::get('/data', [CliShipmentController::class, 'getShipments'])->name('shipments.data');
         Route::post('/store', [CliShipmentController::class, 'store'])->name('shipments.store');
         Route::get('/create', [CliShipmentController::class, 'create'])->name('shipments.create');
