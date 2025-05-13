@@ -19,7 +19,7 @@
             </nav>
         </div>
         <div>
-            <a href="{{ route('freights.show', $freight->id) }}" class="btn btn-secondary me-2">
+            <a href="{{ route('freights.cliente.index') }}" class="btn btn-secondary me-2">
                 <i class="fas fa-arrow-left me-1"></i>Voltar para Frete
             </a>
             <button id="export-route" class="btn btn-primary">

@@ -276,7 +276,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
         ]);
 
         try {
-            $validated->company_id =  auth()->id();
+            $validated['company_id'] =  auth()->id();
             DB::beginTransaction();
             $freight = Freight::create($validated);
             DB::commit();
