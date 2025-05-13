@@ -180,9 +180,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/data', [CliFreightController::class, 'getDataTable'])->name('freights.cliente.data');
         Route::get('/stats', [CliFreightController::class, 'getStats'])->name('freights.stats');
         Route::get('/statuses', [CliFreightController::class, 'getStatuses'])->name('freights.statuses');
-        Route::get('/{id}', [CliFreightController::class, 'show'])->name('freights.show');
-        Route::get('/', [CliFreightController::class, 'index'])->name('freights.index');
-        Route::post('/store', [CliFreightController::class, 'store'])->name('freights.store');
+        Route::get('/{id}', [CliFreightController::class, 'show'])->name('freights.cliente.show');
+        Route::get('/', [CliFreightController::class, 'index'])->name('freights.cliente.index');
+        Route::post('/store', [CliFreightController::class, 'store'])->name('freights.cliente.store');
         Route::get('/create', [CliFreightController::class, 'create'])->name('freights.cliente.create');
         Route::delete('/delete-all', [CliFreightController::class, 'deleteAll'])->name('freights.cliente.deleteAll');
         Route::delete('/{id}', [CliFreightController::class, 'destroy'])->name('freights.cliente.destroy');
