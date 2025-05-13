@@ -152,9 +152,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
         $query->orderBy('id', 'desc');
     
         return DataTables::of($query)
-            ->addColumn('company_name', function($freight) {
-                return $freight->company->name ?? 'N/A';
-            })
+          
             ->addColumn('driver_name', function($freight) {
                 if (!$freight->freightsDriver) {
                     return '<span class="badge bg-info text-muted">Não atribuído</span>';
@@ -302,7 +300,7 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
         // Determina a classe do badge baseado no status
         
     
-        return view('freights.map', [
+        return view('freights.cliente.map', [
             'freight' => $freight,
             'statusBadgeClass' => '',
             'paymentBadgeClass' => ''
