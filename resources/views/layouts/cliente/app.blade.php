@@ -57,17 +57,19 @@
             overflow-y: auto;
             padding: 10px 0; /* Reduzi o padding vertical */
         }
+
         .sidebar-footer {
-            padding: 0; /* Remove todo o padding */
+            
             text-align: center;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
 
         .sidebar-footer img {
-            max-height: 180px; /* Altura ainda menor */
+            max-height: 250px;
             width: auto;
-            margin: 5px 0; /* Margem mínima */
+          
         }
+
         .sidebar-link {
             display: flex;
             align-items: center;
