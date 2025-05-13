@@ -34,17 +34,18 @@
         /* Sidebar Estilizado */
         .sidebar {
             grid-area: sidebar;
-            background: #2c3e50;
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
             color: white;
             display: flex;
             flex-direction: column;
             border-right: 1px solid #e2e8f0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
         }
 
         .sidebar-logo {
             padding: 10px;
             text-align: center;
-            background: #1a252f;
+            background: rgba(0,0,0,0.2);
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
@@ -92,7 +93,7 @@
         /* Navbar */
         .navbar {
             grid-area: navbar;
-            background: var(--primary);
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
             display: flex;
             align-items: center;
             padding: 0 15px;
@@ -181,7 +182,7 @@
             margin: 0;
         }
 
-        /* Conteúdo Principal - Correção do Branco */
+        /* Conteúdo Principal */
         .main-content {
             grid-area: content;
             padding: var(--content-padding);
@@ -278,7 +279,6 @@
                 <i class="fas fa-box"></i>
                 <span>Cargas</span>
             </a>
-          
         </nav>
     </aside>
 
