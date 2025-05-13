@@ -285,6 +285,9 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
         } catch (\Exception $e) {
             DB::rollBack();
+            if (isset($freight)) {
+                $freight->delete();
+            }
             Log::error('Freight creation failed: '.$e->getMessage());
 
             return back()->withInput()

@@ -279,11 +279,16 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
             DB::beginTransaction();
             $freight = Freight::create($validated);
             DB::commit();
+        
             $paymentData = $this->createAsaasPayment($freight);
             return  $paymentData ;
 
         } catch (\Exception $e) {
+              
             DB::rollBack();
+            if (isset($freight)) {
+                $freight->delete();
+            }
             Log::error('Freight creation failed: '.$e->getMessage());
 
             return back()->withInput()
