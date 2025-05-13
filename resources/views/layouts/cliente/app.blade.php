@@ -57,17 +57,16 @@
             overflow-y: auto;
             padding: 10px 0; /* Reduzi o padding vertical */
         }
-
         .sidebar-footer {
-            padding: 5px 0; /* Reduzi o padding vertical */
+            padding: 0; /* Remove todo o padding */
             text-align: center;
             border-top: 1px solid rgba(255,255,255,0.1);
         }
 
         .sidebar-footer img {
-            max-height: 180;/* Reduzi um pouco a altura máxima */
+            max-height: 150px; /* Altura ainda menor */
             width: auto;
-            margin-bottom: 5px; /* Adicionei uma pequena margem na parte inferior */
+            margin: 5px 0; /* Margem mínima */
         }
         .sidebar-link {
             display: flex;
