@@ -158,6 +158,7 @@ class CliShipmentController extends Controller
         $validated['is_hazardous'] = $request->has('is_hazardous');
         $validated['requires_temperature_control'] = $request->has('requires_temperature_control');
 
+        $validated['company_id'] =  auth()->id();
         // Create the shipment
         $shipment = Shipment::create($validated);
 
