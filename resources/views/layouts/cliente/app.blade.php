@@ -270,11 +270,11 @@
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="/freights" class="sidebar-link">
+            <a href="/freights/cliente" class="sidebar-link">
                 <i class="fas fa-truck"></i>
                 <span>Fretes</span>
             </a>
-            <a href="/shipments" class="sidebar-link">
+            <a href="/shipments/cliente" class="sidebar-link">
                 <i class="fas fa-box"></i>
                 <span>Cargas</span>
             </a>

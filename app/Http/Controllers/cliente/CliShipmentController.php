@@ -40,7 +40,7 @@ class CliShipmentController extends Controller
     public function getShipments(Request $request)
     {
         $shipments = Shipment::with(['company', 'freight'])
-         ->where('company_id', auth()->id()) // Filtra pelo cliente logado  
+         ->where('shipments.company_id', auth()->id()) // Filtra pelo cliente logado 
         ->select('shipments.*');
     
         return DataTables::of($shipments)
