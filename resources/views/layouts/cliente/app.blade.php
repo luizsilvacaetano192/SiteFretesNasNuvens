@@ -38,7 +38,6 @@
             color: white;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid #e2e8f0;
             box-shadow: 2px 0 10px rgba(0,0,0,0.2);
         }
 
@@ -95,9 +94,9 @@
             display: flex;
             align-items: center;
             padding: 0 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             z-index: 10;
             justify-content: space-between;
+            border-left: 1px solid rgba(255,255,255,0.1);
         }
 
         .navbar-brand {
