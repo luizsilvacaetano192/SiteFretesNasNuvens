@@ -69,19 +69,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/driver-truck-details/{freightsDriver}', [FreightController::class, 'getDriverTruckDetails']);
 
 
-    // Shipments cliente
-    Route::prefix('shipments/cliente')->middleware('auth')->group(function () {
-        Route::get('/data', [CliShipmentController::class, 'getShipments'])->name('shipments.cliente.data');
-        Route::post('/store', [CliShipmentController::class, 'store'])->name('shipments.cliente.store');
-        Route::get('/create', [CliShipmentController::class, 'create'])->name('shipments.cliente.create');
-        Route::get('/index', [CliShipmentController::class, 'index'])->name('shipments.cliente.index');
-        Route::get('/edit', [CliShipmentController::class, 'edit'])->name('shipments.cliente.edit');
-        Route::get('/destroy', [CliShipmentController::class, 'destroy'])->name('shipments.cliente.destroy');
-        Route::get('/{shipment}', [CliShipmentController::class, 'show'])->name('shipments.cliente.show');
-        Route::get('/{id}/request-freight', [CliShipmentController::class, 'requestFreight'])->name('shipments.cliente.requestFreight');
-        Route::post('/{id}/store-freight', [CliShipmentController::class, 'storeFreight'])->name('shipments.cliente.storeFreight');
-        Route::delete('/clear', [CliShipmentController::class, 'clear'])->name('shipments.cliente.clear');
-    });
 
 
     // Shipments
@@ -97,6 +84,21 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{id}/store-freight', [ShipmentController::class, 'storeFreight'])->name('shipments.storeFreight');
         Route::delete('/clear', [ShipmentController::class, 'clear'])->name('shipments.clear');
     });
+
+        // Shipments cliente
+    Route::prefix('shipments/cliente')->middleware('auth')->group(function () {
+        Route::get('/data', [CliShipmentController::class, 'getShipments'])->name('shipments.cliente.data');
+        Route::post('/store', [CliShipmentController::class, 'store'])->name('shipments.cliente.store');
+        Route::get('/create', [CliShipmentController::class, 'create'])->name('shipments.cliente.create');
+        Route::get('/index', [CliShipmentController::class, 'index'])->name('shipments.cliente.index');
+        Route::get('/edit', [CliShipmentController::class, 'edit'])->name('shipments.cliente.edit');
+        Route::get('/destroy', [CliShipmentController::class, 'destroy'])->name('shipments.cliente.destroy');
+        Route::get('/{shipment}', [CliShipmentController::class, 'show'])->name('shipments.cliente.show');
+        Route::get('/{id}/request-freight', [CliShipmentController::class, 'requestFreight'])->name('shipments.cliente.requestFreight');
+        Route::post('/{id}/store-freight', [CliShipmentController::class, 'storeFreight'])->name('shipments.cliente.storeFreight');
+        Route::delete('/clear', [CliShipmentController::class, 'clear'])->name('shipments.cliente.clear');
+    });
+
 
     // Companies
     Route::prefix('companies')->group(function () {
@@ -254,7 +256,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         return response()->json(['success' => false, 'position' => null]);
     });
 
-  
+    // Additional Shipments Route
+    Route::get('/shipments', function () {
+        $shipments = Shipment::all();
+        return view('shipments.index', compact('shipments'));
+    });
 });
 
 Route::get('/institucial', function () {
