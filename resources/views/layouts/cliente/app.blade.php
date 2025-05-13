@@ -263,7 +263,7 @@
     <!-- Sidebar -->
     <aside class="sidebar">
         <div class="sidebar-logo">
-            <img src="{{ asset('images/logo_fretes_nas_nuvens.png') }}" alt="Logo">
+            <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" alt="Logo">
         </div>
         
         <nav class="sidebar-nav">
