@@ -34,22 +34,21 @@
         /* Sidebar Estilizado */
         .sidebar {
             grid-area: sidebar;
-            background: #2c3e50;
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
             color: white;
             display: flex;
             flex-direction: column;
-            border-right: 1px solid #e2e8f0;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.2);
         }
 
-        .sidebar-logo {
-            padding: 10px;
+        .sidebar-header {
+            padding: 15px 10px;
             text-align: center;
-            background: #1a252f;
             border-bottom: 1px solid rgba(255,255,255,0.1);
         }
 
-        .sidebar-logo img {
-            max-height: 150px;
+        .sidebar-header img {
+            max-height: 180px;
             width: auto;
         }
 
@@ -59,46 +58,57 @@
             padding: 10px 0;
         }
 
+        .sidebar-footer {
+            text-align: center;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .sidebar-footer img {
+            max-height: 250px;
+            width: auto;
+        }
+
         .sidebar-link {
             display: flex;
             align-items: center;
-            padding: 10px 15px;
+            padding: 12px 15px;
             color: rgba(255,255,255,0.9);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 1rem;
+            font-weight: 500;
             transition: all 0.2s;
-            margin: 2px 10px;
-            border-radius: 4px;
+            margin: 4px 10px;
+            border-radius: 6px;
         }
 
         .sidebar-link:hover, .sidebar-link.active {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             color: white;
         }
 
         .sidebar-link i {
-            width: 20px;
+            width: 24px;
             text-align: center;
             margin-right: 10px;
-            font-size: 0.95rem;
+            font-size: 1.1rem;
         }
 
         .sidebar-divider {
             height: 1px;
-            background: rgba(255,255,255,0.1);
+            background: 'white';
             margin: 10px 15px;
         }
 
         /* Navbar */
         .navbar {
             grid-area: navbar;
-            background: var(--primary);
+            background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
             display: flex;
             align-items: center;
             padding: 0 15px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
             z-index: 10;
             justify-content: space-between;
+            border-left: 1px solid rgba(255,255,255,0.1);
         }
 
         .navbar-brand {
@@ -181,7 +191,7 @@
             margin: 0;
         }
 
-        /* Conteúdo Principal - Correção do Branco */
+        /* Conteúdo Principal */
         .main-content {
             grid-area: content;
             padding: var(--content-padding);
@@ -261,8 +271,8 @@
 
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="sidebar-logo">
-            <img src="{{ asset('images/logo_fretes_nas_nuvens.png') }}" alt="Logo">
+        <div class="sidebar-header">
+            <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" alt="Logo Principal">
         </div>
         
         <nav class="sidebar-nav">
@@ -270,11 +280,11 @@
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
-            <a href="/freights" class="sidebar-link">
+            <a href="/freights/cliente" class="sidebar-link">
                 <i class="fas fa-truck"></i>
                 <span>Fretes</span>
             </a>
-            <a href="/shipments" class="sidebar-link">
+            <a href="/shipments/cliente" class="sidebar-link">
                 <i class="fas fa-box"></i>
                 <span>Cargas</span>
             </a>
@@ -309,6 +319,10 @@
                 <span>Configurações</span>
             </a>
         </nav>
+        
+        <div class="sidebar-footer">
+            <img src="{{ asset('images/mascote-fretes-em-nuvens.png') }}" alt="Logo Secundário">
+        </div>
     </aside>
 
     <!-- Navbar -->
