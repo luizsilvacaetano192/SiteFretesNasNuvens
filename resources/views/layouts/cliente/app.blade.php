@@ -12,7 +12,7 @@
     <style>
         :root {
             --primary: #4e73df;
-            --sidebar-width: 200px;
+            --sidebar-width: 220px;
             --navbar-height: 50px;
             --content-padding: 15px;
         }
@@ -41,50 +41,53 @@
             box-shadow: 2px 0 10px rgba(0,0,0,0.2);
         }
 
-        .sidebar-logo {
-            padding: 15px 10px;
-            text-align: center;
-        }
-
-        .sidebar-logo img {
-            max-height: 150px;
-            width: auto;
-        }
-
         .sidebar-nav {
             flex-grow: 1;
             overflow-y: auto;
-            padding: 10px 0;
+            padding: 15px 0;
+        }
+
+        .sidebar-logo {
+            padding: 20px 10px;
+            text-align: center;
+            margin-top: auto;
+        }
+
+        .sidebar-logo img {
+            max-height: 100px;
+            width: auto;
+            opacity: 0.8;
         }
 
         .sidebar-link {
             display: flex;
             align-items: center;
-            padding: 10px 15px;
+            padding: 12px 20px;
             color: rgba(255,255,255,0.9);
             text-decoration: none;
-            font-size: 0.9rem;
+            font-size: 1rem;
+            font-weight: 500;
             transition: all 0.2s;
-            margin: 2px 10px;
-            border-radius: 4px;
+            margin: 4px 12px;
+            border-radius: 6px;
         }
 
         .sidebar-link:hover, .sidebar-link.active {
-            background: rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.15);
             color: white;
         }
 
         .sidebar-link i {
-            width: 20px;
+            width: 24px;
             text-align: center;
-            margin-right: 10px;
-            font-size: 0.95rem;
+            margin-right: 12px;
+            font-size: 1.2rem;
         }
 
         .sidebar-divider {
             height: 1px;
             background: rgba(255,255,255,0.1);
-            margin: 10px 15px;
+            margin: 15px;
         }
 
         /* Navbar */
@@ -259,10 +262,6 @@
 
     <!-- Sidebar -->
     <aside class="sidebar">
-        <div class="sidebar-logo">
-            <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" alt="Logo">
-        </div>
-        
         <nav class="sidebar-nav">
             <a href="#" class="sidebar-link">
                 <i class="fas fa-home"></i>
@@ -277,6 +276,10 @@
                 <span>Cargas</span>
             </a>
         </nav>
+        
+        <div class="sidebar-logo">
+            <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" alt="Logo">
+        </div>
     </aside>
 
     <!-- Navbar -->
