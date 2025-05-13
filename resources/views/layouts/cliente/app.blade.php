@@ -97,7 +97,7 @@
 
         .sidebar-divider {
             height: 1px;
-            background: rgba(255,255,255,0.1);
+            background: 'white';
             margin: 10px 15px;
         }
 
