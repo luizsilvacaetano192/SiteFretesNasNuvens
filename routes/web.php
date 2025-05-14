@@ -110,6 +110,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/list', [CompanyController::class, 'list'])->name('companies.list');
     });
 
+    // Companies ciente
+    Route::prefix('companies/cliente')->group(function () {
+      
+        Route::post('/store', [CliCompanyController::class, 'store'])->name('companies.cliente.store');
+ 
+    });
+
     // Drivers
     Route::prefix('drivers')->group(function () {
         Route::delete('/{id}', [DriverController::class, 'destroy'])->name('drivers.destroy');

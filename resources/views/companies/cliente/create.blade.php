@@ -176,7 +176,7 @@
                     </div>
 
 
-                    <form id="company-form" action="{{ route('companies.store') }}" method="POST" class="needs-validation" novalidate>
+                    <form id="company-form" action="{{ route('companies.cliente.store') }}" method="POST" class="needs-validation" novalidate>
                         @csrf
 
                         <!-- Dados da Empresa -->
