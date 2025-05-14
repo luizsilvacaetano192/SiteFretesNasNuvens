@@ -13,7 +13,6 @@ class CliCompanyController extends Controller
 {    
     public function create()
     {
-        dd(User::all());
         return view('companies.cliente.create');
     }
   
