@@ -164,6 +164,7 @@
 
         /* Header */
         .main-header {
+          background-color: #f0f8ff; /* Azul Alice - bem clarinho */
           position: fixed;
           top: 0;
           left: 0;
@@ -567,25 +568,27 @@
 </head>
 <body>
     <!-- Cabeçalho -->
-    <header class="main-header">
-        <div class="container">
-            <div class="logo">
-                <a href="/">
-                    <img src="<?php echo e(asset('images/logo_fretes2.png')); ?>" alt="Fretes em Nuvens - Plataforma de Fretes" width="180">
-                </a>
-            </div>
-            <nav class="main-nav">
-                <ul>
-                    <li><a href="#como-funciona">Como Funciona</a></li>
-                    <li><a href="#para-empresas">Para Empresas</a></li>
-                    <li><a href="#para-motoristas">Para Motoristas</a></li>
-                    <li><a href="#contato">Contato</a></li>
-                    <li><a href="/login" class="btn btn-outline">Entrar</a></li>
-                    <li><a href="cadastro.html" class="btn btn-primary">Cadastre-se</a></li>
-                </ul>
-            </nav>
+   <header class="main-header" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
+    <div class="container">
+        <div class="logo">
+            <a href="/">
+                <img src="<?php echo e(asset('images/logo_fretes_em_nuvens3.png')); ?>" 
+                alt="Fretes em Nuvens - Plataforma de Fretes" width="180"
+                >
+            </a>
         </div>
-    </header>
+        <nav class="main-nav">
+            <ul>
+                <li><a href="#como-funciona" style="color: white;">Como Funciona</a></li>
+                <li><a href="#para-empresas" style="color: white;">Para Empresas</a></li>
+                <li><a href="#para-motoristas" style="color: white;">Para Motoristas</a></li>
+                <li><a href="#contato" style="color: white;">Contato</a></li>
+                <li><a href="/login" class="btn btn-outline" style="border-color: white; color: white;">Entrar</a></li>
+                <li><a href="/cadastro" class="btn btn-primary" style="background-color: white; color: #3498db; border-color: white;">Cadastre-se</a></li>
+            </ul>
+        </nav>
+    </div>
+</header>
 
     <!-- Hero Section -->
     <section class="hero">
@@ -794,7 +797,7 @@
     <footer class="main-footer">
         <div class="container">
             <div class="footer-logo">
-                <img src="<?php echo e(asset('images/logo-pequeno-fretes-em-nuvens.png')); ?>" alt="Fretes em Nuvens" width="150">
+                <img src="<?php echo e(asset('images/logo_fretes_em_nuvens3.png')); ?>" alt="Fretes em Nuvens" width="150">
                 <p>Conectando empresas e motoristas de forma inteligente</p>
             </div>
             

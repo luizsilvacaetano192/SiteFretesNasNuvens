@@ -13,6 +13,7 @@ class CliCompanyController extends Controller
 {    
     public function create()
     {
+        dd(User::all());
         return view('companies.cliente.create');
     }
   
@@ -71,6 +72,8 @@ class CliCompanyController extends Controller
             'company_id' => $company->id, // assumindo que há um campo company_id na tabela users
         ]);
     }
+
+    
 
     return redirect()->route('login.index')
         ->with('success', 'Empresa cadastrada com sucesso!');
