@@ -73,9 +73,7 @@ class CliCompanyController extends Controller
         ]);
     }
 
-    
-
-    return redirect()->route('login.index')
+    return redirect()->route('login.form')
         ->with('success', 'Empresa cadastrada com sucesso!');
 }
 
