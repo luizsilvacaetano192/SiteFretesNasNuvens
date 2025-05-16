@@ -294,44 +294,9 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
             ->addColumn('formatted_value', function($freight) {
                 return $freight->freight_value ? 'R$ '.number_format($freight->freight_value, 2, ',', '.') : 'N/A';
             })
-            ->addColumn('payment_button', function($freight) {
-                if (!$freight->charge) return '<span class="text-muted">N/A</span>';
-                
-                $status = strtolower($freight->charge->status ?? '');
-                
-                if ($status === 'paid') {
-                    if ($freight->charge->receipt_url) {
-                        return '
-                            <a href="'.$freight->charge->receipt_url.'" class="btn btn-sm btn-info" target="_blank" title="Visualizar Recibo">
-                                <i class="fas fa-file-invoice-dollar"></i> Recibo
-                            </a>
-                        ';
-                    }
-                    return '<span class="badge bg-success">Pago</span>';
-                } else {
-                    if ($freight->charge->charge_url) {
-                        return '
-                            <a href="'.$freight->charge->charge_url.'" class="btn btn-sm btn-success" target="_blank" title="Realizar Pagamento">
-                                <i class="fas fa-credit-card"></i> Pagar
-                            </a>
-                        ';
-                    }
-                    return '<span class="badge bg-warning">Pendente</span>';
-                }
-            })
-            ->addColumn('actions', function($freight) {
-                return '
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-primary view-freight" data-id="'.$freight->id.'" title="Visualizar">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                        <button class="btn btn-sm btn-danger delete-freight" data-id="'.$freight->id.'" title="Excluir">
-                            <i class="fas fa-trash"></i>
-                        </button>
-                    </div>
-                ';
-            })
-            ->rawColumns(['status_badge', 'actions', 'payment_button', 'driver_name'])
+     
+       
+            ->rawColumns(['status_badge', 'driver_name'])
             ->make(true);
     }
 
