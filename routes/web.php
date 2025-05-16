@@ -37,6 +37,10 @@ use Illuminate\Http\Request;
 |
 */
 
+Route::get('/health', function() {
+    return response()->json(['status' => 'ok'], 200);
+});
+
 // Rotas Públicas (acessíveis sem autenticação)
 Route::middleware(['guest', 'throttle:5,1'])->group(function () {
     // Rota única para exibir o formulário e processar login
