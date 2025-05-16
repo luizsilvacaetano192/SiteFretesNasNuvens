@@ -50,9 +50,7 @@ class FreightController extends Controller
             }
             
             return datatables()->eloquent($query)
-                ->addColumn('action', function($freight) {
-                    return view('freights.actions', compact('freight'))->render();
-                })
+               
                 ->addColumn('truck_type_name', function($freight) {
                     return $freight->truck_type_name;
                 })
