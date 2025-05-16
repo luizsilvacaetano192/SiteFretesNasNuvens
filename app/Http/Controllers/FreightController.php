@@ -20,16 +20,6 @@ use Illuminate\Support\Facades\Storage;
 class FreightController extends Controller
 {
 
-    <?php
-
-namespace App\Http\Controllers;
-
-use App\Models\Freight;
-use App\Models\FreightStatus;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
-
-
     public function dashboard(Request $request)
     {
         $statuses = FreightStatus::all();
