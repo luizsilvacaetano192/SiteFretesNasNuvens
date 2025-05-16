@@ -189,7 +189,7 @@
                                     <th>Data Coleta</th>
                                     <th>Data Entrega</th>
                                     <th>Valor</th>
-                                    <th class="text-end pe-4">Ações</th>
+                                   
                                 </tr>
                             </thead>
                         </table>
@@ -586,12 +586,7 @@ $(document).ready(function() {
                     data: 'freight_value',
                     render: data => formatCurrency(data) || 'R$ 0,00'
                 },
-                { 
-                    data: 'action',
-                    orderable: false,
-                    searchable: false,
-                    className: 'text-end pe-4'
-                }
+              
             ],
             language: {
                 url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
