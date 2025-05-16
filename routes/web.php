@@ -177,14 +177,16 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 
   
-        Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
-        ->name('freights.last-position');
+    Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
+    ->name('freights.last-position');
 
-        Route::get('freights/{freight}/history', [FreightController::class, 'history'])->name('freights.history');
+    Route::get('freights/{freight}/history', [FreightController::class, 'history'])->name('freights.history');
 
-        Route::get('freights/{freight}/status', [FreightController::class, 'currentStatus'])->name('freights.status');
+    Route::get('freights/{freight}/status', [FreightController::class, 'currentStatus'])->name('freights.status');
 
-        Route::get('freights/{freight}/route', [FreightController::class, 'showRoute'])->name('freights.route');
+    Route::get('freights/{freight}/route', [FreightController::class, 'showRoute'])->name('freights.route');
+
+    Route::get('/freights/dashboard', [FreightController::class, 'dashboard'])->name('freights.dashboard');
     
 
         // Freights cliente
