@@ -19,6 +19,109 @@ use Illuminate\Support\Facades\Storage;
 
 class FreightController extends Controller
 {
+
+    <?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Freight;
+use App\Models\FreightStatus;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+
+
+    public function dashboard(Request $request)
+    {
+        $statuses = FreightStatus::all();
+        
+        // Se for uma requisição AJAX para a DataTable
+        if ($request->ajax()) {
+            $query = Freight::with(['company', 'freightStatus'])
+                ->select('freights.*');
+            
+            // Aplicar filtro de status
+            if ($request->has('status_filter') && $request->status_filter !== 'all') {
+                $query->where('status_id', $request->status_filter);
+            }
+            
+            // Aplicar filtro do mapa
+            if ($request->has('map_filter') && $request->map_filter !== 'all') {
+                switch ($request->map_filter) {
+                    case 'pending':
+                        $query->where('status_id', 1); // Pendente
+                        break;
+                    case 'in_progress':
+                        $query->where('status_id', 2); // Em andamento
+                        break;
+                    case 'completed':
+                        $query->where('status_id', 3); // Concluído
+                        break;
+                }
+            }
+            
+            return datatables()->eloquent($query)
+                ->addColumn('action', function($freight) {
+                    return view('freights.actions', compact('freight'))->render();
+                })
+                ->addColumn('truck_type_name', function($freight) {
+                    return $freight->truck_type_name;
+                })
+                ->rawColumns(['action', 'freight_status'])
+                ->toJson();
+        }
+        
+        // Dados para os cards de resumo
+        $summary = [
+            'total_freights' => Freight::count(),
+            'in_progress' => Freight::where('status_id', 2)->count(),
+            'pending' => Freight::where('status_id', 1)->count(),
+            'total_value' => Freight::sum('freight_value')
+        ];
+        
+        // Dados para os gráficos
+        $charts = [
+            'status_chart' => $this->getStatusChartData(),
+            'monthly_chart' => $this->getMonthlyChartData()
+        ];
+        
+        return view('freights.dashboard', compact('statuses', 'summary', 'charts'));
+    }
+    
+    protected function getStatusChartData()
+    {
+        $data = Freight::join('freight_statuses', 'freights.status_id', '=', 'freight_statuses.id')
+            ->select('freight_statuses.name as status', DB::raw('count(*) as total'))
+            ->groupBy('freight_statuses.name')
+            ->get();
+            
+        return [
+            'labels' => $data->pluck('status'),
+            'data' => $data->pluck('total')
+        ];
+    }
+    
+    protected function getMonthlyChartData()
+    {
+        $currentYear = date('Y');
+        $monthlyData = Freight::select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->whereYear('created_at', $currentYear)
+            ->groupBy('month')
+            ->get()
+            ->keyBy('month');
+        
+        $monthlyCounts = [];
+        for ($i = 1; $i <= 12; $i++) {
+            $monthlyCounts[] = $monthlyData->has($i) ? $monthlyData[$i]->total : 0;
+        }
+        
+        return [
+            'data' => $monthlyCounts
+        ];
+    }
+
     public function index(Request $request)
     {
         if ($request->ajax()) {

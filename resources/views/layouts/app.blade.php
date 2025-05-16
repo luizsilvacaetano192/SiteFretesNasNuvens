@@ -276,7 +276,7 @@
         </div>
         
         <nav class="sidebar-nav">
-            <a href="#" class="sidebar-link">
+            <a href="/freights/dashboard" class="sidebar-link">
                 <i class="fas fa-home"></i>
                 <span>Dashboard</span>
             </a>
