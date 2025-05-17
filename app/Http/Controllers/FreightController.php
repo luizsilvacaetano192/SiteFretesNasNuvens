@@ -20,11 +20,7 @@ use Maatwebsite\Excel\Facades\Excel;
 
 class FreightController extends Controller
 {
-    public function __construct()
-    {
-        $this->middleware('auth');
-        $this->middleware('can:view,freight')->only(['show', 'showRoute', 'lastPosition', 'history']);
-    }
+  
 
 
     public function chartData()
