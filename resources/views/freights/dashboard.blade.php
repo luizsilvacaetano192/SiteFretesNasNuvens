@@ -684,9 +684,9 @@ $(document).ready(function() {
                     }
                     
                     // Atualizar gráfico mensal
-                    if (data.charts.monthly_chart) {
-                        monthlyChart.data.datasets[0].data = data.charts.monthly_chart.data;
-                        monthlyChart.update();
+                    if (data.monthly_chart) {
+                        data.monthly_chart.data.datasets[0].data = data.charts.monthly_chart.data;
+                        data.monthly_chart.update();
                     }
                 }
                 $('.chart-overlay').hide();
