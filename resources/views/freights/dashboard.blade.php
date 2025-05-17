@@ -672,7 +672,7 @@ $(document).ready(function() {
         $.ajax({
             url: "{{ route('freights.chart-data') }}",
             method: 'GET',
-            data: { charts_only: true },
+        
             success: function(data) {
                 console.log('data', data);
                 if (data.charts) {
