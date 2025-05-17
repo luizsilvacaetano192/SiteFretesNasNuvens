@@ -780,6 +780,7 @@ $(document).ready(function() {
     
     // Atualizar marcadores do mapa
     function updateMapMarkers(freights) {
+        console.log('freights', freights)
         // Limpar marcadores existentes
         mapMarkers.forEach(marker => marker.setMap(null));
         mapMarkers = [];
