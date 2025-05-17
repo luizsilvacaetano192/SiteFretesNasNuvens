@@ -524,6 +524,7 @@ $(document).ready(function() {
                     d.map_filter = $('#mapFilterDropdown').data('filter') || 'all';
                 },
                 dataSrc: function(json) {
+                    console.log('json', json);
                     // Atualizar dados do dashboard
                     updateSummaryCards(json.summary);
                     updateCharts(json.charts);
