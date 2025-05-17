@@ -674,6 +674,7 @@ $(document).ready(function() {
             method: 'GET',
             data: { charts_only: true },
             success: function(data) {
+                console.log('data', data);
                 if (data.charts) {
                     // Atualizar gráfico de status
                     if (data.charts.status_chart) {
