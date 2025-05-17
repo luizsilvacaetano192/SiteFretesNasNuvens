@@ -675,7 +675,7 @@ $(document).ready(function() {
            
             success: function(data) {
               
-                    console.log('data', data)
+                    console.log('data', data.monthly_chart)
                     // Atualizar gráfico de status
                     if (monthly_chart.status_chart) {
                         statusChart.data.labels = data.status_chart.labels;
