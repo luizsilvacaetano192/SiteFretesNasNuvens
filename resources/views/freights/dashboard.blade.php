@@ -485,12 +485,49 @@
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=visualization"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=visualization&callback=initMap" async defer></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
+// Variável global para controlar o timeout do mapa
+let mapLoadTimeout;
+
+// Função para carregar a API do Google Maps
+function loadGoogleMapsAPI() {
+    return new Promise((resolve, reject) => {
+        // Verificar se a API já está carregada
+        if (window.google && window.google.maps) {
+            resolve();
+            return;
+        }
+        
+        // Configurar timeout para fallback
+        mapLoadTimeout = setTimeout(() => {
+            reject(new Error('Timeout ao carregar a API do Google Maps'));
+        }, 10000);
+        
+        // Criar elemento script
+        const script = document.createElement('script');
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=visualization&callback=initMap`;
+        script.async = true;
+        script.defer = true;
+        script.onerror = () => {
+            clearTimeout(mapLoadTimeout);
+            reject(new Error('Falha ao carregar a API do Google Maps'));
+        };
+        
+        // Adicionar script ao documento
+        document.head.appendChild(script);
+        
+        // Configurar callback global
+        window.initMap = function() {
+            clearTimeout(mapLoadTimeout);
+            resolve();
+        };
+    });
+}
+
 $(document).ready(function() {
-      
     // Variáveis globais
     let statusChart, monthlyChart, freightMap, mapMarkers = [], table;
     
@@ -688,156 +725,202 @@ $(document).ready(function() {
     
     // Inicializar mapa do Google
     function initMap() {
-        // Configuração inicial do mapa (centro no Brasil)
-        const mapOptions = {
-            center: { lat: -15.7889, lng: -47.8792 },
-            zoom: 4,
-            mapTypeId: 'roadmap',
-            styles: [
-                {
-                    "featureType": "administrative",
-                    "elementType": "labels.text.fill",
-                    "stylers": [
-                        {
-                            "color": "#444444"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "landscape",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "color": "#f2f2f2"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "poi",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "saturation": -100
-                        },
-                        {
-                            "lightness": 45
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.highway",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "simplified"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "road.arterial",
-                    "elementType": "labels.icon",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "transit",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "visibility": "off"
-                        }
-                    ]
-                },
-                {
-                    "featureType": "water",
-                    "elementType": "all",
-                    "stylers": [
-                        {
-                            "color": "#46bcec"
-                        },
-                        {
-                            "visibility": "on"
-                        }
-                    ]
-                }
-            ]
-        };
-        
-        freightMap = new google.maps.Map(document.getElementById('freightMap'), mapOptions);
+        try {
+            console.log('Inicializando mapa...');
+            
+            // Configuração inicial do mapa (centro no Brasil)
+            const mapOptions = {
+                center: { lat: -15.7889, lng: -47.8792 },
+                zoom: 4,
+                mapTypeId: 'roadmap',
+                styles: [
+                    {
+                        "featureType": "administrative",
+                        "elementType": "labels.text.fill",
+                        "stylers": [
+                            {
+                                "color": "#444444"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "landscape",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "color": "#f2f2f2"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "poi",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "saturation": -100
+                            },
+                            {
+                                "lightness": 45
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.highway",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "visibility": "simplified"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "road.arterial",
+                        "elementType": "labels.icon",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "transit",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "visibility": "off"
+                            }
+                        ]
+                    },
+                    {
+                        "featureType": "water",
+                        "elementType": "all",
+                        "stylers": [
+                            {
+                                "color": "#46bcec"
+                            },
+                            {
+                                "visibility": "on"
+                            }
+                        ]
+                    }
+                ]
+            };
+            
+            freightMap = new google.maps.Map(document.getElementById('freightMap'), mapOptions);
+            
+            // Adicionar listeners para eventos do mapa
+            google.maps.event.addListenerOnce(freightMap, 'tilesloaded', function() {
+                console.log('Mapa carregado com sucesso');
+                $('.map-overlay').hide();
+            });
+            
+            google.maps.event.addListenerOnce(freightMap, 'error', function() {
+                console.error('Erro ao carregar o mapa');
+                $('.map-overlay').hide();
+                showToast('Erro ao carregar o mapa. Verifique sua conexão ou a chave da API.', 'danger');
+            });
+            
+        } catch (e) {
+            console.error('Erro ao inicializar o mapa:', e);
+            $('.map-overlay').hide();
+            showToast('Erro crítico ao carregar o mapa', 'danger');
+        }
     }
     
     // Atualizar marcadores do mapa
     function updateMapMarkers(freights) {
-        console.log('freights', freights)
+        console.log('Atualizando marcadores do mapa. Total de fretes:', freights.length);
+        
         // Limpar marcadores existentes
         mapMarkers.forEach(marker => marker.setMap(null));
         mapMarkers = [];
         
         // Se não houver fretes, sair
-        if (!freights || freights.length === 0) return;
+        if (!freights || freights.length === 0) {
+            console.log('Nenhum frete para exibir no mapa');
+            $('.map-overlay').hide();
+            return;
+        }
         
         const bounds = new google.maps.LatLngBounds();
+        let hasValidMarkers = false;
         
-        // Adicionar novos marcadores
         freights.forEach(freight => {
-            console.log('freight.start_lat', freight.start_lat)
-            if (freight.start_lat && freight.start_lng) {
-                const position = new google.maps.LatLng(freight.start_lat, freight.start_lng);
-                bounds.extend(position);
+            // Verificar se as coordenadas existem e são válidas
+            if (freight.start_lat && freight.start_lng && 
+                !isNaN(freight.start_lat) && !isNaN(freight.start_lng)) {
                 
-                const marker = new google.maps.Marker({
-                    position: position,
-                    map: freightMap,
-                    title: `Frete #${freight.id}`,
-                    icon: {
-                        path: google.maps.SymbolPath.CIRCLE,
-                        fillColor: getStatusColor(freight.status_id),
-                        fillOpacity: 0.9,
-                        strokeColor: '#fff',
-                        strokeWeight: 1,
-                        scale: 8
-                    }
-                });
+                const lat = parseFloat(freight.start_lat);
+                const lng = parseFloat(freight.start_lng);
                 
-                // Criar conteúdo do info window
-                const contentString = `
-                    <div class="freight-popup">
-                        <h6 class="fw-bold mb-1">Frete #${freight.id}</h6>
-                        <p class="mb-1"><small>Status: ${freight.freight_status.name}</small></p>
-                        <p class="mb-1"><small>Origem: ${freight.start_address}</small></p>
-                        <p class="mb-1"><small>Destino: ${freight.destination_address}</small></p>
-                        <p class="mb-0"><small>Valor: ${formatCurrency(freight.freight_value)}</small></p>
-                    </div>
-                `;
-                
-                const infowindow = new google.maps.InfoWindow({
-                    content: contentString
-                });
-                
-                marker.addListener('click', () => {
-                    infowindow.open(freightMap, marker);
-                });
-                
-                mapMarkers.push(marker);
+                // Verificar se as coordenadas estão dentro de limites geográficos válidos
+                if (lat >= -90 && lat <= 90 && lng >= -180 && lng <= 180) {
+                    const position = new google.maps.LatLng(lat, lng);
+                    bounds.extend(position);
+                    
+                    const marker = new google.maps.Marker({
+                        position: position,
+                        map: freightMap,
+                        title: `Frete #${freight.id}`,
+                        icon: {
+                            path: google.maps.SymbolPath.CIRCLE,
+                            fillColor: getStatusColor(freight.status_id),
+                            fillOpacity: 0.9,
+                            strokeColor: '#fff',
+                            strokeWeight: 1,
+                            scale: 8
+                        }
+                    });
+                    
+                    // Criar conteúdo do info window
+                    const contentString = `
+                        <div class="freight-popup">
+                            <h6 class="fw-bold mb-1">Frete #${freight.id}</h6>
+                            <p class="mb-1"><small>Status: ${freight.freight_status?.name || 'N/A'}</small></p>
+                            <p class="mb-1"><small>Origem: ${freight.start_address || 'N/A'}</small></p>
+                            <p class="mb-1"><small>Destino: ${freight.destination_address || 'N/A'}</small></p>
+                            <p class="mb-0"><small>Valor: ${formatCurrency(freight.freight_value)}</small></p>
+                        </div>
+                    `;
+                    
+                    const infowindow = new google.maps.InfoWindow({
+                        content: contentString
+                    });
+                    
+                    marker.addListener('click', () => {
+                        infowindow.open(freightMap, marker);
+                    });
+                    
+                    mapMarkers.push(marker);
+                    hasValidMarkers = true;
+                } else {
+                    console.warn(`Coordenadas inválidas para frete ${freight.id}: lat=${lat}, lng=${lng}`);
+                }
+            } else {
+                console.warn(`Frete ${freight.id} não possui coordenadas válidas`, freight);
             }
         });
         
-        // Ajustar o zoom para mostrar todos os marcadores
-        if (mapMarkers.length > 0) {
+        if (hasValidMarkers) {
+            console.log(`Adicionados ${mapMarkers.length} marcadores válidos no mapa`);
             freightMap.fitBounds(bounds, { padding: 50 });
+        } else {
+            console.log('Nenhum marcador válido para exibir. Centralizando no Brasil.');
+            // Centralizar no Brasil se nenhum marcador válido
+            freightMap.setCenter({ lat: -15.7889, lng: -47.8792 });
+            freightMap.setZoom(4);
         }
+        
+        $('.map-overlay').hide();
     }
     
     // Obter cor baseada no status
@@ -846,7 +929,7 @@ $(document).ready(function() {
             1: '#4e73df',  // Pendente (azul)
             2: '#f6c23e',  // Em andamento (amarelo)
             3: '#1cc88a',  // Concluído (verde)
-            4: '#e74a3b',   // Cancelado (vermelho)
+            4: '#e74a3b',  // Cancelado (vermelho)
             5: '#36b9cc'    // Outros (ciano)
         };
         
@@ -1206,11 +1289,26 @@ $(document).ready(function() {
         });
     }
     
-    // Inicializar tudo
-    initCharts();
-    initMap();
-    table = initDataTable();
-    loadChartData();
+    // Inicializar a aplicação
+    function initializeApp() {
+        initCharts();
+        table = initDataTable();
+        loadChartData();
+        
+        // Carregar a API do Google Maps
+        loadGoogleMapsAPI()
+            .then(() => {
+                console.log('API do Google Maps carregada com sucesso');
+            })
+            .catch(error => {
+                console.error('Erro ao carregar a API do Google Maps:', error);
+                $('.map-overlay').hide();
+                showToast('Erro ao carregar o Google Maps. Tente recarregar a página.', 'danger');
+            });
+    }
+    
+    // Inicializar quando o documento estiver pronto
+    initializeApp();
     
     // Evento para expandir/recolher detalhes
     $('#freights-table tbody').on('click', 'td.dt-control', function() {
