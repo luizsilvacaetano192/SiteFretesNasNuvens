@@ -31,55 +31,37 @@ class FreightController extends Controller
         ]);
     }
 
-    public function dashboard(Request $request)
+  public function dashboard(Request $request)
     {
         $statuses = FreightStatus::all();
-    
+        
         if ($request->ajax()) {
-            $query = Freight::with(['company', 'freightStatus'])
-            ->select('freights.*');
-        
-        if ($request->has('status_filter') && $request->status_filter !== 'all') {
-            $query->where('status_id', $request->status_filter);
+            if ($request->has('charts_only')) {
+                return $this->getChartData($request);
+            }
+            
+            $query = $this->buildDashboardQuery($request);
+            
+            return datatables()->eloquent($query)
+                ->with([
+                    'summary' => $this->getDashboardSummary(),
+                    'statuses' => $statuses
+                ])
+                ->addColumn('truck_type_name', function($freight) {
+                    return $freight->truck_type_name;
+                })
+                ->rawColumns(['action', 'freight_status'])
+                ->toJson();
         }
         
-        if ($request->has('map_filter') && $request->map_filter !== 'all') {
-            $query->where('status_id', $this->getStatusIdFromFilter($request->map_filter));
-        }
-        
-     
-
-        return datatables()->eloquent($query)
-            ->addColumn('truck_type_name', function($freight) {
-                return $freight->truck_type_name;
-            })
-            ->rawColumns(['action', 'freight_status'])
-            ->toJson();
-        }
-
-       
-        
-        // Prepare data for initial page load
-        $data = [
+        return view('freights.dashboard', [
             'statuses' => $statuses,
             'summary' => $this->getDashboardSummary(),
             'charts' => $this->getDashboardCharts()
-        ];
-    
-        return view('freights.dashboard', $data);
+        ]);
     }
 
-    protected function getDashboardSummary()
-    {
-        return [
-            'total_freights' => Freight::count(),
-            'in_progress' => Freight::where('status_id', 2)->count(),
-            'pending' => Freight::where('status_id', 1)->count(),
-            'total_value' => Freight::sum('freight_value')
-        ];
-    }
-    
-    protected function getDashboardDataTable(Request $request)
+    protected function buildDashboardQuery(Request $request)
     {
         $query = Freight::with(['company', 'freightStatus'])
             ->select('freights.*');
@@ -92,14 +74,9 @@ class FreightController extends Controller
             $query->where('status_id', $this->getStatusIdFromFilter($request->map_filter));
         }
         
-        return datatables()->eloquent($query)
-            ->addColumn('truck_type_name', function($freight) {
-                return $freight->truck_type_name;
-            })
-            ->rawColumns(['action', 'freight_status'])
-            ->toJson();
+        return $query;
     }
-    
+
     protected function getStatusIdFromFilter($filter)
     {
         return match($filter) {
@@ -109,9 +86,17 @@ class FreightController extends Controller
             default => null
         };
     }
-    
-  
-    
+
+    protected function getDashboardSummary()
+    {
+        return [
+            'total_freights' => Freight::count(),
+            'in_progress' => Freight::where('status_id', 2)->count(),
+            'pending' => Freight::where('status_id', 1)->count(),
+            'total_value' => Freight::sum('freight_value')
+        ];
+    }
+
     protected function getDashboardCharts()
     {
         return [
@@ -119,7 +104,7 @@ class FreightController extends Controller
             'monthly_chart' => $this->getMonthlyChartData()
         ];
     }
-    
+
     protected function getStatusChartData()
     {
         $data = Freight::join('freight_statuses', 'freights.status_id', '=', 'freight_statuses.id')
@@ -132,7 +117,7 @@ class FreightController extends Controller
             'data' => $data->pluck('total')
         ];
     }
-    
+
     protected function getMonthlyChartData()
     {
         $currentYear = date('Y');

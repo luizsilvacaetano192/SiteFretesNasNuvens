@@ -4,6 +4,9 @@
 
 @section('content')
 <div class="container-fluid px-4">
+    <!-- Container para notificações toast -->
+    <div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>
+
     <div class="row">
         <div class="col-12">
             <h1 class="mt-4">
@@ -269,6 +272,57 @@
         </div>
     </div>
 </div>
+
+<!-- Modal para Detalhes de Motorista/Caminhão -->
+<div class="modal fade" id="driverTruckModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detalhes do Motorista e Caminhão</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">Informações do Motorista</h6>
+                            </div>
+                            <div class="card-body" id="driverDetails">
+                                <!-- Conteúdo carregado via AJAX -->
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card mb-4">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">Informações do Caminhão</h6>
+                            </div>
+                            <div class="card-body" id="truckDetails">
+                                <!-- Conteúdo carregado via AJAX -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h6 class="mb-0">Implementos</h6>
+                            </div>
+                            <div class="card-body" id="implementsDetails">
+                                <!-- Conteúdo carregado via AJAX -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
 
 @push('styles')
@@ -413,6 +467,22 @@
             background-color: rgba(13, 110, 253, 0.2) !important;
             color: #fff;
         }
+    }
+    
+    /* Modal styles */
+    .modal-body img {
+        max-width: 100%;
+        height: auto;
+        border-radius: 5px;
+        margin-bottom: 10px;
+    }
+    
+    .implement-photo {
+        width: 100px;
+        height: 100px;
+        object-fit: cover;
+        margin-right: 10px;
+        margin-bottom: 10px;
     }
 </style>
 @endpush
@@ -596,34 +666,37 @@ $(document).ready(function() {
     
     // Carregar dados dos gráficos
     function loadChartData() {
-    $('.chart-overlay').show();
-    
-    $.ajax({
-        url: "{{ route('freights.chart-data') }}",
-        method: 'GET',
-        success: function(data) {
-            // Update status chart
-            if (data.status_chart) {
-                statusChart.data.labels = data.status_chart.labels;
-                statusChart.data.datasets[0].data = data.status_chart.data;
-                statusChart.update();
+        $('.chart-overlay').show();
+        
+        $.ajax({
+            url: "{{ route('freights.dashboard') }}",
+            method: 'GET',
+            data: { charts_only: true },
+            success: function(data) {
+                if (data.charts) {
+                    // Atualizar gráfico de status
+                    if (data.charts.status_chart) {
+                        statusChart.data.labels = data.charts.status_chart.labels;
+                        statusChart.data.datasets[0].data = data.charts.status_chart.data;
+                        statusChart.update();
+                    }
+                    
+                    // Atualizar gráfico mensal
+                    if (data.charts.monthly_chart) {
+                        monthlyChart.data.datasets[0].data = data.charts.monthly_chart.data;
+                        monthlyChart.update();
+                    }
+                }
+                $('.chart-overlay').hide();
+            },
+            error: function(xhr) {
+                console.error('Error loading chart data:', xhr.responseText);
+                $('.chart-overlay').hide();
+                showToast('Erro ao carregar dados dos gráficos', 'danger');
             }
-            
-            // Update monthly chart
-            if (data.monthly_chart) {
-                monthlyChart.data.datasets[0].data = data.monthly_chart.data;
-                monthlyChart.update();
-            }
-            
-            $('.chart-overlay').hide();
-        },
-        error: function(xhr) {
-            console.error('Error loading chart data:', xhr.responseText);
-            $('.chart-overlay').hide();
-            showToast('Error loading chart data', 'danger');
-        }
         });
     }
+    
     // Inicializar mapa
     function initMap() {
         freightMap = L.map('freightMap').setView([-15.7889, -47.8792], 4);
@@ -687,10 +760,10 @@ $(document).ready(function() {
     
     // Atualizar cards de resumo
     function updateSummaryCards(data) {
-        $('#total-freights').text(data.total_freights);
-        $('#in-progress').text(data.in_progress);
-        $('#pending').text(data.pending);
-        $('#total-value').text(formatCurrency(data.total_value));
+        $('#total-freights').text(data.total_freights || 0);
+        $('#in-progress').text(data.in_progress || 0);
+        $('#pending').text(data.pending || 0);
+        $('#total-value').text(formatCurrency(data.total_value || 0));
     }
     
     // Carregar detalhes do frete via AJAX
@@ -724,9 +797,187 @@ $(document).ready(function() {
         });
     }
     
+    // Mostrar detalhes do motorista e caminhão
+    function showDriverTruckDetails(freightsDriverId) {
+        const modal = $('#driverTruckModal');
+        const driverContent = $('#driverDetails');
+        const truckContent = $('#truckDetails');
+        const implementsContent = $('#implementsDetails');
+        
+        // Mostrar loaders
+        driverContent.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>');
+        truckContent.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>');
+        implementsContent.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>');
+        
+        modal.modal('show');
+        
+        $.ajax({
+            url: `/freights/driver-truck-details/${freightsDriverId}`,
+            method: 'GET',
+            success: function(data) {
+                // Atualizar informações do motorista
+                if (data.driver) {
+                    driverContent.html(`
+                        <div class="row">
+                            <div class="col-md-4 text-center">
+                                <img src="${data.driver.face_photo_url || '/images/default-user.png'}" 
+                                     class="img-thumbnail mb-3" 
+                                     alt="Foto do Motorista"
+                                     style="max-width: 150px;">
+                            </div>
+                            <div class="col-md-8">
+                                <h5>${data.driver.name}</h5>
+                                <p><strong>CPF:</strong> ${data.driver.cpf || 'Não informado'}</p>
+                                <p><strong>CNH:</strong> ${data.driver.driver_license_number || 'Não informado'}</p>
+                                <p><strong>Validade CNH:</strong> ${formatDateBR(data.driver.driver_license_expiration) || 'Não informada'}</p>
+                                <div class="row mt-3">
+                                    <div class="col-md-6">
+                                        <img src="${data.driver.driver_license_front_url || '/images/default-license.jpg'}" 
+                                             class="img-thumbnail" 
+                                             alt="CNH Frente">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <img src="${data.driver.driver_license_back_url || '/images/default-license.jpg'}" 
+                                             class="img-thumbnail" 
+                                             alt="CNH Verso">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                }
+                
+                // Atualizar informações do caminhão
+                if (data.truck) {
+                    truckContent.html(`
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>Placa:</strong> ${data.truck.license_plate || 'Não informada'}</p>
+                                <p><strong>Modelo:</strong> ${data.truck.model || 'Não informado'}</p>
+                                <p><strong>Ano:</strong> ${data.truck.year || 'Não informado'}</p>
+                                <p><strong>Cor:</strong> ${data.truck.color || 'Não informada'}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="row">
+                                    <div class="col-6 mb-2">
+                                        <img src="${data.truck.front_photo_full_url || '/images/default-truck.jpg'}" 
+                                             class="img-thumbnail" 
+                                             alt="Foto Dianteira">
+                                    </div>
+                                    <div class="col-6 mb-2">
+                                        <img src="${data.truck.rear_photo_full_url || '/images/default-truck.jpg'}" 
+                                             class="img-thumbnail" 
+                                             alt="Foto Traseira">
+                                    </div>
+                                    <div class="col-6">
+                                        <img src="${data.truck.crv_photo_full_url || '/images/default-document.jpg'}" 
+                                             class="img-thumbnail" 
+                                             alt="CRV">
+                                    </div>
+                                    <div class="col-6">
+                                        <img src="${data.truck.crlv_photo_full_url || '/images/default-document.jpg'}" 
+                                             class="img-thumbnail" 
+                                             alt="CRLV">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    `);
+                }
+                
+                // Atualizar informações dos implementos
+                if (data.implements && data.implements.length > 0) {
+                    let implementsHtml = '<div class="d-flex flex-wrap">';
+                    data.implements.forEach(implement => {
+                        implementsHtml += `
+                            <div class="me-3 mb-3 text-center">
+                                <img src="${implement.photo_url || '/images/default-implement.jpg'}" 
+                                     class="implement-photo img-thumbnail" 
+                                     alt="${implement.type}">
+                                <p class="mb-0"><strong>${implement.type}</strong></p>
+                            </div>
+                        `;
+                    });
+                    implementsHtml += '</div>';
+                    implementsContent.html(implementsHtml);
+                } else {
+                    implementsContent.html('<p class="text-muted">Nenhum implemento cadastrado</p>');
+                }
+            },
+            error: function(xhr) {
+                showToast('Erro ao carregar detalhes do motorista/caminhão', 'danger');
+                console.error('Error loading driver/truck details:', xhr.responseText);
+            }
+        });
+    }
+    
+    // Formatar detalhes expandidos
+    function formatFreightDetails(d) {
+        return `
+            <div class="row px-4 py-3 bg-light rounded-3 mx-1 my-2">
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0 fw-bold">Detalhes do Frete</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted">Tipo de Caminhão</small>
+                                    <p class="mb-0 fw-semibold">${d.truck_type_name || 'N/A'}</p>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted">Distância</small>
+                                    <p class="mb-0 fw-semibold">${d.distance_km || '0'} km</p>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted">Tempo Estimado</small>
+                                    <p class="mb-0 fw-semibold">${d.duration || 'N/A'}</p>
+                                </div>
+                                <div class="col-6 mb-2">
+                                    <small class="text-muted">Valor Motorista</small>
+                                    <p class="mb-0 fw-semibold">${formatCurrency(d.driver_freight_value) || 'R$ 0,00'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-6 mb-3">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0 fw-bold">Instruções</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <small class="text-muted">Carregamento</small>
+                                <p class="mb-0">${d.loading_instructions || 'Nenhuma instrução'}</p>
+                            </div>
+                            <div>
+                                <small class="text-muted">Descarga</small>
+                                <p class="mb-0">${d.unloading_instructions || 'Nenhuma instrução'}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="col-md-12">
+                    <div class="card border-0 shadow-sm">
+                        <div class="card-header bg-white">
+                            <h6 class="mb-0 fw-bold">Descrição</h6>
+                        </div>
+                        <div class="card-body">
+                            <p class="mb-0">${d.freight_description || 'Nenhuma descrição disponível'}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+    
     // Inicializar DataTable
     function initDataTable() {
-        table = $('#freights-table').DataTable({
+        return $('#freights-table').DataTable({
             processing: true,
             serverSide: true,
             ajax: {
@@ -738,18 +989,19 @@ $(document).ready(function() {
                 },
                 dataSrc: function(json) {
                     // Atualizar dados do dashboard
-                    console.log('data aa', json)
-                    updateSummaryCards(json.summary);
+                    if (json.summary) {
+                        updateSummaryCards(json.summary);
+                    }
                     
-                    if (json.freights && json.freights.data) {
-                        updateMapMarkers(json.freights.data);
+                    if (json.data) {
+                        updateMapMarkers(json.data);
                     }
                     
                     // Atualizar contagem de registros
-                    $('#showing-entries').text(json.freights.recordsFiltered);
-                    $('#total-entries').text(json.freights.recordsTotal);
+                    $('#showing-entries').text(json.recordsFiltered || 0);
+                    $('#total-entries').text(json.recordsTotal || 0);
                     
-                    return json.freights.data;
+                    return json.data;
                 },
                 error: function(xhr) {
                     showToast('Erro ao carregar dados da tabela', 'danger');
@@ -846,74 +1098,10 @@ $(document).ready(function() {
         });
     }
     
-    // Formatar detalhes expandidos
-    function formatFreightDetails(d) {
-        return `
-            <div class="row px-4 py-3 bg-light rounded-3 mx-1 my-2">
-                <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Detalhes do Frete</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted">Tipo de Caminhão</small>
-                                    <p class="mb-0 fw-semibold">${d.truck_type_name || 'N/A'}</p>
-                                </div>
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted">Distância</small>
-                                    <p class="mb-0 fw-semibold">${d.distance_km || '0'} km</p>
-                                </div>
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted">Tempo Estimado</small>
-                                    <p class="mb-0 fw-semibold">${d.duration || 'N/A'}</p>
-                                </div>
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted">Valor Motorista</small>
-                                    <p class="mb-0 fw-semibold">${formatCurrency(d.driver_freight_value) || 'R$ 0,00'}</p>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Instruções</h6>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <small class="text-muted">Carregamento</small>
-                                <p class="mb-0">${d.loading_instructions || 'Nenhuma instrução'}</p>
-                            </div>
-                            <div>
-                                <small class="text-muted">Descarga</small>
-                                <p class="mb-0">${d.unloading_instructions || 'Nenhuma instrução'}</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div class="col-md-12">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Descrição</h6>
-                        </div>
-                        <div class="card-body">
-                            <p class="mb-0">${d.freight_description || 'Nenhuma descrição disponível'}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        `;
-    }
-    
     // Inicializar tudo
     initCharts();
     initMap();
-    initDataTable();
+    const table = initDataTable();
     loadChartData();
     
     // Evento para expandir/recolher detalhes
@@ -1011,9 +1199,47 @@ $(document).ready(function() {
     $('#export-excel').click(function() {
         table.button('.buttons-excel').trigger();
     });
+    
+    // Função global para mostrar detalhes do motorista/caminhão
+    window.detailsDriverTruck = function(freightsDriverId) {
+        showDriverTruckDetails(freightsDriverId);
+    };
+    
+    // Funções globais para aprovação/reprovação
+    window.aprovar = function(freightsDriverId, statusId) {
+        if (confirm('Tem certeza que deseja aprovar este motorista?')) {
+            updateFreightDriverStatus(freightsDriverId, statusId);
+        }
+    };
+    
+    window.reprovar = function(freightsDriverId, statusId) {
+        if (confirm('Tem certeza que deseja recusar este motorista?')) {
+            updateFreightDriverStatus(freightsDriverId, statusId);
+        }
+    };
+    
+    function updateFreightDriverStatus(freightsDriverId, statusId) {
+        $.ajax({
+            url: `/freights-driver/${freightsDriverId}/update-status`,
+            method: 'POST',
+            data: {
+                status_id: statusId,
+                _token: '{{ csrf_token() }}'
+            },
+            success: function(response) {
+                if (response.success) {
+                    showToast(response.message, 'success');
+                    table.ajax.reload(null, false);
+                } else {
+                    showToast('Erro ao atualizar status', 'danger');
+                }
+            },
+            error: function(xhr) {
+                showToast('Erro ao atualizar status', 'danger');
+                console.error('Error updating status:', xhr.responseText);
+            }
+        });
+    }
 });
-
-// Adicionar container para toasts
-$('body').append('<div id="toastContainer" class="toast-container position-fixed bottom-0 end-0 p-3"></div>');
 </script>
 @endpush

@@ -75,8 +75,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
     
     // Dashboard
-    Route::get('/freights/dashboard', [FreightController::class, 'dashboard'])->name('freights.dashboard');
-    
+    Route::get('/freights/dashboard', [FreightController::class, 'dashboard'])
+        ->name('freights.dashboard');
+
+    Route::get('/freights/chart-data', [FreightController::class, 'getChartData'])
+        ->name('freights.chart-data');
+
     Route::get('/driver-truck-details/{freightsDriver}', [FreightController::class, 'getDriverTruckDetails']);
 
     // Shipments cliente
@@ -175,11 +179,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         });
         Route::post('/toggle-status', [TruckController::class, 'toggleStatus'])->name('trucks.toggleStatus');
     });
-
-    // routes/web.php
-    Route::get('/freights/chart-data', [FreightController::class, 'chartData'])
-    ->name('freights.chart-data');
-
   
     Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
     ->name('freights.last-position');
