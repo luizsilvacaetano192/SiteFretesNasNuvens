@@ -189,10 +189,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     Route::get('freights/{freight}/route', [FreightController::class, 'showRoute'])->name('freights.route');
 
-    Route::get('/freights/dashboard', [FreightController::class, 'dashboard'])->name('freights.dashboard');
-    
-
-        // Freights cliente
+    // Freights cliente
     Route::prefix('freights/cliente')->middleware('auth')->group(function () {
         Route::get('/data', [CliFreightController::class, 'getDataTable'])->name('freights.cliente.data');
         Route::get('/stats', [CliFreightController::class, 'getStats'])->name('freights.stats');
@@ -224,9 +221,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/{freightId}/transport', [FreightController::class, 'transport'])->name('freights.transport');
     });
 
-
-    
-
     // Freight Statuses
     Route::prefix('freight-statuses')->group(function () {
         Route::get('/', [FreightStatusController::class, 'index'])->name('freight_statuses.index');
@@ -234,11 +228,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/create', [FreightStatusController::class, 'create'])->name('freight_statuses.create');
         Route::post('/store', [FreightStatusController::class, 'store'])->name('freight-statuses.store');
     });
-
-  
-  
-   
-  
 
     // Pending Tasks
     Route::prefix('pending-tasks')->group(function () {

@@ -670,7 +670,7 @@ $(document).ready(function() {
         $('.chart-overlay').show();
         
         $.ajax({
-            url: "{{ route('freights.dashboard') }}",
+            url: "{{ route('freights.chart-data') }}",
             method: 'GET',
             data: { charts_only: true },
             success: function(data) {
