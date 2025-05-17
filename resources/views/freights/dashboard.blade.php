@@ -738,7 +738,7 @@ $(document).ready(function() {
                 },
                 dataSrc: function(json) {
                     // Atualizar dados do dashboard
-                    console.log('data aa', $data)
+                    console.log('data aa', json)
                     updateSummaryCards(json.summary);
                     
                     if (json.freights && json.freights.data) {
