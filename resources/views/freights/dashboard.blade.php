@@ -500,7 +500,7 @@
 
 <script>
 $(document).ready(function() {
-       let table;
+      
     // Variáveis globais
     let statusChart, monthlyChart, freightMap, mapMarkers = [], table;
     
