@@ -47,7 +47,7 @@ class FreightController extends Controller
             $query->where('status_id', $this->getStatusIdFromFilter($request->map_filter));
         }
         
-         die('chegou amtes do primeiro return');
+     
 
         return datatables()->eloquent($query)
             ->addColumn('truck_type_name', function($freight) {
@@ -57,7 +57,7 @@ class FreightController extends Controller
             ->toJson();
         }
 
-        die('chegou depois do primeiro return');
+       
         
         // Prepare data for initial page load
         $data = [
@@ -66,6 +66,7 @@ class FreightController extends Controller
             'charts' => $this->getDashboardCharts()
         ];
         
+        dd($data);
         return view('freights.dashboard', $data);
     }
 
