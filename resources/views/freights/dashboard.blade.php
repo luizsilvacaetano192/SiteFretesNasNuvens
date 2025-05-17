@@ -489,8 +489,202 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
-// Variável global para controlar o timeout do mapa
+// Variáveis globais
+let statusChart, monthlyChart, freightMap = null, mapMarkers = [], table;
+let mapInitialized = false;
 let mapLoadTimeout;
+
+// Formatar datas
+function formatDateBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleDateString('pt-BR');
+}
+
+function formatDateTimeBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleString('pt-BR');
+}
+
+// Formatar valores monetários
+function formatCurrency(value) {
+    if (!value) return 'R$ 0,00';
+    return 'R$ ' + parseFloat(value).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+\,)/g, "$1.");
+}
+
+// Mostrar toast de notificação
+function showToast(message, type = 'success') {
+    const toast = $(`
+        <div class="toast align-items-center text-white bg-${type} border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="d-flex">
+                <div class="toast-body">
+                    ${message}
+                </div>
+                <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+        </div>
+    `);
+    
+    $('#toastContainer').append(toast);
+    
+    setTimeout(() => {
+        toast.remove();
+    }, 5000);
+}
+
+// Inicializar gráficos
+function initCharts() {
+    // Gráfico de status
+    const statusCtx = document.getElementById('statusChart').getContext('2d');
+    statusChart = new Chart(statusCtx, {
+        type: 'doughnut',
+        data: {
+            labels: [],
+            datasets: [{
+                data: [],
+                backgroundColor: [
+                    '#4e73df',
+                    '#1cc88a',
+                    '#36b9cc',
+                    '#f6c23e',
+                    '#e74a3b',
+                    '#858796',
+                    '#5a5c69'
+                ],
+                hoverBackgroundColor: [
+                    '#2e59d9',
+                    '#17a673',
+                    '#2c9faf',
+                    '#dda20a',
+                    '#be2617',
+                    '#6c757d',
+                    '#4a4c54'
+                ],
+                hoverBorderColor: "rgba(234, 236, 244, 1)",
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right',
+                },
+                tooltip: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(context) {
+                            const label = context.label || '';
+                            const value = context.raw || 0;
+                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                            const percentage = Math.round((value / total) * 100);
+                            return `${label}: ${value} (${percentage}%)`;
+                        }
+                    }
+                }
+            },
+            cutout: '70%',
+        }
+    });
+    
+    // Gráfico mensal
+    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+    monthlyChart = new Chart(monthlyCtx, {
+        type: 'bar',
+        data: {
+            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+            datasets: [{
+                label: 'Fretes',
+                backgroundColor: '#4e73df',
+                hoverBackgroundColor: '#2e59d9',
+                borderColor: '#4e73df',
+                data: Array(12).fill(0),
+            }]
+        },
+        options: {
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    display: false
+                },
+                tooltip: {
+                    backgroundColor: "rgb(255,255,255)",
+                    bodyFontColor: "#858796",
+                    borderColor: '#dddfeb',
+                    borderWidth: 1,
+                    xPadding: 15,
+                    yPadding: 15,
+                    displayColors: false,
+                    caretPadding: 10,
+                    callbacks: {
+                        label: function(context) {
+                            return `Fretes: ${context.raw}`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        display: false,
+                        drawBorder: false
+                    },
+                    ticks: {
+                        color: '#858796'
+                    }
+                },
+                y: {
+                    grid: {
+                        color: "rgb(234, 236, 244)",
+                        drawBorder: false,
+                    },
+                    ticks: {
+                        color: '#858796',
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+}
+
+// Carregar dados dos gráficos
+function loadChartData() {
+    $('.chart-overlay').show();
+    
+    $.ajax({
+        url: "{{ route('freights.chart-data') }}",
+        method: 'GET',
+        success: function(data) {
+            // Atualizar gráfico de status
+            if (data.status_chart) {
+                statusChart.data.labels = data.status_chart.labels;
+                statusChart.data.datasets[0].data = data.status_chart.data;
+                statusChart.update();
+            }
+            
+            // Atualizar gráfico mensal
+            if (data.monthly_chart) {
+                monthlyChart.data.datasets[0].data = data.monthly_chart.data;
+                monthlyChart.update();
+            }
+            
+            $('.chart-overlay').hide();
+        },
+        error: function(xhr) {
+            console.error('Error loading chart data:', xhr.responseText);
+            $('.chart-overlay').hide();
+            showToast('Erro ao carregar dados dos gráficos', 'danger');
+        }
+    });
+}
 
 // Função para carregar a API do Google Maps
 function loadGoogleMapsAPI() {
@@ -501,10 +695,12 @@ function loadGoogleMapsAPI() {
             return;
         }
         
-        // Configurar timeout para fallback
+        // Configurar timeout para fallback (15 segundos)
         mapLoadTimeout = setTimeout(() => {
             reject(new Error('Timeout ao carregar a API do Google Maps'));
-        }, 10000);
+            $('.map-overlay').hide();
+            showToast('O mapa está demorando muito para carregar. Verifique sua conexão.', 'warning');
+        }, 15000);
         
         // Criar elemento script
         const script = document.createElement('script');
@@ -514,9 +710,10 @@ function loadGoogleMapsAPI() {
         script.onerror = () => {
             clearTimeout(mapLoadTimeout);
             reject(new Error('Falha ao carregar a API do Google Maps'));
+            $('.map-overlay').hide();
+            showToast('Erro ao carregar o Google Maps. Verifique sua conexão.', 'danger');
         };
         
-        // Adicionar script ao documento
         document.head.appendChild(script);
         
         // Configurar callback global
@@ -527,318 +724,93 @@ function loadGoogleMapsAPI() {
     });
 }
 
-$(document).ready(function() {
-    // Variáveis globais
-    let statusChart, monthlyChart, freightMap, mapMarkers = [], table;
-    
-    // Formatar datas
-    function formatDateBR(dateStr) {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('pt-BR');
-    }
-    
-    function formatDateTimeBR(dateStr) {
-        if (!dateStr) return '';
-        const date = new Date(dateStr);
-        return date.toLocaleString('pt-BR');
-    }
-    
-    // Formatar valores monetários
-    function formatCurrency(value) {
-        if (!value) return 'R$ 0,00';
-        return 'R$ ' + parseFloat(value).toFixed(2).replace('.', ',').replace(/(\d)(?=(\d{3})+\,)/g, "$1.");
-    }
-    
-    // Mostrar toast de notificação
-    function showToast(message, type = 'success') {
-        const toast = $(`
-            <div class="toast align-items-center text-white bg-${type} border-0 show" role="alert" aria-live="assertive" aria-atomic="true">
-                <div class="d-flex">
-                    <div class="toast-body">
-                        ${message}
-                    </div>
-                    <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-                </div>
-            </div>
-        `);
+// Inicializar mapa do Google
+function initMap() {
+    try {
+        console.log('Inicializando mapa...');
         
-        $('#toastContainer').append(toast);
-        
-        setTimeout(() => {
-            toast.remove();
-        }, 5000);
-    }
-    
-    // Inicializar gráficos
-    function initCharts() {
-        // Gráfico de status
-        const statusCtx = document.getElementById('statusChart').getContext('2d');
-        statusChart = new Chart(statusCtx, {
-            type: 'doughnut',
-            data: {
-                labels: [],
-                datasets: [{
-                    data: [],
-                    backgroundColor: [
-                        '#4e73df',
-                        '#1cc88a',
-                        '#36b9cc',
-                        '#f6c23e',
-                        '#e74a3b',
-                        '#858796',
-                        '#5a5c69'
-                    ],
-                    hoverBackgroundColor: [
-                        '#2e59d9',
-                        '#17a673',
-                        '#2c9faf',
-                        '#dda20a',
-                        '#be2617',
-                        '#6c757d',
-                        '#4a4c54'
-                    ],
-                    hoverBorderColor: "rgba(234, 236, 244, 1)",
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        position: 'right',
-                    },
-                    tooltip: {
-                        backgroundColor: "rgb(255,255,255)",
-                        bodyFontColor: "#858796",
-                        borderColor: '#dddfeb',
-                        borderWidth: 1,
-                        xPadding: 15,
-                        yPadding: 15,
-                        displayColors: false,
-                        caretPadding: 10,
-                        callbacks: {
-                            label: function(context) {
-                                const label = context.label || '';
-                                const value = context.raw || 0;
-                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                                const percentage = Math.round((value / total) * 100);
-                                return `${label}: ${value} (${percentage}%)`;
-                            }
-                        }
-                    }
+        // Configuração inicial do mapa (centro no Brasil)
+        const mapOptions = {
+            center: { lat: -15.7889, lng: -47.8792 },
+            zoom: 4,
+            mapTypeId: 'roadmap',
+            styles: [
+                {
+                    "featureType": "administrative",
+                    "elementType": "labels.text.fill",
+                    "stylers": [{"color": "#444444"}]
                 },
-                cutout: '70%',
-            }
-        });
-        
-        // Gráfico mensal
-        const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-        monthlyChart = new Chart(monthlyCtx, {
-            type: 'bar',
-            data: {
-                labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-                datasets: [{
-                    label: 'Fretes',
-                    backgroundColor: '#4e73df',
-                    hoverBackgroundColor: '#2e59d9',
-                    borderColor: '#4e73df',
-                    data: Array(12).fill(0),
-                }]
-            },
-            options: {
-                maintainAspectRatio: false,
-                plugins: {
-                    legend: {
-                        display: false
-                    },
-                    tooltip: {
-                        backgroundColor: "rgb(255,255,255)",
-                        bodyFontColor: "#858796",
-                        borderColor: '#dddfeb',
-                        borderWidth: 1,
-                        xPadding: 15,
-                        yPadding: 15,
-                        displayColors: false,
-                        caretPadding: 10,
-                        callbacks: {
-                            label: function(context) {
-                                return `Fretes: ${context.raw}`;
-                            }
-                        }
-                    }
+                {
+                    "featureType": "landscape",
+                    "elementType": "all",
+                    "stylers": [{"color": "#f2f2f2"}]
                 },
-                scales: {
-                    x: {
-                        grid: {
-                            display: false,
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#858796'
-                        }
-                    },
-                    y: {
-                        grid: {
-                            color: "rgb(234, 236, 244)",
-                            drawBorder: false,
-                        },
-                        ticks: {
-                            color: '#858796',
-                            precision: 0
-                        }
-                    }
+                {
+                    "featureType": "poi",
+                    "elementType": "all",
+                    "stylers": [{"visibility": "off"}]
+                },
+                {
+                    "featureType": "road",
+                    "elementType": "all",
+                    "stylers": [{"saturation": -100}, {"lightness": 45}]
+                },
+                {
+                    "featureType": "road.highway",
+                    "elementType": "all",
+                    "stylers": [{"visibility": "simplified"}]
+                },
+                {
+                    "featureType": "road.arterial",
+                    "elementType": "labels.icon",
+                    "stylers": [{"visibility": "off"}]
+                },
+                {
+                    "featureType": "transit",
+                    "elementType": "all",
+                    "stylers": [{"visibility": "off"}]
+                },
+                {
+                    "featureType": "water",
+                    "elementType": "all",
+                    "stylers": [{"color": "#46bcec"}, {"visibility": "on"}]
                 }
-            }
-        });
-    }
-    
-    // Carregar dados dos gráficos
-    function loadChartData() {
-        $('.chart-overlay').show();
+            ]
+        };
         
-        $.ajax({
-            url: "{{ route('freights.chart-data') }}",
-            method: 'GET',
-            success: function(data) {
-                // Atualizar gráfico de status
-                if (data.status_chart) {
-                    statusChart.data.labels = data.status_chart.labels;
-                    statusChart.data.datasets[0].data = data.status_chart.data;
-                    statusChart.update();
-                }
-                
-                // Atualizar gráfico mensal
-                if (data.monthly_chart) {
-                    monthlyChart.data.datasets[0].data = data.monthly_chart.data;
-                    monthlyChart.update();
-                }
-                
-                $('.chart-overlay').hide();
-            },
-            error: function(xhr) {
-                console.error('Error loading chart data:', xhr.responseText);
-                $('.chart-overlay').hide();
-                showToast('Erro ao carregar dados dos gráficos', 'danger');
-            }
-        });
-    }
-    
-    // Inicializar mapa do Google
-    function initMap() {
-        try {
-            console.log('Inicializando mapa...');
-            
-            // Configuração inicial do mapa (centro no Brasil)
-            const mapOptions = {
-                center: { lat: -15.7889, lng: -47.8792 },
-                zoom: 4,
-                mapTypeId: 'roadmap',
-                styles: [
-                    {
-                        "featureType": "administrative",
-                        "elementType": "labels.text.fill",
-                        "stylers": [
-                            {
-                                "color": "#444444"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "landscape",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "color": "#f2f2f2"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "poi",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "visibility": "off"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "saturation": -100
-                            },
-                            {
-                                "lightness": 45
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road.highway",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "visibility": "simplified"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "road.arterial",
-                        "elementType": "labels.icon",
-                        "stylers": [
-                            {
-                                "visibility": "off"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "transit",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "visibility": "off"
-                            }
-                        ]
-                    },
-                    {
-                        "featureType": "water",
-                        "elementType": "all",
-                        "stylers": [
-                            {
-                                "color": "#46bcec"
-                            },
-                            {
-                                "visibility": "on"
-                            }
-                        ]
-                    }
-                ]
-            };
-            
-            freightMap = new google.maps.Map(document.getElementById('freightMap'), mapOptions);
-            
-            // Adicionar listeners para eventos do mapa
-            google.maps.event.addListenerOnce(freightMap, 'tilesloaded', function() {
-                console.log('Mapa carregado com sucesso');
-                $('.map-overlay').hide();
-            });
-            
-            google.maps.event.addListenerOnce(freightMap, 'error', function() {
-                console.error('Erro ao carregar o mapa');
-                $('.map-overlay').hide();
-                showToast('Erro ao carregar o mapa. Verifique sua conexão ou a chave da API.', 'danger');
-            });
-            
-        } catch (e) {
-            console.error('Erro ao inicializar o mapa:', e);
+        freightMap = new google.maps.Map(document.getElementById('freightMap'), mapOptions);
+        mapInitialized = true;
+        
+        // Adicionar listeners para eventos do mapa
+        google.maps.event.addListenerOnce(freightMap, 'tilesloaded', function() {
+            console.log('Mapa carregado com sucesso');
             $('.map-overlay').hide();
-            showToast('Erro crítico ao carregar o mapa', 'danger');
-        }
+        });
+        
+        google.maps.event.addListenerOnce(freightMap, 'error', function() {
+            console.error('Erro ao carregar o mapa');
+            $('.map-overlay').hide();
+            showToast('Erro ao carregar o mapa. Verifique sua conexão ou a chave da API.', 'danger');
+        });
+        
+    } catch (e) {
+        console.error('Erro ao inicializar o mapa:', e);
+        $('.map-overlay').hide();
+        showToast('Erro crítico ao carregar o mapa', 'danger');
     }
-    
-    // Atualizar marcadores do mapa
-    function updateMapMarkers(freights) {
+}
+
+// Atualizar marcadores do mapa
+function updateMapMarkers(freights) {
+    try {
         console.log('Atualizando marcadores do mapa. Total de fretes:', freights.length);
+        
+        // Verificar se o mapa foi inicializado
+        if (!freightMap || !mapInitialized) {
+            console.error('O mapa não foi inicializado corretamente');
+            $('.map-overlay').hide();
+            return;
+        }
         
         // Limpar marcadores existentes
         mapMarkers.forEach(marker => marker.setMap(null));
@@ -853,6 +825,7 @@ $(document).ready(function() {
         
         const bounds = new google.maps.LatLngBounds();
         let hasValidMarkers = false;
+        let validMarkersCount = 0;
         
         freights.forEach(freight => {
             // Verificar se as coordenadas existem e são válidas
@@ -902,6 +875,7 @@ $(document).ready(function() {
                     
                     mapMarkers.push(marker);
                     hasValidMarkers = true;
+                    validMarkersCount++;
                 } else {
                     console.warn(`Coordenadas inválidas para frete ${freight.id}: lat=${lat}, lng=${lng}`);
                 }
@@ -910,9 +884,27 @@ $(document).ready(function() {
             }
         });
         
+        console.log(`Marcadores válidos adicionados: ${validMarkersCount}`);
+        
         if (hasValidMarkers) {
-            console.log(`Adicionados ${mapMarkers.length} marcadores válidos no mapa`);
-            freightMap.fitBounds(bounds, { padding: 50 });
+            try {
+                // Ajustar o zoom para mostrar todos os marcadores
+                freightMap.fitBounds(bounds, { 
+                    padding: 50,
+                    maxZoom: 15 // Limite máximo de zoom para evitar zoom excessivo
+                });
+                
+                // Se houver apenas um marcador, centralizar nele com zoom padrão
+                if (validMarkersCount === 1) {
+                    freightMap.setCenter(bounds.getCenter());
+                    freightMap.setZoom(10);
+                }
+            } catch (e) {
+                console.error('Erro ao ajustar bounds do mapa:', e);
+                // Centralizar no Brasil como fallback
+                freightMap.setCenter({ lat: -15.7889, lng: -47.8792 });
+                freightMap.setZoom(4);
+            }
         } else {
             console.log('Nenhum marcador válido para exibir. Centralizando no Brasil.');
             // Centralizar no Brasil se nenhum marcador válido
@@ -921,393 +913,398 @@ $(document).ready(function() {
         }
         
         $('.map-overlay').hide();
-    }
-    
-    // Obter cor baseada no status
-    function getStatusColor(statusId) {
-        const colors = {
-            1: '#4e73df',  // Pendente (azul)
-            2: '#f6c23e',  // Em andamento (amarelo)
-            3: '#1cc88a',  // Concluído (verde)
-            4: '#e74a3b',  // Cancelado (vermelho)
-            5: '#36b9cc'    // Outros (ciano)
-        };
         
-        return colors[statusId] || '#858796'; // Cinza para status desconhecido
+    } catch (e) {
+        console.error('Erro ao atualizar marcadores do mapa:', e);
+        $('.map-overlay').hide();
+        showToast('Erro ao atualizar o mapa', 'danger');
     }
+}
+
+// Obter cor baseada no status
+function getStatusColor(statusId) {
+    const colors = {
+        1: '#4e73df',  // Pendente (azul)
+        2: '#f6c23e',  // Em andamento (amarelo)
+        3: '#1cc88a',  // Concluído (verde)
+        4: '#e74a3b',  // Cancelado (vermelho)
+        5: '#36b9cc'   // Outros (ciano)
+    };
     
-    // Obter classe de cor baseada no status (para badges)
-    function getStatusColorClass(statusId) {
-        const colors = {
-            1: 'bg-primary',  // Pendente
-            2: 'bg-warning',  // Em andamento
-            3: 'bg-success',  // Concluído
-            4: 'bg-danger',   // Cancelado
-            5: 'bg-info'      // Outros
-        };
-        
-        return colors[statusId] || 'bg-secondary';
-    }
+    return colors[statusId] || '#858796'; // Cinza para status desconhecido
+}
+
+// Obter classe de cor baseada no status (para badges)
+function getStatusColorClass(statusId) {
+    const colors = {
+        1: 'bg-primary',  // Pendente
+        2: 'bg-warning',  // Em andamento
+        3: 'bg-success',  // Concluído
+        4: 'bg-danger',   // Cancelado
+        5: 'bg-info'      // Outros
+    };
     
-    // Atualizar cards de resumo
-    function updateSummaryCards(data) {
-        $('#total-freights').text(data.total_freights || 0);
-        $('#in-progress').text(data.in_progress || 0);
-        $('#pending').text(data.pending || 0);
-        $('#total-value').text(formatCurrency(data.total_value || 0));
-    }
+    return colors[statusId] || 'bg-secondary';
+}
+
+// Atualizar cards de resumo
+function updateSummaryCards(data) {
+    $('#total-freights').text(data.total_freights || 0);
+    $('#in-progress').text(data.in_progress || 0);
+    $('#pending').text(data.pending || 0);
+    $('#total-value').text(formatCurrency(data.total_value || 0));
+}
+
+// Carregar detalhes do frete via AJAX
+function loadFreightDetails(freightId) {
+    const modal = $('#freightDetailsModal');
+    const content = $('#freightDetailsContent');
     
-    // Carregar detalhes do frete via AJAX
-    function loadFreightDetails(freightId) {
-        const modal = $('#freightDetailsModal');
-        const content = $('#freightDetailsContent');
-        
-        content.html(`
-            <div class="text-center py-5">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
+    content.html(`
+        <div class="text-center py-5">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
             </div>
-        `);
-        
-        modal.modal('show');
-        
-        $.ajax({
-            url: `/freights/${freightId}/details`,
-            method: 'GET',
-            success: function(data) {
-                content.html(data);
-            },
-            error: function(xhr) {
-                content.html(`
-                    <div class="alert alert-danger">
-                        Erro ao carregar detalhes do frete. Por favor, tente novamente.
+        </div>
+    `);
+    
+    modal.modal('show');
+    
+    $.ajax({
+        url: `/freights/${freightId}/details`,
+        method: 'GET',
+        success: function(data) {
+            content.html(data);
+        },
+        error: function(xhr) {
+            content.html(`
+                <div class="alert alert-danger">
+                    Erro ao carregar detalhes do frete. Por favor, tente novamente.
+                </div>
+            `);
+        }
+    });
+}
+
+// Mostrar detalhes do motorista e caminhão
+function showDriverTruckDetails(freightsDriverId) {
+    const modal = $('#driverTruckModal');
+    const driverContent = $('#driverDetails');
+    const truckContent = $('#truckDetails');
+    const implementsContent = $('#implementsDetails');
+    
+    // Mostrar loaders
+    driverContent.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>');
+    truckContent.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>');
+    implementsContent.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>');
+    
+    modal.modal('show');
+    
+    $.ajax({
+        url: `/freights/driver-truck-details/${freightsDriverId}`,
+        method: 'GET',
+        success: function(data) {
+            // Atualizar informações do motorista
+            if (data.driver) {
+                driverContent.html(`
+                    <div class="row">
+                        <div class="col-md-4 text-center">
+                            <img src="${data.driver.face_photo_url || '/images/default-user.png'}" 
+                                 class="img-thumbnail mb-3" 
+                                 alt="Foto do Motorista"
+                                 style="max-width: 150px;">
+                        </div>
+                        <div class="col-md-8">
+                            <h5>${data.driver.name}</h5>
+                            <p><strong>CPF:</strong> ${data.driver.cpf || 'Não informado'}</p>
+                            <p><strong>CNH:</strong> ${data.driver.driver_license_number || 'Não informado'}</p>
+                            <p><strong>Validade CNH:</strong> ${formatDateBR(data.driver.driver_license_expiration) || 'Não informada'}</p>
+                            <div class="row mt-3">
+                                <div class="col-md-6">
+                                    <img src="${data.driver.driver_license_front_url || '/images/default-license.jpg'}" 
+                                         class="img-thumbnail" 
+                                         alt="CNH Frente">
+                                </div>
+                                <div class="col-md-6">
+                                    <img src="${data.driver.driver_license_back_url || '/images/default-license.jpg'}" 
+                                         class="img-thumbnail" 
+                                         alt="CNH Verso">
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 `);
             }
-        });
-    }
-    
-    // Mostrar detalhes do motorista e caminhão
-    function showDriverTruckDetails(freightsDriverId) {
-        const modal = $('#driverTruckModal');
-        const driverContent = $('#driverDetails');
-        const truckContent = $('#truckDetails');
-        const implementsContent = $('#implementsDetails');
-        
-        // Mostrar loaders
-        driverContent.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>');
-        truckContent.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>');
-        implementsContent.html('<div class="text-center py-3"><div class="spinner-border text-primary" role="status"></div></div>');
-        
-        modal.modal('show');
-        
-        $.ajax({
-            url: `/freights/driver-truck-details/${freightsDriverId}`,
-            method: 'GET',
-            success: function(data) {
-                // Atualizar informações do motorista
-                if (data.driver) {
-                    driverContent.html(`
-                        <div class="row">
-                            <div class="col-md-4 text-center">
-                                <img src="${data.driver.face_photo_url || '/images/default-user.png'}" 
-                                     class="img-thumbnail mb-3" 
-                                     alt="Foto do Motorista"
-                                     style="max-width: 150px;">
-                            </div>
-                            <div class="col-md-8">
-                                <h5>${data.driver.name}</h5>
-                                <p><strong>CPF:</strong> ${data.driver.cpf || 'Não informado'}</p>
-                                <p><strong>CNH:</strong> ${data.driver.driver_license_number || 'Não informado'}</p>
-                                <p><strong>Validade CNH:</strong> ${formatDateBR(data.driver.driver_license_expiration) || 'Não informada'}</p>
-                                <div class="row mt-3">
-                                    <div class="col-md-6">
-                                        <img src="${data.driver.driver_license_front_url || '/images/default-license.jpg'}" 
-                                             class="img-thumbnail" 
-                                             alt="CNH Frente">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <img src="${data.driver.driver_license_back_url || '/images/default-license.jpg'}" 
-                                             class="img-thumbnail" 
-                                             alt="CNH Verso">
-                                    </div>
-                                </div>
-                            </div>
+            
+            // Atualizar informações do caminhão
+            if (data.truck) {
+                truckContent.html(`
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Placa:</strong> ${data.truck.license_plate || 'Não informada'}</p>
+                            <p><strong>Modelo:</strong> ${data.truck.model || 'Não informado'}</p>
+                            <p><strong>Ano:</strong> ${data.truck.year || 'Não informado'}</p>
+                            <p><strong>Cor:</strong> ${data.truck.color || 'Não informada'}</p>
                         </div>
-                    `);
-                }
-                
-                // Atualizar informações do caminhão
-                if (data.truck) {
-                    truckContent.html(`
-                        <div class="row">
-                            <div class="col-md-6">
-                                <p><strong>Placa:</strong> ${data.truck.license_plate || 'Não informada'}</p>
-                                <p><strong>Modelo:</strong> ${data.truck.model || 'Não informado'}</p>
-                                <p><strong>Ano:</strong> ${data.truck.year || 'Não informado'}</p>
-                                <p><strong>Cor:</strong> ${data.truck.color || 'Não informada'}</p>
-                            </div>
-                            <div class="col-md-6">
-                                <div class="row">
-                                    <div class="col-6 mb-2">
-                                        <img src="${data.truck.front_photo_full_url || '/images/default-truck.jpg'}" 
-                                             class="img-thumbnail" 
-                                             alt="Foto Dianteira">
-                                    </div>
-                                    <div class="col-6 mb-2">
-                                        <img src="${data.truck.rear_photo_full_url || '/images/default-truck.jpg'}" 
-                                             class="img-thumbnail" 
-                                             alt="Foto Traseira">
-                                    </div>
-                                    <div class="col-6">
-                                        <img src="${data.truck.crv_photo_full_url || '/images/default-document.jpg'}" 
-                                             class="img-thumbnail" 
-                                             alt="CRV">
-                                    </div>
-                                    <div class="col-6">
-                                        <img src="${data.truck.crlv_photo_full_url || '/images/default-document.jpg'}" 
-                                             class="img-thumbnail" 
-                                             alt="CRLV">
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    `);
-                }
-                
-                // Atualizar informações dos implementos
-                if (data.implements && data.implements.length > 0) {
-                    let implementsHtml = '<div class="d-flex flex-wrap">';
-                    data.implements.forEach(implement => {
-                        implementsHtml += `
-                            <div class="me-3 mb-3 text-center">
-                                <img src="${implement.photo_url || '/images/default-implement.jpg'}" 
-                                     class="implement-photo img-thumbnail" 
-                                     alt="${implement.type}">
-                                <p class="mb-0"><strong>${implement.type}</strong></p>
-                            </div>
-                        `;
-                    });
-                    implementsHtml += '</div>';
-                    implementsContent.html(implementsHtml);
-                } else {
-                    implementsContent.html('<p class="text-muted">Nenhum implemento cadastrado</p>');
-                }
-            },
-            error: function(xhr) {
-                showToast('Erro ao carregar detalhes do motorista/caminhão', 'danger');
-                console.error('Error loading driver/truck details:', xhr.responseText);
-            }
-        });
-    }
-    
-    // Formatar detalhes expandidos
-    function formatFreightDetails(d) {
-        return `
-            <div class="row px-4 py-3 bg-light rounded-3 mx-1 my-2">
-                <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Detalhes do Frete</h6>
-                        </div>
-                        <div class="card-body">
+                        <div class="col-md-6">
                             <div class="row">
                                 <div class="col-6 mb-2">
-                                    <small class="text-muted">Tipo de Caminhão</small>
-                                    <p class="mb-0 fw-semibold">${d.truck_type_name || 'N/A'}</p>
+                                    <img src="${data.truck.front_photo_full_url || '/images/default-truck.jpg'}" 
+                                         class="img-thumbnail" 
+                                         alt="Foto Dianteira">
                                 </div>
                                 <div class="col-6 mb-2">
-                                    <small class="text-muted">Distância</small>
-                                    <p class="mb-0 fw-semibold">${d.distance_km || '0'} km</p>
+                                    <img src="${data.truck.rear_photo_full_url || '/images/default-truck.jpg'}" 
+                                         class="img-thumbnail" 
+                                         alt="Foto Traseira">
                                 </div>
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted">Tempo Estimado</small>
-                                    <p class="mb-0 fw-semibold">${d.duration || 'N/A'}</p>
+                                <div class="col-6">
+                                    <img src="${data.truck.crv_photo_full_url || '/images/default-document.jpg'}" 
+                                         class="img-thumbnail" 
+                                         alt="CRV">
                                 </div>
-                                <div class="col-6 mb-2">
-                                    <small class="text-muted">Valor Motorista</small>
-                                    <p class="mb-0 fw-semibold">${formatCurrency(d.driver_freight_value) || 'R$ 0,00'}</p>
+                                <div class="col-6">
+                                    <img src="${data.truck.crlv_photo_full_url || '/images/default-document.jpg'}" 
+                                         class="img-thumbnail" 
+                                         alt="CRLV">
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-                
-                <div class="col-md-6 mb-3">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Instruções</h6>
+                `);
+            }
+            
+            // Atualizar informações dos implementos
+            if (data.implements && data.implements.length > 0) {
+                let implementsHtml = '<div class="d-flex flex-wrap">';
+                data.implements.forEach(implement => {
+                    implementsHtml += `
+                        <div class="me-3 mb-3 text-center">
+                            <img src="${implement.photo_url || '/images/default-implement.jpg'}" 
+                                 class="implement-photo img-thumbnail" 
+                                 alt="${implement.type}">
+                            <p class="mb-0"><strong>${implement.type}</strong></p>
                         </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <small class="text-muted">Carregamento</small>
-                                <p class="mb-0">${d.loading_instructions || 'Nenhuma instrução'}</p>
-                            </div>
-                            <div>
-                                <small class="text-muted">Descarga</small>
-                                <p class="mb-0">${d.unloading_instructions || 'Nenhuma instrução'}</p>
-                            </div>
-                        </div>
+                    `;
+                });
+                implementsHtml += '</div>';
+                implementsContent.html(implementsHtml);
+            } else {
+                implementsContent.html('<p class="text-muted">Nenhum implemento cadastrado</p>');
+            }
+        },
+        error: function(xhr) {
+            showToast('Erro ao carregar detalhes do motorista/caminhão', 'danger');
+            console.error('Error loading driver/truck details:', xhr.responseText);
+        }
+    });
+}
+
+// Formatar detalhes expandidos
+function formatFreightDetails(d) {
+    return `
+        <div class="row px-4 py-3 bg-light rounded-3 mx-1 my-2">
+            <div class="col-md-6 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0 fw-bold">Detalhes do Frete</h6>
                     </div>
-                </div>
-                
-                <div class="col-md-12">
-                    <div class="card border-0 shadow-sm">
-                        <div class="card-header bg-white">
-                            <h6 class="mb-0 fw-bold">Descrição</h6>
-                        </div>
-                        <div class="card-body">
-                            <p class="mb-0">${d.freight_description || 'Nenhuma descrição disponível'}</p>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Tipo de Caminhão</small>
+                                <p class="mb-0 fw-semibold">${d.truck_type_name || 'N/A'}</p>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Distância</small>
+                                <p class="mb-0 fw-semibold">${d.distance_km || '0'} km</p>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Tempo Estimado</small>
+                                <p class="mb-0 fw-semibold">${d.duration || 'N/A'}</p>
+                            </div>
+                            <div class="col-6 mb-2">
+                                <small class="text-muted">Valor Motorista</small>
+                                <p class="mb-0 fw-semibold">${formatCurrency(d.driver_freight_value) || 'R$ 0,00'}</p>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-        `;
-    }
-    
-    // Inicializar DataTable
-    function initDataTable() {
-        return $('#freights-table').DataTable({
-            processing: true,
-            serverSide: true,
-            ajax: {
-                url: "{{ route('freights.dashboard') }}",
-                type: "GET",
-                data: function(d) {
-                    d.status_filter = $('#statusFilterDropdown').data('filter') || 'all';
-                    d.map_filter = $('#mapFilterDropdown').data('filter') || 'all';
-                },
-                dataSrc: function(json) {
-                    // Atualizar dados do dashboard
-                    if (json.summary) {
-                        updateSummaryCards(json.summary);
-                    }
-                    
-                    if (json.data) {
-                        updateMapMarkers(json.data);
-                    }
-                    
-                    // Atualizar contagem de registros
-                    $('#showing-entries').text(json.recordsFiltered || 0);
-                    $('#total-entries').text(json.recordsTotal || 0);
-                    
-                    return json.data;
-                },
-                error: function(xhr) {
-                    showToast('Erro ao carregar dados da tabela', 'danger');
-                    $('.table-overlay').hide();
-                }
+            
+            <div class="col-md-6 mb-3">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0 fw-bold">Instruções</h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-3">
+                            <small class="text-muted">Carregamento</small>
+                            <p class="mb-0">${d.loading_instructions || 'Nenhuma instrução'}</p>
+                        </div>
+                        <div>
+                            <small class="text-muted">Descarga</small>
+                            <p class="mb-0">${d.unloading_instructions || 'Nenhuma instrução'}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-white">
+                        <h6 class="mb-0 fw-bold">Descrição</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">${d.freight_description || 'Nenhuma descrição disponível'}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+}
+
+// Inicializar DataTable
+function initDataTable() {
+    return $('#freights-table').DataTable({
+        processing: true,
+        serverSide: true,
+        ajax: {
+            url: "{{ route('freights.dashboard') }}",
+            type: "GET",
+            data: function(d) {
+                d.status_filter = $('#statusFilterDropdown').data('filter') || 'all';
+                d.map_filter = $('#mapFilterDropdown').data('filter') || 'all';
             },
-            dom: 'Bfrtip',
-            buttons: [
-                {
-                    extend: 'excel',
-                    text: '<i class="fas fa-file-excel me-1"></i>Excel',
-                    className: 'btn btn-success btn-sm',
-                    exportOptions: {
-                        columns: [1, 2, 3, 4, 5, 6, 7, 8]
-                    }
+            dataSrc: function(json) {
+                // Atualizar dados do dashboard
+                if (json.summary) {
+                    updateSummaryCards(json.summary);
                 }
-            ],
-            order: [[1, 'desc']],
-            columns: [
-                {
-                    className: 'dt-control',
-                    orderable: false,
-                    data: null,
-                    defaultContent: '',
-                    width: '40px'
-                },
-                { 
-                    data: 'id',
-                    className: 'ps-4 fw-semibold',
-                    orderable: true,
-                },
-                { 
-                    data: 'company.name',
-                    name: 'company_id',
-                    render: data => data || 'N/A'
-                },
-                { 
-                    data: 'freight_status',
-                    name: 'status_id',
-                    render: (data, type, row) => {
-                        return `<span class="badge ${getStatusColorClass(data.id)} bg-opacity-10 text-${getStatusColorClass(data.id).replace('bg-', '')}">
-                            ${data.name}
-                        </span>`;
-                    }
-                },
-                { 
-                    data: 'start_address',
-                    render: data => data || 'N/A'
-                },
-                { 
-                    data: 'destination_address',
-                    render: data => data || 'N/A'
-                },
-                { 
-                    data: 'pickup_date',
-                    render: data => formatDateTimeBR(data) || 'Não agendado'
-                },
-                { 
-                    data: 'delivery_date',
-                    render: data => formatDateTimeBR(data) || 'Não agendado'
-                },
-                { 
-                    data: 'freight_value',
-                    render: data => formatCurrency(data) || 'R$ 0,00'
-                },
-                { 
-                    data: 'id',
-                    orderable: false,
-                    searchable: false,
-                    className: 'text-end pe-4',
-                    render: function(data, type, row) {
-                        return `
-                            <div class="btn-group">
-                                <button class="btn btn-sm btn-outline-primary view-freight" data-id="${data}">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                                <a href="/freights/${data}/edit" class="btn btn-sm btn-outline-secondary">
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            </div>
-                        `;
-                    }
+                
+                if (json.data) {
+                    updateMapMarkers(json.data);
                 }
-            ],
-            language: {
-                url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
+                
+                // Atualizar contagem de registros
+                $('#showing-entries').text(json.recordsFiltered || 0);
+                $('#total-entries').text(json.recordsTotal || 0);
+                
+                return json.data;
             },
-            initComplete: function() {
-                $('.table-overlay').hide();
-            },
-            drawCallback: function() {
+            error: function(xhr) {
+                showToast('Erro ao carregar dados da tabela', 'danger');
                 $('.table-overlay').hide();
             }
+        },
+        dom: 'Bfrtip',
+        buttons: [
+            {
+                extend: 'excel',
+                text: '<i class="fas fa-file-excel me-1"></i>Excel',
+                className: 'btn btn-success btn-sm',
+                exportOptions: {
+                    columns: [1, 2, 3, 4, 5, 6, 7, 8]
+                }
+            }
+        ],
+        order: [[1, 'desc']],
+        columns: [
+            {
+                className: 'dt-control',
+                orderable: false,
+                data: null,
+                defaultContent: '',
+                width: '40px'
+            },
+            { 
+                data: 'id',
+                className: 'ps-4 fw-semibold',
+                orderable: true,
+            },
+            { 
+                data: 'company.name',
+                name: 'company_id',
+                render: data => data || 'N/A'
+            },
+            { 
+                data: 'freight_status',
+                name: 'status_id',
+                render: (data, type, row) => {
+                    return `<span class="badge ${getStatusColorClass(data.id)} bg-opacity-10 text-${getStatusColorClass(data.id).replace('bg-', '')}">
+                        ${data.name}
+                    </span>`;
+                }
+            },
+            { 
+                data: 'start_address',
+                render: data => data || 'N/A'
+            },
+            { 
+                data: 'destination_address',
+                render: data => data || 'N/A'
+            },
+            { 
+                data: 'pickup_date',
+                render: data => formatDateTimeBR(data) || 'Não agendado'
+            },
+            { 
+                data: 'delivery_date',
+                render: data => formatDateTimeBR(data) || 'Não agendado'
+            },
+            { 
+                data: 'freight_value',
+                render: data => formatCurrency(data) || 'R$ 0,00'
+            },
+            { 
+                data: 'id',
+                orderable: false,
+                searchable: false,
+                className: 'text-end pe-4',
+                render: function(data, type, row) {
+                    return `
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary view-freight" data-id="${data}">
+                                <i class="fas fa-eye"></i>
+                            </button>
+                            <a href="/freights/${data}/edit" class="btn btn-sm btn-outline-secondary">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    `;
+                }
+            }
+        ],
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.13.1/i18n/pt-BR.json'
+        },
+        initComplete: function() {
+            $('.table-overlay').hide();
+        },
+        drawCallback: function() {
+            $('.table-overlay').hide();
+        }
+    });
+}
+
+// Inicializar a aplicação
+function initializeApp() {
+    initCharts();
+    table = initDataTable();
+    loadChartData();
+    
+    // Carregar a API do Google Maps
+    loadGoogleMapsAPI()
+        .then(() => {
+            console.log('API do Google Maps carregada com sucesso');
+        })
+        .catch(error => {
+            console.error('Erro ao carregar a API do Google Maps:', error);
         });
-    }
-    
-    // Inicializar a aplicação
-    function initializeApp() {
-        initCharts();
-        table = initDataTable();
-        loadChartData();
-        
-        // Carregar a API do Google Maps
-        loadGoogleMapsAPI()
-            .then(() => {
-                console.log('API do Google Maps carregada com sucesso');
-            })
-            .catch(error => {
-                console.error('Erro ao carregar a API do Google Maps:', error);
-                $('.map-overlay').hide();
-                showToast('Erro ao carregar o Google Maps. Tente recarregar a página.', 'danger');
-            });
-    }
-    
-    // Inicializar quando o documento estiver pronto
+}
+
+// Inicializar quando o documento estiver pronto
+$(document).ready(function() {
     initializeApp();
     
     // Evento para expandir/recolher detalhes
