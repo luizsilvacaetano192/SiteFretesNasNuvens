@@ -485,7 +485,7 @@
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=visualization&callback=initMap" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=visualization"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
@@ -691,36 +691,38 @@ function loadGoogleMapsAPI() {
     return new Promise((resolve, reject) => {
         // Verificar se a API já está carregada
         if (window.google && window.google.maps) {
+            initMap();
             resolve();
             return;
         }
-        
+
         // Configurar timeout para fallback (15 segundos)
         mapLoadTimeout = setTimeout(() => {
             reject(new Error('Timeout ao carregar a API do Google Maps'));
             $('.map-overlay').hide();
             showToast('O mapa está demorando muito para carregar. Verifique sua conexão.', 'warning');
         }, 15000);
-        
+
         // Criar elemento script
         const script = document.createElement('script');
-        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=visualization&callback=initMap`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=visualization`;
         script.async = true;
         script.defer = true;
-        script.onerror = () => {
+        
+        script.onload = function() {
+            clearTimeout(mapLoadTimeout);
+            initMap();
+            resolve();
+        };
+        
+        script.onerror = function() {
             clearTimeout(mapLoadTimeout);
             reject(new Error('Falha ao carregar a API do Google Maps'));
             $('.map-overlay').hide();
             showToast('Erro ao carregar o Google Maps. Verifique sua conexão.', 'danger');
         };
-        
+
         document.head.appendChild(script);
-        
-        // Configurar callback global
-        window.initMap = function() {
-            clearTimeout(mapLoadTimeout);
-            resolve();
-        };
     });
 }
 
@@ -728,6 +730,10 @@ function loadGoogleMapsAPI() {
 function initMap() {
     try {
         console.log('Inicializando mapa...');
+        
+        if (!window.google || !window.google.maps) {
+            throw new Error('Google Maps API not loaded');
+        }
         
         // Configuração inicial do mapa (centro no Brasil)
         const mapOptions = {
