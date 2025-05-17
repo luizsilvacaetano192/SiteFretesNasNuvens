@@ -684,8 +684,8 @@ $(document).ready(function() {
                     }
                     
                     // Atualizar gráfico mensal
-                    if (data.charts.monthly_chart) {
-                        monthlyChart.data.datasets[0].data = data.charts.monthly_chart.data;
+                    if (data.monthly_chart) {
+                        monthlyChart.data.datasets[0].data = data.monthly_chart.data;
                         monthlyChart.update();
                     }
              
