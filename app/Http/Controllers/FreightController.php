@@ -65,8 +65,7 @@ class FreightController extends Controller
             'summary' => $this->getDashboardSummary(),
             'charts' => $this->getDashboardCharts()
         ];
-        
-        dd($data);
+    
         return view('freights.dashboard', $data);
     }
 
