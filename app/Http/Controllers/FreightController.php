@@ -31,6 +31,15 @@ class FreightController extends Controller
         ]);
     }
 
+
+    public function getChartData(Request $request)
+    {
+        return response()->json([
+            'status_chart' => $this->getStatusChartData(),
+            'monthly_chart' => $this->getMonthlyChartData()
+        ]);
+    }
+
   public function dashboard(Request $request)
     {
         $statuses = FreightStatus::all();
