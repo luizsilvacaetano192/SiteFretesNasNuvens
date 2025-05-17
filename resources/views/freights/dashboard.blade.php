@@ -670,11 +670,11 @@ $(document).ready(function() {
         $('.chart-overlay').show();
         
         $.ajax({
-            url: "{{ route('freights.dashboard') }}",
+            url: "{{ route('freights.chart-data') }}",
             method: 'GET',
-            data: { charts_only: true },
+           
             success: function(data) {
-                if (data.charts) {
+              
                     console.log('data', data)
                     // Atualizar gráfico de status
                     if (data.charts.status_chart) {
@@ -688,7 +688,7 @@ $(document).ready(function() {
                         monthlyChart.data.datasets[0].data = data.charts.monthly_chart.data;
                         monthlyChart.update();
                     }
-                }
+             
                 $('.chart-overlay').hide();
             },
             error: function(xhr) {
