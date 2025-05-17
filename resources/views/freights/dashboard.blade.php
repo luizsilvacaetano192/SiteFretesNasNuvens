@@ -329,7 +329,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link href="https://cdn.datatables.net/1.13.1/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.dataTables.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 <style>
     /* Estilos para os cards */
     .card {
@@ -389,39 +388,30 @@
     }
     
     /* Estilos para o mapa */
-    .leaflet-container {
+    #freightMap {
         z-index: 1;
+        border-radius: 0 0 0.3rem 0.3rem;
     }
     
-    /* Custom marker styles */
-    .marker-pin {
-        width: 30px;
-        height: 30px;
-        border-radius: 50% 50% 50% 0;
-        position: relative;
-        transform: rotate(-45deg);
-        left: 50%;
-        top: 50%;
-        margin: -15px 0 0 -15px;
+    /* Ajustes para o info window do Google Maps */
+    .gm-style .gm-style-iw {
+        padding: 10px;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
     }
     
-    .marker-pin::after {
-        content: '';
-        width: 24px;
-        height: 24px;
-        margin: 3px 0 0 3px;
-        background: #fff;
-        position: absolute;
-        border-radius: 50%;
+    .gm-style .gm-style-iw-c {
+        padding: 0;
+        border-radius: 0.5rem;
     }
     
-    /* Status colors for markers */
-    .bg-primary { background-color: #4e73df; }
-    .bg-success { background-color: #1cc88a; }
-    .bg-warning { background-color: #f6c23e; }
-    .bg-danger { background-color: #e74a3b; }
-    .bg-info { background-color: #36b9cc; }
-    .bg-secondary { background-color: #858796; }
+    .gm-style .gm-style-iw-d {
+        overflow: hidden !important;
+    }
+    
+    .gm-ui-hover-effect {
+        top: 8px !important;
+        right: 8px !important;
+    }
     
     /* Estilos para os dropdowns */
     .dropdown-menu {
@@ -495,7 +485,7 @@
 <script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=visualization"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 
 <script>
@@ -672,23 +662,20 @@ $(document).ready(function() {
         $.ajax({
             url: "{{ route('freights.chart-data') }}",
             method: 'GET',
-           
             success: function(data) {
-              
-                    console.log('data', data.monthly_chart)
-                    // Atualizar gráfico de status
-                    if (data.status_chart) {
-                        statusChart.data.labels = data.status_chart.labels;
-                        statusChart.data.datasets[0].data = data.status_chart.data;
-                        statusChart.update();
-                    }
-                    
-                    // Atualizar gráfico mensal
-                    if (data.monthly_chart) {
-                        monthlyChart.data.datasets[0].data = data.monthly_chart.data;
-                        monthlyChart.update();
-                    }
-             
+                // Atualizar gráfico de status
+                if (data.status_chart) {
+                    statusChart.data.labels = data.status_chart.labels;
+                    statusChart.data.datasets[0].data = data.status_chart.data;
+                    statusChart.update();
+                }
+                
+                // Atualizar gráfico mensal
+                if (data.monthly_chart) {
+                    monthlyChart.data.datasets[0].data = data.monthly_chart.data;
+                    monthlyChart.update();
+                }
+                
                 $('.chart-overlay').hide();
             },
             error: function(xhr) {
@@ -699,34 +686,131 @@ $(document).ready(function() {
         });
     }
     
-    // Inicializar mapa
+    // Inicializar mapa do Google
     function initMap() {
-        freightMap = L.map('freightMap').setView([-15.7889, -47.8792], 4);
+        // Configuração inicial do mapa (centro no Brasil)
+        const mapOptions = {
+            center: { lat: -15.7889, lng: -47.8792 },
+            zoom: 4,
+            mapTypeId: 'roadmap',
+            styles: [
+                {
+                    "featureType": "administrative",
+                    "elementType": "labels.text.fill",
+                    "stylers": [
+                        {
+                            "color": "#444444"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "landscape",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "color": "#f2f2f2"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "poi",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "saturation": -100
+                        },
+                        {
+                            "lightness": 45
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road.highway",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "visibility": "simplified"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "road.arterial",
+                    "elementType": "labels.icon",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "transit",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "visibility": "off"
+                        }
+                    ]
+                },
+                {
+                    "featureType": "water",
+                    "elementType": "all",
+                    "stylers": [
+                        {
+                            "color": "#46bcec"
+                        },
+                        {
+                            "visibility": "on"
+                        }
+                    ]
+                }
+            ]
+        };
         
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-        }).addTo(freightMap);
+        freightMap = new google.maps.Map(document.getElementById('freightMap'), mapOptions);
     }
     
     // Atualizar marcadores do mapa
     function updateMapMarkers(freights) {
         // Limpar marcadores existentes
-        mapMarkers.forEach(marker => freightMap.removeLayer(marker));
+        mapMarkers.forEach(marker => marker.setMap(null));
         mapMarkers = [];
+        
+        // Se não houver fretes, sair
+        if (!freights || freights.length === 0) return;
+        
+        const bounds = new google.maps.LatLngBounds();
         
         // Adicionar novos marcadores
         freights.forEach(freight => {
             if (freight.start_lat && freight.start_lng) {
-                const marker = L.marker([freight.start_lat, freight.start_lng], {
-                    icon: L.divIcon({
-                        className: 'custom-marker',
-                        html: `<div class="marker-pin ${getStatusColorClass(freight.status_id)}"></div>`,
-                        iconSize: [30, 42],
-                        iconAnchor: [15, 42]
-                    })
-                }).addTo(freightMap);
+                const position = new google.maps.LatLng(freight.start_lat, freight.start_lng);
+                bounds.extend(position);
                 
-                marker.bindPopup(`
+                const marker = new google.maps.Marker({
+                    position: position,
+                    map: freightMap,
+                    title: `Frete #${freight.id}`,
+                    icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        fillColor: getStatusColor(freight.status_id),
+                        fillOpacity: 0.9,
+                        strokeColor: '#fff',
+                        strokeWeight: 1,
+                        scale: 8
+                    }
+                });
+                
+                // Criar conteúdo do info window
+                const contentString = `
                     <div class="freight-popup">
                         <h6 class="fw-bold mb-1">Frete #${freight.id}</h6>
                         <p class="mb-1"><small>Status: ${freight.freight_status.name}</small></p>
@@ -734,7 +818,15 @@ $(document).ready(function() {
                         <p class="mb-1"><small>Destino: ${freight.destination_address}</small></p>
                         <p class="mb-0"><small>Valor: ${formatCurrency(freight.freight_value)}</small></p>
                     </div>
-                `);
+                `;
+                
+                const infowindow = new google.maps.InfoWindow({
+                    content: contentString
+                });
+                
+                marker.addListener('click', () => {
+                    infowindow.open(freightMap, marker);
+                });
                 
                 mapMarkers.push(marker);
             }
@@ -742,12 +834,24 @@ $(document).ready(function() {
         
         // Ajustar o zoom para mostrar todos os marcadores
         if (mapMarkers.length > 0) {
-            const group = new L.featureGroup(mapMarkers);
-            freightMap.fitBounds(group.getBounds(), { padding: [50, 50] });
+            freightMap.fitBounds(bounds, { padding: 50 });
         }
     }
     
-    // Obter classe de cor baseada no status
+    // Obter cor baseada no status
+    function getStatusColor(statusId) {
+        const colors = {
+            1: '#4e73df',  // Pendente (azul)
+            2: '#f6c23e',  // Em andamento (amarelo)
+            3: '#1cc88a',  // Concluído (verde)
+            4: '#e74a3b',   // Cancelado (vermelho)
+            5: '#36b9cc'    // Outros (ciano)
+        };
+        
+        return colors[statusId] || '#858796'; // Cinza para status desconhecido
+    }
+    
+    // Obter classe de cor baseada no status (para badges)
     function getStatusColorClass(statusId) {
         const colors = {
             1: 'bg-primary',  // Pendente
