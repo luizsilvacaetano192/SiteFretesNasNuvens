@@ -492,6 +492,7 @@ $(document).ready(function() {
     
     // Atualizar cards de resumo
     function updateSummaryCards(data) {
+        console.log('data', data);
         $('#total-freights').text(data.total_freights);
         $('#in-progress').text(data.in_progress);
         $('#pending').text(data.pending);

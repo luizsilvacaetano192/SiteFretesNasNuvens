@@ -592,7 +592,7 @@ public function currentStatus(Freight $freight)
                 'billingType' => 'PIX',
                 'value' => $freight->freight_value,
                 'freight_id' => $freight->id,
-                'successUrl' => 'https://52.91.243.105/freights'
+                'successUrl' => 'https://fretesemnuvens/freights'
             ]);
 
             $data = $response->json();
