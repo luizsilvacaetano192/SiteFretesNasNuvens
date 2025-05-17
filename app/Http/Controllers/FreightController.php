@@ -8,7 +8,6 @@ use App\Models\Driver;
 use App\Models\FreightStatus;
 use App\Models\FreightsDriver;
 use App\Models\Company;
-use App\Models\FreightDriver;
 use App\Models\Truck;
 use Illuminate\Http\Request;
 use Yajra\DataTables\DataTables;
@@ -16,63 +15,78 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use App\Exports\FreightsExport;
+use Maatwebsite\Excel\Facades\Excel;
 
 class FreightController extends Controller
 {
+    public function __construct()
+    {
+        $this->middleware('auth');
+        $this->middleware('can:view,freight')->only(['show', 'showRoute', 'lastPosition', 'history']);
+    }
 
     public function dashboard(Request $request)
     {
         $statuses = FreightStatus::all();
         
-        // Se for uma requisição AJAX para a DataTable
         if ($request->ajax()) {
-            $query = Freight::with(['company', 'freightStatus'])
-                ->select('freights.*');
-            
-            // Aplicar filtro de status
-            if ($request->has('status_filter') && $request->status_filter !== 'all') {
-                $query->where('status_id', $request->status_filter);
-            }
-            
-            // Aplicar filtro do mapa
-            if ($request->has('map_filter') && $request->map_filter !== 'all') {
-                switch ($request->map_filter) {
-                    case 'pending':
-                        $query->where('status_id', 1); // Pendente
-                        break;
-                    case 'in_progress':
-                        $query->where('status_id', 2); // Em andamento
-                        break;
-                    case 'completed':
-                        $query->where('status_id', 3); // Concluído
-                        break;
-                }
-            }
-            
-            return datatables()->eloquent($query)
-               
-                ->addColumn('truck_type_name', function($freight) {
-                    return $freight->truck_type_name;
-                })
-                ->rawColumns(['action', 'freight_status'])
-                ->toJson();
+            return $this->getDashboardDataTable($request);
         }
         
-        // Dados para os cards de resumo
-        $summary = [
+        $summary = $this->getDashboardSummary();
+        $charts = $this->getDashboardCharts();
+        
+        return view('freights.dashboard', compact('statuses', 'summary', 'charts'));
+    }
+    
+    protected function getDashboardDataTable(Request $request)
+    {
+        $query = Freight::with(['company', 'freightStatus'])
+            ->select('freights.*');
+        
+        if ($request->has('status_filter') && $request->status_filter !== 'all') {
+            $query->where('status_id', $request->status_filter);
+        }
+        
+        if ($request->has('map_filter') && $request->map_filter !== 'all') {
+            $query->where('status_id', $this->getStatusIdFromFilter($request->map_filter));
+        }
+        
+        return datatables()->eloquent($query)
+            ->addColumn('truck_type_name', function($freight) {
+                return $freight->truck_type_name;
+            })
+            ->rawColumns(['action', 'freight_status'])
+            ->toJson();
+    }
+    
+    protected function getStatusIdFromFilter($filter)
+    {
+        return match($filter) {
+            'pending' => 1,
+            'in_progress' => 2,
+            'completed' => 3,
+            default => null
+        };
+    }
+    
+    protected function getDashboardSummary()
+    {
+        return [
             'total_freights' => Freight::count(),
             'in_progress' => Freight::where('status_id', 2)->count(),
             'pending' => Freight::where('status_id', 1)->count(),
             'total_value' => Freight::sum('freight_value')
         ];
-        
-        // Dados para os gráficos
-        $charts = [
+    }
+    
+    protected function getDashboardCharts()
+    {
+        return [
             'status_chart' => $this->getStatusChartData(),
             'monthly_chart' => $this->getMonthlyChartData()
         ];
-        
-        return view('freights.dashboard', compact('statuses', 'summary', 'charts'));
     }
     
     protected function getStatusChartData()
@@ -100,13 +114,8 @@ class FreightController extends Controller
             ->get()
             ->keyBy('month');
         
-        $monthlyCounts = [];
-        for ($i = 1; $i <= 12; $i++) {
-            $monthlyCounts[] = $monthlyData->has($i) ? $monthlyData[$i]->total : 0;
-        }
-        
         return [
-            'data' => $monthlyCounts
+            'data' => collect(range(1, 12))->map(fn($month) => $monthlyData[$month]->total ?? 0)
         ];
     }
 
@@ -116,201 +125,223 @@ class FreightController extends Controller
             return $this->getDataTable($request);
         }
         
-        $statuses = FreightStatus::all();
-        return view('freights.index', compact('statuses'));
-    }
-
-    // In your controller
-    public function getDriverTruckDetails($freightsDriver_id)
-    {
-        $freightDriver = FreightsDriver::findOrFail($freightsDriver_id);
-        $driver = Driver::findOrFail($freightDriver->driver_id);
-        $truck = Truck::findOrFail($freightDriver->truck_id);
-
-        return response()->json([
-            'driver' => $driver->append([
-                'driver_license_front_url',
-                'driver_license_back_url',
-                'face_photo_url'
-            ]),
-            'truck' => $truck->append([
-                'front_photo_full_url',
-                'rear_photo_full_url',
-                'left_side_photo_full_url',
-                'right_side_photo_full_url',
-                'crv_photo_full_url',
-                'crlv_photo_full_url'
-            ]),
-            'implements' => $truck->implements->map(function($implement) {
-                $implement->photo_url = $implement->photo 
-                    ? Storage::disk('s3')->url($implement->photo) 
-                    : null;
-                return $implement;
-            })
+        return view('freights.index', [
+            'statuses' => FreightStatus::all()
         ]);
     }
 
-
-public function updateStatus(FreightsDriver $freightsDriver, Request $request)
-{
-    $validated = $request->validate([
-        'status_id' => 'required|integer|exists:freight_statuses,id'
-    ]);
-
-    $freightsDriver->status_id = $validated['status_id'];
-
-    // Se o novo status for 5, chama a API externa
-    if ($freightsDriver->status_id == 5) {
+    public function getDriverTruckDetails($freightsDriver_id)
+    {
+        $freightDriver = FreightsDriver::with(['driver', 'truck.implements'])->findOrFail($freightsDriver_id);
+        
+        return response()->json([
+            'driver' => $this->getDriverDetails($freightDriver->driver),
+            'truck' => $this->getTruckDetails($freightDriver->truck),
+            'implements' => $this->getTruckImplements($freightDriver->truck)
+        ]);
+    }
     
-        try {
-            $response = Http::post('https://qpo5gxrs74.execute-api.us-east-1.amazonaws.com/teste', [
-                'freights_driver_id' => $freightsDriver->id
-            ]);
-
-            // Verifica se a requisição foi bem-sucedida (opcional)
-            if ($response->successful()) {
-                // Faça algo com a resposta, se necessário
-                // $responseData = $response->json();
-            } else {
-                // Log de erro, se a API retornar status 4xx/5xx
-                \Log::error('Falha na chamada da API: ' . $response->status());
-            }
-        } catch (\Exception $e) {
-            // Log em caso de erro de conexão, timeout, etc.
-            \Log::error('Erro ao chamar API externa: ' . $e->getMessage());
-        }
+    protected function getDriverDetails($driver)
+    {
+        return $driver->append([
+            'driver_license_front_url',
+            'driver_license_back_url',
+            'face_photo_url'
+        ]);
+    }
+    
+    protected function getTruckDetails($truck)
+    {
+        return $truck->append([
+            'front_photo_full_url',
+            'rear_photo_full_url',
+            'left_side_photo_full_url',
+            'right_side_photo_full_url',
+            'crv_photo_full_url',
+            'crlv_photo_full_url'
+        ]);
+    }
+    
+    protected function getTruckImplements($truck)
+    {
+        return $truck->implements->map(function($implement) {
+            $implement->photo_url = $implement->photo 
+                ? Storage::disk('s3')->url($implement->photo) 
+                : null;
+            return $implement;
+        });
     }
 
-    if ($freightsDriver->status_id == 10) {
-    
-        try {
-            $response = Http::post('https://8t163e6pei.execute-api.us-east-1.amazonaws.com/teste', [
-                'freights_driver_id' => $freightsDriver->id
-            ]);
+    public function updateStatus(FreightsDriver $freightsDriver, Request $request)
+    {
+        $validated = $request->validate([
+            'status_id' => 'required|integer|exists:freight_statuses,id'
+        ]);
 
-            // Verifica se a requisição foi bem-sucedida (opcional)
-            if ($response->successful()) {
-                // Faça algo com a resposta, se necessário
-                // $responseData = $response->json();
-            } else {
-                // Log de erro, se a API retornar status 4xx/5xx
-                \Log::error('Falha na chamada da API: ' . $response->status());
+        $freightsDriver->update(['status_id' => $validated['status_id']]);
+        
+        $this->callExternalApis($freightsDriver);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Status atualizado com sucesso!'
+        ]);
+    }
+    
+    protected function callExternalApis($freightsDriver)
+    {
+        $statusActions = [
+            5 => 'https://qpo5gxrs74.execute-api.us-east-1.amazonaws.com/teste',
+            10 => 'https://8t163e6pei.execute-api.us-east-1.amazonaws.com/teste'
+        ];
+        
+        if (array_key_exists($freightsDriver->status_id, $statusActions)) {
+            try {
+                Http::timeout(10)->post($statusActions[$freightsDriver->status_id], [
+                    'freights_driver_id' => $freightsDriver->id
+                ]);
+            } catch (\Exception $e) {
+                Log::error("API call failed for status {$freightsDriver->status_id}: " . $e->getMessage());
             }
-        } catch (\Exception $e) {
-            // Log em caso de erro de conexão, timeout, etc.
-            \Log::error('Erro ao chamar API externa: ' . $e->getMessage());
         }
     }
-
-    return response()->json([
-        'success' => true,
-        'message' => 'Status atualizado com sucesso!'
-    ]);
-}
-
-    
 
     public function getDataTable(Request $request)
     {
-        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver.driver'])
-                ->select('freights.*');
+        $query = $this->buildFreightQuery($request);
+        
+        return DataTables::of($query)
+            ->addColumn('company_name', fn($freight) => $freight->company->name ?? 'N/A')
+            ->addColumn('driver_name', fn($freight) => $this->getDriverNameColumn($freight))
+            ->addColumn('status_badge', fn($freight) => $this->getStatusBadge($freight))
+            ->addColumn('formatted_value', fn($freight) => $this->formatCurrency($freight->freight_value))
+            ->rawColumns(['status_badge', 'driver_name'])
+            ->make(true);
+    }
     
-        // Aplica os filtros antes de passar para o DataTables
+    protected function buildFreightQuery(Request $request)
+    {
+        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver.driver']);
+        
         if ($request->status_filter) {
             $query->where('status_id', $request->status_filter);
         }
-    
+        
         if ($request->company_filter) {
             $query->where('company_id', $request->company_filter);
         }
-    
+        
         if ($request->driver_filter) {
             $query->where('driver_id', $request->driver_filter);
         }
-    
-        // Filtros de data
+        
         if ($request->start_date) {
             $query->whereDate('created_at', '>=', $request->start_date);
         }
-    
+        
         if ($request->end_date) {
             $query->whereDate('created_at', '<=', $request->end_date);
         }
+        
+        return $query->orderBy('id', 'desc');
+    }
     
-        // Ordenação padrão
-        $query->orderBy('id', 'desc');
+    protected function getDriverNameColumn($freight)
+    {
+        if (!$freight->freightsDriver) {
+            return '<span class="badge bg-info text-muted">Não atribuído</span>';
+        }
+        
+        $buttons = $freight->freightsDriver->status_id == 9 
+            ? $this->getApprovalButtons($freight->freightsDriver->id)
+            : '';
+            
+        return '
+        <div class="d-flex flex-column">
+            <span class="badge bg-success mb-1">' . e($freight->freightsDriver->driver->name) . '</span>
+            <div class="d-flex gap-1 align-self-start">
+                ' . $buttons . '
+                <a href="#" onclick="detailsDriverTruck(' . $freight->freightsDriver->id . '); return false;" 
+                    class="btn btn-sm btn-primary">
+                    Ver Detalhes
+                </a>
+            </div>
+        </div>';
+    }
     
-        return DataTables::of($query)
-            ->addColumn('company_name', function($freight) {
-                return $freight->company->name ?? 'N/A';
-            })
-            ->addColumn('driver_name', function($freight) {
-                if (!$freight->freightsDriver) {
-                    return '<span class="badge bg-info text-muted">Não atribuído</span>';
-                }
-                
-                return '
-                <div class="d-flex flex-column">
-                    <span class="badge bg-success mb-1">' . e($freight->freightsDriver->driver->name) . '</span>
-                    <div class="d-flex gap-1 align-self-start">' .
-                        ($freight->freightsDriver->status_id == 9 ? '
-                            <button onclick="aprovar(' . $freight->freightsDriver->id . ', 5); return false;" 
-                                    class="btn btn-sm btn-success">
-                                Aprovar
-                            </button>
-                            <button onclick="reprovar(' . $freight->freightsDriver->id . ', 10); return false;" 
-                                    class="btn btn-sm btn-danger">
-                                Recusar
-                            </button>'
-                            : ''
-                        ) . '
-                        <a href="#" 
-                            onclick="detailsDriverTruck(' . $freight->freightsDriver->id . '); return false;" 
-                            class="btn btn-sm btn-primary">
-                            Ver Detalhes
-                        </a>
-                    </div>
-                </div>';
-            })
-            ->addColumn('status_badge', function($freight) {
-                $status = $freight->freightStatus;
-                if (!$status) return '<span class="badge bg-secondary">N/A</span>';
-                
-                $badgeClass = [
-                    '1' => 'bg-secondary',
-                    '3' => 'bg-warning',
-                    '4' => 'bg-info',
-                    '5' => 'bg-secondary',
-                    '6' => 'bg-primary',
-                    '7' => 'bg-primary',
-                    '8' => 'bg-info',
-                    '9' => 'bg-success',
-                ][$status->id] ?? 'bg-secondary';
-                
-                return '<span class="badge '.$badgeClass.'">'.$status->name.'</span>';
-            })
-            ->addColumn('formatted_value', function($freight) {
-                return $freight->freight_value ? 'R$ '.number_format($freight->freight_value, 2, ',', '.') : 'N/A';
-            })
-     
-       
-            ->rawColumns(['status_badge', 'driver_name'])
-            ->make(true);
+    protected function getApprovalButtons($freightDriverId)
+    {
+        return '
+        <button onclick="aprovar(' . $freightDriverId . ', 5); return false;" 
+                class="btn btn-sm btn-success">
+            Aprovar
+        </button>
+        <button onclick="reprovar(' . $freightDriverId . ', 10); return false;" 
+                class="btn btn-sm btn-danger">
+            Recusar
+        </button>';
+    }
+    
+    protected function getStatusBadge($freight)
+    {
+        if (!$freight->freightStatus) {
+            return '<span class="badge bg-secondary">N/A</span>';
+        }
+        
+        $badgeClasses = [
+            '1' => 'bg-secondary',
+            '3' => 'bg-warning',
+            '4' => 'bg-info',
+            '5' => 'bg-secondary',
+            '6' => 'bg-primary',
+            '7' => 'bg-primary',
+            '8' => 'bg-info',
+            '9' => 'bg-success',
+        ];
+        
+        $class = $badgeClasses[$freight->freightStatus->id] ?? 'bg-secondary';
+        
+        return '<span class="badge '.$class.'">'.$freight->freightStatus->name.'</span>';
+    }
+    
+    protected function formatCurrency($value)
+    {
+        return $value ? 'R$ '.number_format($value, 2, ',', '.') : 'N/A';
     }
 
     public function create()
     {
-        $companies = Company::all();
-        $drivers = Driver::all();
-        $statuses = FreightStatus::all();
-        $shipments = Shipment::whereDoesntHave('freight')->get();
-
-        return view('freights.create', compact('companies', 'drivers', 'statuses', 'shipments'));  
+        return view('freights.create', [
+            'companies' => Company::all(),
+            'drivers' => Driver::all(),
+            'statuses' => FreightStatus::all(),
+            'shipments' => Shipment::availableForFreight()->get()
+        ]);
     }
 
     public function store(Request $request)
     {
-        $validated = $request->validate([
+        $validated = $this->validateFreightRequest($request);
+        
+        try {
+            DB::beginTransaction();
+            
+            $freight = Freight::create($validated);
+            $paymentData = $this->createAsaasPayment($freight);
+            
+            DB::commit();
+            
+            return $paymentData;
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Freight creation failed: '.$e->getMessage());
+            return back()->withInput()->with('error', 'Erro ao criar frete: '.$e->getMessage());
+        }
+    }
+    
+    protected function validateFreightRequest(Request $request)
+    {
+        return $request->validate([
             'shipment_id' => 'required|exists:shipments,id',
             'company_id' => 'required|exists:companies,id',
             'driver_id' => 'nullable|exists:drivers,id',
@@ -330,152 +361,120 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
             'duration' => 'required|string',
             'driver_freight_value' => 'required|numeric|min:0'
         ]);
-
-        try {
-            DB::beginTransaction();
-            $freight = Freight::create($validated);
-            DB::commit();
-        
-            $paymentData = $this->createAsaasPayment($freight);
-            return  $paymentData ;
-
-        } catch (\Exception $e) {
-              
-            DB::rollBack();
-            if (isset($freight)) {
-                $freight->delete();
-            }
-            Log::error('Freight creation failed: '.$e->getMessage());
-
-            return back()->withInput()
-                ->with('error', 'Erro ao criar frete: '.$e->getMessage());
-        }
     }
 
     public function show($id)
     {
-
-        $freight = Freight::with(['freightStatus', 'company', 'shipment', 'charge','history','FreightsDriver'])
-        ->select('freights.*')->findorfail($id);
-        // Determina a classe do badge baseado no status
-        
-    
+        $freight = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'history', 'FreightsDriver'])
+            ->findOrFail($id);
+            
         return view('freights.map', [
             'freight' => $freight,
-            'statusBadgeClass' => '',
-            'paymentBadgeClass' => ''
+            'statusBadgeClass' => $this->getStatusBadgeClass($freight->freightStatus->name)
         ]);
     }
 
     public function showRoute(Freight $freight)
-{
-     $this->authorize('view', $freight);
-   // $this->authorize('view', $freight);
-    
-    $statusBadgeClass = match($freight->freightStatus->name) {
-        'Em Trânsito' => 'info',
-        'Entregue' => 'success',
-        'Cancelado' => 'danger',
-        default => 'warning'
-    };
-    
-    return view('freights.route', [
-        'freight' => $freight,
-        'statusBadgeClass' => $statusBadgeClass
-    ]);
-}
+    {
+        return view('freights.route', [
+            'freight' => $freight,
+            'statusBadgeClass' => $this->getStatusBadgeClass($freight->freightStatus->name)
+        ]);
+    }
 
-public function lastPosition(Freight $freight)
-{
-  //  $this->authorize('view', $freight);
-    
-    $lastLocation = $freight->history()
-        ->orderBy('date', 'desc')
-        ->orderBy('time', 'desc')
-        ->first();
-    
-    return response()->json([
-        'latitude' => $lastLocation->latitude ?? null,
-        'longitude' => $lastLocation->longitude ?? null,
-        'address' => $lastLocation->address ?? null,
-        'date' => $lastLocation->date ?? null,
-        'time' => $lastLocation->time ?? null,
-        'status' => $lastLocation->status ?? null
-    ]);
-}
+    public function lastPosition(Freight $freight)
+    {
+        $lastLocation = $freight->history()
+            ->latest('date')
+            ->latest('time')
+            ->first();
+        
+        return response()->json([
+            'latitude' => $lastLocation->latitude ?? null,
+            'longitude' => $lastLocation->longitude ?? null,
+            'address' => $lastLocation->address ?? null,
+            'date' => $lastLocation->date ?? null,
+            'time' => $lastLocation->time ?? null,
+            'status' => $lastLocation->status ?? null
+        ]);
+    }
 
-public function history(Freight $freight)
-{
-   // $this->authorize('view', $freight);
-    
-    $history = $freight->history()
-        ->orderBy('date', 'desc')
-        ->orderBy('time', 'desc')
-        ->get()
-        ->map(function($item) {
-            return [
-                'latitude' => $item->latitude,
-                'longitude' => $item->longitude,
-                'address' => $item->address,
-                'date' => $item->date,
-                'time' => $item->time,
-                'status' => $item->status
-            ];
-        });
-    
-    return response()->json($history);
-}
+    public function history(Freight $freight)
+    {
+        $history = $freight->history()
+            ->orderBy('date', 'desc')
+            ->orderBy('time', 'desc')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'latitude' => $item->latitude,
+                    'longitude' => $item->longitude,
+                    'address' => $item->address,
+                    'date' => $item->date,
+                    'time' => $item->time,
+                    'status' => $item->status
+                ];
+            });
+        
+        return response()->json($history);
+    }
 
-public function currentStatus(Freight $freight)
-{
-    $this->authorize('view', $freight);
-    
-    return response()->json([
-        'status' => $freight->freightStatus->name
-    ]);
-}
-
+    public function currentStatus(Freight $freight)
+    {
+        return response()->json([
+            'status' => $freight->freightStatus->name
+        ]);
+    }
 
     public function getLastPosition($id)
     {
         $freight = Freight::findOrFail($id);
         $lastPosition = $freight->history()
-            ->orderBy('created_at', 'desc')
+            ->latest('created_at')
             ->first();
             
         return response()->json($lastPosition);
     }
     
-    private function getStatusBadgeClass($statusName)
+    protected function getStatusBadgeClass($statusName)
     {
-        switch (strtolower($statusName)) {
-            case 'em transito':
-                return 'info';
-            case 'entregue':
-                return 'success';
-            case 'cancelado':
-                return 'danger';
-            default:
-                return 'warning';
-        }
+        return match(strtolower($statusName)) {
+            'em transito' => 'info',
+            'entregue' => 'success',
+            'cancelado' => 'danger',
+            default => 'warning'
+        };
     }
 
-
-       public function edit(Freight $freight)
+    public function edit(Freight $freight)
     {
-        $companies = Company::all();
-        $drivers = Driver::all();
-        $statuses = FreightStatus::all();
-        $shipments = Shipment::whereDoesntHave('freight')
-            ->orWhere('id', $freight->shipment_id)
-            ->get();
-
-        return view('freights.edit', compact('freight', 'companies', 'drivers', 'statuses', 'shipments',));
+        return view('freights.edit', [
+            'freight' => $freight,
+            'companies' => Company::all(),
+            'drivers' => Driver::all(),
+            'statuses' => FreightStatus::all(),
+            'shipments' => Shipment::availableForFreightOrCurrent($freight->shipment_id)->get()
+        ]);
     }
 
     public function update(Request $request, Freight $freight)
     {
-        $validated = $request->validate([
+        $validated = $this->validateFreightUpdateRequest($request);
+        
+        try {
+            $freight->update($validated);
+            return redirect()->route('freights.index')
+                ->with('success', 'Frete atualizado com sucesso!');
+        } catch (\Exception $e) {
+            Log::error('Freight update failed: '.$e->getMessage());
+            return back()->withInput()
+                ->with('error', 'Erro ao atualizar frete: '.$e->getMessage());
+        }
+    }
+    
+    protected function validateFreightUpdateRequest(Request $request)
+    {
+        return $request->validate([
             'shipment_id' => 'required|exists:shipments,id',
             'company_id' => 'required|exists:companies,id',
             'driver_id' => 'nullable|exists:drivers,id',
@@ -494,16 +493,6 @@ public function currentStatus(Freight $freight)
             'distance' => 'required|string',
             'duration' => 'required|string',
         ]);
-
-        try {
-            $freight->update($validated);
-            return redirect()->route('freights.index')
-                ->with('success', 'Frete atualizado com sucesso!');
-        } catch (\Exception $e) {
-            Log::error('Freight update failed: '.$e->getMessage());
-            return back()->withInput()
-                ->with('error', 'Erro ao atualizar frete: '.$e->getMessage());
-        }
     }
 
     public function destroy(Freight $freight)
@@ -556,9 +545,7 @@ public function currentStatus(Freight $freight)
             ->selectRaw('freight_statuses.name, COUNT(*) as count')
             ->groupBy('freight_statuses.name')
             ->get()
-            ->mapWithKeys(function($item) {
-                return [$item->name => $item->count];
-            });
+            ->mapWithKeys(fn($item) => [$item->name => $item->count]);
         
         return response()->json([
             'Aguardando pagamento' => $stats['Aguardando pagamento'] ?? 0,
@@ -569,10 +556,9 @@ public function currentStatus(Freight $freight)
             'Em processo de entrega' => $stats['Em processo de entrega'] ?? 0,
             'Carga entregue' => $stats['Carga entregue'] ?? 0,
             'Cancelado' => $stats['Cancelado'] ?? 0,
-            'total' => array_sum($stats->toArray())
+            'total' => $stats->sum()
         ]);
     }
-
 
     public function getStatuses()
     {
@@ -587,38 +573,31 @@ public function currentStatus(Freight $freight)
     protected function createAsaasPayment(Freight $freight)
     {
         try {
-            $response = Http::post('https://0xjej23ew7.execute-api.us-east-1.amazonaws.com/teste', [
+            $response = Http::timeout(15)->post(config('services.asaas.payment_url'), [
                 'name' => 'Frete #'.$freight->id,
                 'billingType' => 'PIX',
                 'value' => $freight->freight_value,
                 'freight_id' => $freight->id,
-                'successUrl' => 'https://fretesemnuvens/freights'
+                'successUrl' => route('freights.index')
             ]);
 
             $data = $response->json();
          
-            if ($data['success']) {
-               
-                $paymentData = [
+            if ($data['success'] ?? false) {
+                return json_encode([
                     'payment_link' => $data['asaasResponse']['url'] ?? null,
                     'asaas_payment_id' => $data['asaasResponse']['id'] ?? null
-                ];
-
-         
-                $jsonObject = json_encode($paymentData, JSON_FORCE_OBJECT);
-                return $jsonObject;
+                ], JSON_FORCE_OBJECT);
             }
 
             throw new \Exception('Asaas API error: '.$response->body());
-
         } catch (\Exception $e) {
-            
             Log::error('Asaas payment failed: '.$e->getMessage());
             return [
                 'payment_link' => null,
                 'asaas_payment_id' => null,
-                'erro' => $e->getMessage(),
-                'retorno api' =>  $data
+                'error' => $e->getMessage(),
+                'api_response' => $data ?? null
             ];
         }
     }
