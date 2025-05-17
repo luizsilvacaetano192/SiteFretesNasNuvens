@@ -792,6 +792,7 @@ $(document).ready(function() {
         
         // Adicionar novos marcadores
         freights.forEach(freight => {
+            console.log('freight.start_lat', freight.start_lat)
             if (freight.start_lat && freight.start_lng) {
                 const position = new google.maps.LatLng(freight.start_lat, freight.start_lng);
                 bounds.extend(position);
