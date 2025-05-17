@@ -596,30 +596,34 @@ $(document).ready(function() {
     
     // Carregar dados dos gráficos
     function loadChartData() {
-        $('.chart-overlay').show();
-        
-        $.ajax({
-            url: "{{ route('freights.chart-data') }}",
-            method: 'GET',
-            success: function(data) {
-                // Atualizar gráfico de status
+    $('.chart-overlay').show();
+    
+    $.ajax({
+        url: "{{ route('freights.chart-data') }}",
+        method: 'GET',
+        success: function(data) {
+            // Update status chart
+            if (data.status_chart) {
                 statusChart.data.labels = data.status_chart.labels;
                 statusChart.data.datasets[0].data = data.status_chart.data;
                 statusChart.update();
-                
-                // Atualizar gráfico mensal
+            }
+            
+            // Update monthly chart
+            if (data.monthly_chart) {
                 monthlyChart.data.datasets[0].data = data.monthly_chart.data;
                 monthlyChart.update();
-                
-                $('.chart-overlay').hide();
-            },
-            error: function(xhr) {
-                showToast('Erro ao carregar dados dos gráficos', 'danger');
-                $('.chart-overlay').hide();
             }
+            
+            $('.chart-overlay').hide();
+        },
+        error: function(xhr) {
+            console.error('Error loading chart data:', xhr.responseText);
+            $('.chart-overlay').hide();
+            showToast('Error loading chart data', 'danger');
+        }
         });
     }
-    
     // Inicializar mapa
     function initMap() {
         freightMap = L.map('freightMap').setView([-15.7889, -47.8792], 4);

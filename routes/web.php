@@ -176,6 +176,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/toggle-status', [TruckController::class, 'toggleStatus'])->name('trucks.toggleStatus');
     });
 
+    // routes/web.php
+    Route::get('/freights/chart-data', [FreightController::class, 'chartData'])
+    ->name('freights.chart-data');
+
   
     Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
     ->name('freights.last-position');
