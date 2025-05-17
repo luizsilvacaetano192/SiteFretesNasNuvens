@@ -500,6 +500,7 @@
 
 <script>
 $(document).ready(function() {
+       let table;
     // Variáveis globais
     let statusChart, monthlyChart, freightMap, mapMarkers = [], table;
     
@@ -1101,7 +1102,7 @@ $(document).ready(function() {
     // Inicializar tudo
     initCharts();
     initMap();
-    const table = initDataTable();
+    table = initDataTable();
     loadChartData();
     
     // Evento para expandir/recolher detalhes
