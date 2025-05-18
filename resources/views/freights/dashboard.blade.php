@@ -474,6 +474,14 @@
         margin-right: 10px;
         margin-bottom: 10px;
     }
+    #monthlyChart {
+    background-color: white !important;
+}
+
+.chartjs-tooltip {
+    opacity: 1 !important;
+    pointer-events: none !important;
+}
 </style>
 @endpush
 
