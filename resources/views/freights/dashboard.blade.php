@@ -572,7 +572,7 @@ statusChart = new Chart(statusCtx, {
                 labels: {
                     color: 'white', // Preto puro
                     font: {
-                        size: 14,
+                        size: 12,
                         family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
                        
                     },
@@ -607,11 +607,11 @@ statusChart = new Chart(statusCtx, {
             maintainAspectRatio: false,
             plugins: {
                 legend: {
-                    display: false
+                    display: true
                 },
                 tooltip: {
                     backgroundColor: "rgb(255,255,255)",
-                    bodyFontColor: "#858796",
+                    bodyFontColor: "black",
                     borderColor: '#dddfeb',
                     borderWidth: 1,
                     xPadding: 15,
