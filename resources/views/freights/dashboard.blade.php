@@ -572,7 +572,7 @@ statusChart = new Chart(statusCtx, {
                 labels: {
                     color: 'white', // Preto puro
                     font: {
-                        size: 16,
+                        size: 14,
                         family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
                        
                     },
