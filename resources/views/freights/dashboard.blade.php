@@ -108,7 +108,9 @@
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    <canvas id="statusChart" height="250"></canvas>
+                    <div class="chart-container">
+                        <canvas id="statusChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -128,7 +130,9 @@
                             <span class="visually-hidden">Loading...</span>
                         </div>
                     </div>
-                    <canvas id="monthlyChart" height="250"></canvas>
+                    <div class="chart-container">
+                        <canvas id="monthlyChart"></canvas>
+                    </div>
                 </div>
             </div>
         </div>
@@ -485,6 +489,19 @@
 .chartjs-tooltip {
     opacity: 1 !important;
     pointer-events: none !important;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    min-height: 400px; /* Altura mínima igual para ambos */
+    margin-bottom: 20px;
+}
+
+@media (min-width: 768px) {
+    .chart-container {
+        min-height: 500px; /* Altura maior em telas maiores */
+    }
 }
 </style>
 @endpush
