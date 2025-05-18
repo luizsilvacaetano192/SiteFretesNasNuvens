@@ -619,9 +619,18 @@ monthlyChart = new Chart(monthlyCtx, {
         maintainAspectRatio: false,
         plugins: {
               legend: {
-                display: true,
+                position: 'right',
+                display: true, // Garante que a legenda está visível
                 labels: {
-                    color: '#000000' // ou outra cor que contraste com o fundo
+                    color: '#000000', // Preto puro
+                    font: {
+                        size: 12,
+                        family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+                       
+                    },
+                    padding: 20,
+                    boxWidth: 20,
+                    usePointStyle: true
                 }
             },
             tooltip: {
