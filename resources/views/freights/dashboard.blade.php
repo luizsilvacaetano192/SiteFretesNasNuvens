@@ -634,14 +634,14 @@ monthlyChart = new Chart(monthlyCtx, {
                 }
             },
             tooltip: {
-                backgroundColor: "rgba(255,255,255,0.9)",
+                backgroundColor: "rgba(255, 255, 255, 0.18)",
                 bodyFontColor: "#000000",
                 titleFontColor: "#000000",
                 borderColor: '#dddfeb',
                 borderWidth: 1,
                 xPadding: 15,
                 yPadding: 15,
-                displayColors: false,
+                displayColors: true,
                 caretPadding: 10,
                 callbacks: {
                     label: function(context) {
