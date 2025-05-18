@@ -494,13 +494,13 @@
 .chart-container {
     position: relative;
     width: 100%;
-    min-height: 400px; /* Altura mínima igual para ambos */
+    min-height: 200px; /* Altura mínima igual para ambos */
     margin-bottom: 20px;
 }
 
 @media (min-width: 768px) {
     .chart-container {
-        min-height: 500px; /* Altura maior em telas maiores */
+        min-height: 300px; /* Altura maior em telas maiores */
     }
 }
 </style>
