@@ -536,7 +536,8 @@ function showToast(message, type = 'success') {
 // Inicializar gráficos
 function initCharts() {
     // Gráfico de status
- const statusCtx = document.getElementById('statusChart').getContext('2d');
+
+const statusCtx = document.getElementById('statusChart').getContext('2d');
 statusChart = new Chart(statusCtx, {
     type: 'doughnut',
     data: {
@@ -569,10 +570,21 @@ statusChart = new Chart(statusCtx, {
         plugins: {
             legend: {
                 position: 'right',
+                labels: {
+                    color: '#333',  // Cor escura para melhor contraste
+                    font: {
+                        size: 12,   // Tamanho da fonte
+                        weight: 'bold'  // Negrito para melhor legibilidade
+                    },
+                    padding: 20,    // Espaçamento entre itens
+                    usePointStyle: true,  // Usa o mesmo estilo dos pontos
+                    pointStyle: 'circle',  // Estilo dos pontos
+                    boxWidth: 10,   // Largura da caixa de cor
+                }
             },
             tooltip: {
-                backgroundColor: "#fff",  // Cor de fundo branca
-                bodyColor: "#000",       // Cor do texto preto
+                backgroundColor: "#fff",
+                bodyColor: "#000",
                 borderColor: '#dddfeb',
                 borderWidth: 1,
                 xPadding: 15,
