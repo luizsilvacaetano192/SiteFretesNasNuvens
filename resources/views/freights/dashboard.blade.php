@@ -541,65 +541,48 @@ const statusCtx = document.getElementById('statusChart').getContext('2d');
 statusChart = new Chart(statusCtx, {
     type: 'doughnut',
     data: {
-        labels: [],
+        labels: ['Label 1', 'Label 2', 'Label 3'], // Adicione seus labels reais
         datasets: [{
-            data: [],
+            data: [30, 40, 30], // Adicione seus dados reais
             backgroundColor: [
                 '#4e73df',
                 '#1cc88a',
-                '#36b9cc',
-                '#f6c23e',
-                '#e74a3b',
-                '#858796',
-                '#5a5c69'
+                '#36b9cc'
             ],
             hoverBackgroundColor: [
                 '#2e59d9',
                 '#17a673',
-                '#2c9faf',
-                '#dda20a',
-                '#be2617',
-                '#6c757d',
-                '#4a4c54'
+                '#2c9faf'
             ],
             hoverBorderColor: "rgba(234, 236, 244, 1)",
         }]
     },
     options: {
-        maintainAspectRatio: false,
+        maintainAspectRatio: false, // Isso permite controlar a proporção
+        responsive: true,
+        layout: {
+            padding: {
+                right: 50 // Espaço extra para a legenda
+            }
+        },
         plugins: {
             legend: {
                 position: 'right',
+                display: true, // Garante que a legenda está visível
                 labels: {
-                    color: '#333',  // Cor escura para melhor contraste
+                    color: '#000000', // Preto puro
                     font: {
-                        size: 12,   // Tamanho da fonte
-                        weight: 'bold'  // Negrito para melhor legibilidade
+                        size: 14,
+                        family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
+                        weight: 'bold'
                     },
-                    padding: 20,    // Espaçamento entre itens
-                    usePointStyle: true,  // Usa o mesmo estilo dos pontos
-                    pointStyle: 'circle',  // Estilo dos pontos
-                    boxWidth: 10,   // Largura da caixa de cor
+                    padding: 20,
+                    boxWidth: 20,
+                    usePointStyle: true
                 }
             },
             tooltip: {
-                backgroundColor: "#fff",
-                bodyColor: "#000",
-                borderColor: '#dddfeb',
-                borderWidth: 1,
-                xPadding: 15,
-                yPadding: 15,
-                displayColors: true,
-                caretPadding: 10,
-                callbacks: {
-                    label: function(context) {
-                        const label = context.label || '';
-                        const value = context.raw || 0;
-                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                        const percentage = Math.round((value / total) * 100);
-                        return `${label}: ${value} (${percentage}%)`;
-                    }
-                }
+                enabled: true
             }
         },
         cutout: '70%',
