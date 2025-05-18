@@ -572,12 +572,12 @@ function initCharts() {
                 },
                 tooltip: {
                     backgroundColor: "rgb(255,255,255)",
-                    bodyFontColor: "#858796",
+                    bodyFontColor: "white",
                     borderColor: '#dddfeb',
                     borderWidth: 1,
                     xPadding: 15,
                     yPadding: 15,
-                    displayColors: false,
+                    displayColors: true,
                     caretPadding: 10,
                     callbacks: {
                         label: function(context) {
