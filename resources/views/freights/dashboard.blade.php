@@ -590,64 +590,68 @@ statusChart = new Chart(statusCtx, {
 });
     
     // Gráfico mensal
-    const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
-    monthlyChart = new Chart(monthlyCtx, {
-        type: 'bar',
-        data: {
-            labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
-            datasets: [{
-                label: 'Fretes',
-                backgroundColor: '#4e73df',
-                hoverBackgroundColor: '#2e59d9',
-                borderColor: '#4e73df',
-                data: Array(12).fill(0),
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    display: true
-                },
-                tooltip: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyFontColor: "black",
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: false,
-                    caretPadding: 10,
-                    callbacks: {
-                        label: function(context) {
-                            return `Fretes: ${context.raw}`;
-                        }
-                    }
+   const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
+monthlyChart = new Chart(monthlyCtx, {
+    type: 'bar',
+    data: {
+        labels: ['Jan', 'Fev', 'Mar', 'Abr', 'Mai', 'Jun', 'Jul', 'Ago', 'Set', 'Out', 'Nov', 'Dez'],
+        datasets: [{
+            label: 'Fretes',
+            backgroundColor: '#4e73df',
+            hoverBackgroundColor: '#2e59d9',
+            borderColor: '#4e73df',
+            data: Array(12).fill(0),
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                display: true,
+                labels: {
+                    color: '#000000' // Cor da legenda
                 }
             },
-            scales: {
-                x: {
-                    grid: {
-                        display: false,
-                        drawBorder: false
-                    },
-                    ticks: {
-                        color: '#858796'
-                    }
-                },
-                y: {
-                    grid: {
-                        color: "rgb(234, 236, 244)",
-                        drawBorder: false,
-                    },
-                    ticks: {
-                        color: '#858796',
-                        precision: 0
+            tooltip: {
+                backgroundColor: "rgba(255,255,255,0.9)",
+                bodyFontColor: "#000000",
+                titleFontColor: "#000000",
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: false,
+                caretPadding: 10,
+                callbacks: {
+                    label: function(context) {
+                        return `Fretes: ${context.raw}`;
                     }
                 }
             }
+        },
+        scales: {
+            x: {
+                grid: {
+                    display: false,
+                    drawBorder: false
+                },
+                ticks: {
+                    color: '#858796'
+                }
+            },
+            y: {
+                grid: {
+                    color: "rgb(234, 236, 244)",
+                    drawBorder: false,
+                },
+                ticks: {
+                    color: '#858796',
+                    precision: 0
+                }
+            }
         }
-    });
+    }
+});
 }
 
 // Carregar dados dos gráficos
