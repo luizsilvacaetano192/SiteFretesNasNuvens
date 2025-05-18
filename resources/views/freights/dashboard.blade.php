@@ -536,63 +536,63 @@ function showToast(message, type = 'success') {
 // Inicializar gráficos
 function initCharts() {
     // Gráfico de status
-    const statusCtx = document.getElementById('statusChart').getContext('2d');
-    statusChart = new Chart(statusCtx, {
-        type: 'doughnut',
-        data: {
-            labels: [],
-            datasets: [{
-                data: [],
-                backgroundColor: [
-                    '#4e73df',
-                    '#1cc88a',
-                    '#36b9cc',
-                    '#f6c23e',
-                    '#e74a3b',
-                    '#858796',
-                    '#5a5c69'
-                ],
-                hoverBackgroundColor: [
-                    '#2e59d9',
-                    '#17a673',
-                    '#2c9faf',
-                    '#dda20a',
-                    '#be2617',
-                    '#6c757d',
-                    '#4a4c54'
-                ],
-                hoverBorderColor: "rgba(234, 236, 244, 1)",
-            }]
-        },
-        options: {
-            maintainAspectRatio: false,
-            plugins: {
-                legend: {
-                    position: 'right',
-                },
-                tooltip: {
-                    backgroundColor: "rgb(255,255,255)",
-                    bodyFontColor: "white",
-                    borderColor: '#dddfeb',
-                    borderWidth: 1,
-                    xPadding: 15,
-                    yPadding: 15,
-                    displayColors: true,
-                    caretPadding: 10,
-                    callbacks: {
-                        label: function(context) {
-                            const label = context.label || '';
-                            const value = context.raw || 0;
-                            const total = context.dataset.data.reduce((a, b) => a + b, 0);
-                            const percentage = Math.round((value / total) * 100);
-                            return `${label}: ${value} (${percentage}%)`;
-                        }
+ const statusCtx = document.getElementById('statusChart').getContext('2d');
+statusChart = new Chart(statusCtx, {
+    type: 'doughnut',
+    data: {
+        labels: [],
+        datasets: [{
+            data: [],
+            backgroundColor: [
+                '#4e73df',
+                '#1cc88a',
+                '#36b9cc',
+                '#f6c23e',
+                '#e74a3b',
+                '#858796',
+                '#5a5c69'
+            ],
+            hoverBackgroundColor: [
+                '#2e59d9',
+                '#17a673',
+                '#2c9faf',
+                '#dda20a',
+                '#be2617',
+                '#6c757d',
+                '#4a4c54'
+            ],
+            hoverBorderColor: "rgba(234, 236, 244, 1)",
+        }]
+    },
+    options: {
+        maintainAspectRatio: false,
+        plugins: {
+            legend: {
+                position: 'right',
+            },
+            tooltip: {
+                backgroundColor: "#fff",  // Cor de fundo branca
+                bodyColor: "#000",       // Cor do texto preto
+                borderColor: '#dddfeb',
+                borderWidth: 1,
+                xPadding: 15,
+                yPadding: 15,
+                displayColors: true,
+                caretPadding: 10,
+                callbacks: {
+                    label: function(context) {
+                        const label = context.label || '';
+                        const value = context.raw || 0;
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        const percentage = Math.round((value / total) * 100);
+                        return `${label}: ${value} (${percentage}%)`;
                     }
                 }
-            },
-            cutout: '70%',
-        }
-    });
+            }
+        },
+        cutout: '70%',
+    }
+});
     
     // Gráfico mensal
     const monthlyCtx = document.getElementById('monthlyChart').getContext('2d');
