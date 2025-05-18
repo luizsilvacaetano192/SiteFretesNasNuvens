@@ -478,6 +478,10 @@
     background-color: white !important;
 }
 
+    #statusChart {
+    background-color: white !important;
+}
+
 .chartjs-tooltip {
     opacity: 1 !important;
     pointer-events: none !important;
