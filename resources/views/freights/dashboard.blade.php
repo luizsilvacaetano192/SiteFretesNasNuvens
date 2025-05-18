@@ -615,63 +615,31 @@ monthlyChart = new Chart(monthlyCtx, {
             data: Array(12).fill(0),
         }]
     },
-    options: {
-        maintainAspectRatio: false,
-        plugins: {
-              legend: {
-                position: 'right',
-                display: true, // Garante que a legenda está visível
-                labels: {
-                    color: '#000000', // Preto puro
-                    font: {
-                        size: 12,
-                        family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
-                       
-                    },
-                    padding: 20,
-                    boxWidth: 20,
-                    usePointStyle: true
+   options: {
+    plugins: {
+        tooltip: {
+            backgroundColor: "rgba(255, 255, 255, 0.85)", // Fundo branco semi-transparente
+            bodyColor: "#000000",  // Cor do texto principal (preto)
+            titleColor: "#000000", // Cor do título (preto)
+            borderColor: '#dddfeb',
+            borderWidth: 1,
+            padding: 15,           // xPadding e yPadding unificados
+            displayColors: true,
+            caretPadding: 10,
+            callbacks: {
+                label: function(context) {
+                    return `Fretes: ${context.raw}`;
                 }
             },
-            tooltip: {
-                backgroundColor: "rgba(255, 255, 255, 0.18)",
-                bodyFontColor: "#000000",
-                titleFontColor: "#000000",
-                borderColor: '#dddfeb',
-                borderWidth: 1,
-                xPadding: 15,
-                yPadding: 15,
-                displayColors: true,
-                caretPadding: 10,
-                callbacks: {
-                    label: function(context) {
-                        return `Fretes: ${context.raw}`;
-                    }
-                }
-            }
-        },
-        scales: {
-            x: {
-                grid: {
-                    display: false,
-                    drawBorder: false
-                },
-                ticks: {
-                    color: '#858796'
-                }
-            },
-            y: {
-                grid: {
-                    color: "rgb(234, 236, 244)",
-                    drawBorder: false,
-                },
-                ticks: {
-                    color: '#858796',
-                    precision: 0
-                }
+            // Ajustes adicionais para melhor legibilidade:
+            bodyFont: {
+                family: "'Arial', sans-serif",
+                size: 14,
+                weight: 'bold'
             }
         }
     }
+}
 });
 }
 
