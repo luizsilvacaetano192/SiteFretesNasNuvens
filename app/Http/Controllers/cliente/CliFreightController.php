@@ -20,6 +20,136 @@ use App\Http\Controllers\Controller;
 
 class CliFreightController extends Controller
 {
+
+    public function chartData()
+    {
+        return response()->json([
+            'status_chart' => $this->getStatusChartData(),
+            'monthly_chart' => $this->getMonthlyChartData()
+        ]);
+    }
+
+
+    public function getChartData(Request $request)
+    {
+        return response()->json([
+            'status_chart' => $this->getStatusChartData(),
+            'monthly_chart' => $this->getMonthlyChartData()
+        ]);
+    }
+
+    public function dashboard(Request $request)
+    {
+        $statuses = FreightStatus::all();
+        
+        if ($request->ajax()) {
+            if ($request->has('charts_only')) {
+                return $this->getChartData($request);
+            }
+            
+            $query = $this->buildDashboardQuery($request);
+            
+            return datatables()->eloquent($query)
+                ->with([
+                    'summary' => $this->getDashboardSummary(),
+                    'statuses' => $statuses
+                ])
+                ->addColumn('truck_type_name', function($freight) {
+                    return $freight->truck_type_name;
+                })
+                ->rawColumns(['action', 'freight_status'])
+                ->toJson();
+        }
+        
+        return view('freights.cliente.dashboard', [
+            'statuses' => $statuses,
+            'summary' => $this->getDashboardSummary(),
+            'charts' => $this->getDashboardCharts()
+        ]);
+    }
+
+    protected function buildDashboardQuery(Request $request)
+    {
+        $query = Freight::with(['freightStatus'])
+            ->select('freights.*')
+            ->where('freights.company_id', auth()->id());
+        
+        if ($request->has('status_filter') && $request->status_filter !== 'all') {
+            $query->where('status_id', $request->status_filter);
+        }
+        
+        if ($request->has('map_filter') && $request->map_filter !== 'all') {
+            $query->where('status_id', $this->getStatusIdFromFilter($request->map_filter));
+        }
+        
+        return $query;
+    }
+
+    protected function getStatusIdFromFilter($filter)
+    {
+        return match($filter) {
+            'pending' => 1,
+            'in_progress' => 2,
+            'completed' => 3,
+            default => null
+        };
+    }
+
+    protected function getDashboardSummary()
+    {
+        return [
+            'total_freights' => Freight::where('freights.company_id', auth()->id())->count(),
+            'in_progress' => Freight::where('status_id', 2)
+            ->where('freights.company_id', auth()->id())->
+             count(),
+            'pending' => Freight::where('status_id', 1)
+            ->where('freights.company_id', auth()->id())
+            ->count(),
+            'total_value' => Freight::where('freights.company_id', auth()->id())
+            ->sum('freight_value')
+        ];
+    }
+
+    protected function getDashboardCharts()
+    {
+        return [
+            'status_chart' => $this->getStatusChartData(),
+            'monthly_chart' => $this->getMonthlyChartData()
+        ];
+    }
+
+    protected function getStatusChartData()
+    {
+        $data = Freight::join('freight_statuses', 'freights.status_id', '=', 'freight_statuses.id')
+            ->where('freights.company_id', auth()->id())
+            ->select('freight_statuses.name as status', DB::raw('count(*) as total'))
+            ->groupBy('freight_statuses.name')
+            ->get();
+        return [
+            'labels' => $data->pluck('status'),
+            'data' => $data->pluck('total')
+        ];
+    }
+
+    protected function getMonthlyChartData()
+    {
+        $currentYear = date('Y');
+        $monthlyData = Freight::where('freights.company_id', auth()->id())
+                ->select(
+                DB::raw('MONTH(created_at) as month'),
+                DB::raw('COUNT(*) as total')
+            )
+            ->whereYear('created_at', $currentYear)
+            ->groupBy('month')
+            ->get()
+            ->keyBy('month');
+        
+        return [
+            'data' => collect(range(1, 12))->map(fn($month) => $monthlyData[$month]->total ?? 0)
+        ];
+    }
+
+    
     public function index(Request $request)
     {
         if ($request->ajax()) {
@@ -122,17 +252,13 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
 
     public function getDataTable(Request $request)
     {
-        $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver.driver'])
+        $query = Freight::with(['freightStatus',  'shipment', 'charge', 'freightsDriver.driver'])
         ->where('freights.company_id', auth()->id()) // Filtra pelo cliente logado        
         ->select('freights.*');
     
         // Aplica os filtros antes de passar para o DataTables
         if ($request->status_filter) {
             $query->where('status_id', $request->status_filter);
-        }
-    
-        if ($request->company_filter) {
-            $query->where('company_id', $request->company_filter);
         }
     
         if ($request->driver_filter) {

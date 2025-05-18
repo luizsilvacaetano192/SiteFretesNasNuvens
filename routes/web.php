@@ -81,6 +81,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::get('/freights/chart-data', [FreightController::class, 'getChartData'])
         ->name('freights.chart-data');
 
+    //dashborad cliente
+    Route::get('/freights/dashboard/cliente', [CliFreightController::class, 'dashboard'])
+        ->name('freights.cliente.dashboard');
+
+    Route::get('/freights/chart-data/cliente', [CliFreightController::class, 'getChartData'])
+        ->name('freights.cliente.chart-data');
+
     Route::get('/driver-truck-details/{freightsDriver}', [FreightController::class, 'getDriverTruckDetails']);
 
     // Shipments cliente

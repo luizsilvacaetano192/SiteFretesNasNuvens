@@ -40,7 +40,7 @@ class FreightController extends Controller
         ]);
     }
 
-  public function dashboard(Request $request)
+    public function dashboard(Request $request)
     {
         $statuses = FreightStatus::all();
         

@@ -39,14 +39,12 @@ class CliShipmentController extends Controller
     }
     public function getShipments(Request $request)
     {
-        $shipments = Shipment::with(['company', 'freight'])
+        $shipments = Shipment::with(['freight'])
         ->where('shipments.company_id', auth()->id()) // Filtra pelo cliente logado 
         ->select('shipments.*');
     
         return DataTables::of($shipments)
-            ->addColumn('company_name', function($shipment) {
-                return $shipment->company->name ?? 'N/A';
-            })
+          
             ->addColumn('freight_status', function($shipment) {
                 return $shipment->freight ? $shipment->freight->freightStatus->name : 'Sem frete';
             })
@@ -117,9 +115,9 @@ class CliShipmentController extends Controller
     }
     public function create()
     {
-        $companies = Company::all();
+       
         $drivers = Driver::all();
-        return view('shipments.cliente.create', compact('companies', 'drivers'));
+        return view('shipments.cliente.create', compact('drivers'));
     }
 
     public function store(Request $request)
