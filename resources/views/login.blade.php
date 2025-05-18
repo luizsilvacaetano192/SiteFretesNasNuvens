@@ -305,7 +305,7 @@
                     
                     if (response.ok) {
                         const data = await response.json();
-                        const redirectTo = data.role === 'admin' ? '/freights' : '/cliente';
+                        const redirectTo = data.role === 'admin' ? '/freights/dashboard' : '/freights/dashboard/cliente';
                         window.location.href = redirectTo;
                     } else {
                         localStorage.removeItem('auth_token');
