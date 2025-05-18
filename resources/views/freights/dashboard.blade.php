@@ -570,11 +570,11 @@ statusChart = new Chart(statusCtx, {
                 position: 'right',
                 display: true, // Garante que a legenda está visível
                 labels: {
-                    color: '#000000', // Preto puro
+                    color: 'white', // Preto puro
                     font: {
-                        size: 14,
+                        size: 16,
                         family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
-                        weight: 'bold'
+                       
                     },
                     padding: 20,
                     boxWidth: 20,
