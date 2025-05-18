@@ -582,7 +582,7 @@ statusChart = new Chart(statusCtx, {
                 position: 'right',
                 display: true, // Garante que a legenda está visível
                 labels: {
-                    color: 'white', // Preto puro
+                    color: '#000000', // Preto puro
                     font: {
                         size: 12,
                         family: "'Helvetica Neue', 'Helvetica', 'Arial', sans-serif",
@@ -618,10 +618,10 @@ monthlyChart = new Chart(monthlyCtx, {
     options: {
         maintainAspectRatio: false,
         plugins: {
-            legend: {
+              legend: {
                 display: true,
                 labels: {
-                    color: '#000000' // Cor da legenda
+                    color: '#000000' // ou outra cor que contraste com o fundo
                 }
             },
             tooltip: {
