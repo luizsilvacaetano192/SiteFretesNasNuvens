@@ -174,7 +174,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/save', [SettingController::class, 'save'])->name('settings.save');
     });
 
-     Route::post('/toggle-status', [TruckController::class, 'toggleStatus'])->name('trucks.toggleStatus');
+     Route::post('/toggle-truck-status', [TruckController::class, 'toggleStatus'])->name('trucks.toggleStatus');
 
     // Trucks
     Route::prefix('trucks')->group(function () {
