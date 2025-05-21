@@ -280,7 +280,7 @@
         
         <nav class="sidebar-nav">
             <a href="/freights/dashboard" class="sidebar-link">
-                <i class="fas fa-home"></i>
+                <i class="fas fa-chart-line"></i>
                 <span>Dashboard</span>
             </a>
             <a href="/freights" class="sidebar-link">

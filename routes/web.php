@@ -176,6 +176,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Trucks
     Route::prefix('trucks')->group(function () {
+        Route::post('/toggle-status', [TruckController::class, 'toggleStatus'])->name('trucks.toggleStatus');
         Route::get('/', function(Request $request) {
             $driverId = $request->input('driver_id');
             $response = Http::post(
@@ -184,7 +185,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
             );
             return $response->body();
         });
-        Route::post('/toggle-status', [TruckController::class, 'toggleStatus'])->name('trucks.toggleStatus');
+       
     });
   
     Route::get('/freights/{freight}/last-position', [FreightController::class, 'lastPosition'])
