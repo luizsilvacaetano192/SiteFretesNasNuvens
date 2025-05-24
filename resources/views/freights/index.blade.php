@@ -812,7 +812,7 @@ function initializeDataTable() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: '{{ route('freights.cliente.data') }}',
+            url: '{{ route('freights.data') }}',
             type: 'GET',
             data: function(d) {
                 d.status_filter = $('#status-filter').val();
@@ -1120,7 +1120,7 @@ function confirmDeleteAll() {
 
 function deleteAllFreights() {
     $.ajax({
-        url: '{{ route('freights.cliente.deleteAll') }}',
+        url: '{{ route('freights.deleteAll') }}',
         type: 'DELETE',
         data: {
             _token: '{{ csrf_token() }}'
