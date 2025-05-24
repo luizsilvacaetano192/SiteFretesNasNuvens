@@ -146,6 +146,7 @@ class FreightController extends Controller
 
     public function index(Request $request)
     {
+    
         if ($request->ajax()) {
             return $this->getDataTable($request);
         }
@@ -233,6 +234,8 @@ class FreightController extends Controller
 
     public function getDataTable(Request $request)
     {
+
+       
         $query = $this->buildFreightQuery($request);
         
         return DataTables::of($query)
