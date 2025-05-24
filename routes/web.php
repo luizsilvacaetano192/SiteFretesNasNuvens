@@ -201,7 +201,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 
      // Freights
-    Route::prefix('freights')->group(function () {
+    Route::prefix('freights')->middleware('auth')->group(function () {
         Route::get('/data', [FreightController::class, 'getDataTable'])->name('freights.data');
         Route::get('/stats', [FreightController::class, 'getStats'])->name('freights.stats');
         Route::get('/statuses', [FreightController::class, 'getStatuses'])->name('freights.statuses');
