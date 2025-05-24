@@ -283,7 +283,7 @@ class FreightController extends Controller
             
         return '
         <div class="d-flex flex-column">
-            <span class="badge bg-success mb-1">' . e($freight->freightsDriver->driver->name) . '</span>
+            <span class="badge bg-success mb-1">' . ($freight->freightsDriver->driver->name) . '</span>
             <div class="d-flex gap-1 align-self-start">
                 ' . $buttons . '
                 <a href="#" onclick="detailsDriverTruck(' . $freight->freightsDriver->id . '); return false;" 

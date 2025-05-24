@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
     <title><?php echo $__env->yieldContent('title', 'Gestão de Fretes'); ?></title>
+        <!-- Favicon -->
+    <link rel="icon" href="<?php echo e(asset('images/favicon.ico')); ?>" type="image/x-icon">
+    <link rel="shortcut icon" href="<?php echo e(asset('images/favicon.ico')); ?>" type="image/x-icon">
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
@@ -278,8 +281,8 @@
         </div>
         
         <nav class="sidebar-nav">
-            <a href="#" class="sidebar-link">
-                <i class="fas fa-home"></i>
+            <a href="/freights/dashboard/cliente" class="sidebar-link">
+                <i class="fas fa-chart-line"></i>
                 <span>Dashboard</span>
             </a>
             <a href="/freights/cliente" class="sidebar-link">

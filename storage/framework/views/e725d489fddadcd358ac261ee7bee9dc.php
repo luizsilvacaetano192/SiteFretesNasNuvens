@@ -194,7 +194,7 @@
             </h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="<?php echo e(route('dashboard')); ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo e(route('freights.dashboard')); ?>">Dashboard</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Fretes</li>
                 </ol>
             </nav>
@@ -810,7 +810,7 @@ function initializeDataTable() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: '<?php echo e(route('freights.data')); ?>',
+            url: '<?php echo e(route('freights.cliente.data')); ?>',
             type: 'GET',
             data: function(d) {
                 d.status_filter = $('#status-filter').val();
@@ -1118,7 +1118,7 @@ function confirmDeleteAll() {
 
 function deleteAllFreights() {
     $.ajax({
-        url: '<?php echo e(route('freights.deleteAll')); ?>',
+        url: '<?php echo e(route('freights.cliente.deleteAll')); ?>',
         type: 'DELETE',
         data: {
             _token: '<?php echo e(csrf_token()); ?>'

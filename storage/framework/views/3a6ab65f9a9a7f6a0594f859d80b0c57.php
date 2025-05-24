@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="<?php echo e(csrf_token()); ?>">
+        <!-- Favicon -->
+    <link rel="icon" href="<?php echo e(asset('images/favicon.ico')); ?>" type="image/x-icon">
+    <link rel="shortcut icon" href="<?php echo e(asset('images/favicon.ico')); ?>" type="image/x-icon">
     <title>Login - Fretes em Nuvens</title>
     <style>
         * {
@@ -305,7 +308,7 @@
                     
                     if (response.ok) {
                         const data = await response.json();
-                        const redirectTo = data.role === 'admin' ? '/freights' : '/cliente';
+                        const redirectTo = data.role === 'admin' ? '/freights/dashboard' : '/freights/dashboard/cliente';
                         window.location.href = redirectTo;
                     } else {
                         localStorage.removeItem('auth_token');

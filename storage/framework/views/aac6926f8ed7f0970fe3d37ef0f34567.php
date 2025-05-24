@@ -194,7 +194,7 @@
             </h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="<?php echo e(route('dashboard')); ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo e(route('freights.dashboard')); ?>">Dashboard</a></li>
                     <li class="breadcrumb-item active" aria-current="page">Fretes</li>
                 </ol>
             </nav>
