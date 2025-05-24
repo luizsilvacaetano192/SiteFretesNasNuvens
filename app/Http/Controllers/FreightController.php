@@ -251,7 +251,7 @@ class FreightController extends Controller
     {
         $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver.driver']);
         
-        dd($query);
+        dd('ta aq');
 
         if ($request->status_filter) {
             $query->where('status_id', $request->status_filter);
