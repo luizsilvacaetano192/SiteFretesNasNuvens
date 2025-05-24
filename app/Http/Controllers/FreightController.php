@@ -242,6 +242,32 @@ class FreightController extends Controller
             ->addColumn('company_name', fn($freight) => $freight->company->name ?? 'N/A')
             ->addColumn('driver_name', fn($freight) => $this->getDriverNameColumn($freight))
             ->addColumn('status_badge', fn($freight) => $this->getStatusBadge($freight))
+               ->addColumn('payment_button', function($freight) {
+                if (!$freight->charge) return '<span class="text-muted">N/A</span>';
+                
+                $status = strtolower($freight->charge->status ?? '');
+                
+                if ($status === 'paid') {
+                    if ($freight->charge->receipt_url) {
+                        return '
+                            <a href="'.$freight->charge->receipt_url.'" class="btn btn-sm btn-info" target="_blank" title="Visualizar Recibo">
+                                <i class="fas fa-file-invoice-dollar"></i> Recibo
+                            </a>
+                        ';
+                    }
+                    return '<span class="badge bg-success">Pago</span>';
+                } else {
+                    if ($freight->charge->charge_url) {
+                        return '
+                            <a href="'.$freight->charge->charge_url.'" class="btn btn-sm btn-success" target="_blank" title="Realizar Pagamento">
+                                <i class="fas fa-credit-card"></i> Pagar
+                            </a>
+                        ';
+                    }
+                    return '<span class="badge bg-warning">Pendente</span>';
+                }
+            })
+
             ->addColumn('formatted_value', fn($freight) => $this->formatCurrency($freight->freight_value))
             ->rawColumns(['status_badge', 'driver_name'])
             ->make(true);
