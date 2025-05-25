@@ -74,7 +74,7 @@
                                     <span id="last-update">
                                         @if($lastLocation && $lastLocation->date && $lastLocation->time)
                                             {{ \Carbon\Carbon::parse($lastLocation->date)->format('d/m/Y') }} às 
-                                            {{ $lastLocation->time }}
+                                            {{ substr($lastLocation->time, 0, 5) }}
                                         @else
                                             N/A
                                         @endif
@@ -175,7 +175,7 @@
                                     <td>
                                         <div class="d-flex flex-column">
                                             <small>{{ $location->date ? \Carbon\Carbon::parse($location->date)->format('d/m/Y') : 'N/A' }}</small>
-                                            <small>{{ $location->time ? $location->time : 'N/A' }}</small>
+                                            <small>{{ $location->time ? substr($location->time, 0, 5) : 'N/A' }}</small>
                                         </div>
                                     </td>
                                     <td>
@@ -463,7 +463,7 @@ function updateCurrentPosition(position, address) {
         position: position,
         map: map,
         icon: {
-            url: "{{ asset('images/icon-truck.png') }}", // ou "./assets/images/my-icon.png"
+            url: "{{ asset('images/icon-truck.png') }}",
             scaledSize: new google.maps.Size(64, 64)
         },
         title: "Posição atual: " + (address || 'Não disponível')
@@ -609,12 +609,19 @@ function updateHistory() {
             const dateB = b.date && b.time ? new Date(`${b.date}T${b.time}`) : 0;
             return dateB - dateA;
         }).forEach(item => {
+            // Formatar a hora corretamente (HH:MM)
+            let formattedTime = 'N/A';
+            if (item.time) {
+                const timeParts = item.time.split(':');
+                if (timeParts.length >= 2) {
+                    formattedTime = `${timeParts[0]}:${timeParts[1]}`;
+                }
+            }
+            
             historyTable.row.add([
                 `<div>
                     <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
-                    <small>
-                        ${item.time ? new Date('1970-01-01T' + item.time + 'Z').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'N/A'}
-                    </small>
+                    <small>${formattedTime}</small>
                 </div>`,
                 `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
                 `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
@@ -689,16 +696,25 @@ function startAutoUpdate() {
             }
             
             if (history && history.length) {
-                historyTable.clear().rows.add(history.map(item => [
-                    `<div>
-                        <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
-                        <small>
-                        ${item.time ? new Date('1970-01-01T' + item.time + 'Z').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'N/A'}
-                        </small>
-                    </div>`,
-                    `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
-                    `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
-                ])).draw();
+                historyTable.clear().rows.add(history.map(item => {
+                    // Formatar a hora corretamente (HH:MM)
+                    let formattedTime = 'N/A';
+                    if (item.time) {
+                        const timeParts = item.time.split(':');
+                        if (timeParts.length >= 2) {
+                            formattedTime = `${timeParts[0]}:${timeParts[1]}`;
+                        }
+                    }
+                    
+                    return [
+                        `<div>
+                            <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
+                            <small>${formattedTime}</small>
+                        </div>`,
+                        `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
+                        `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
+                    ];
+                })).draw();
             }
             
             updateFreightStatus();
