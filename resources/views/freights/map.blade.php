@@ -612,7 +612,9 @@ function updateHistory() {
             historyTable.row.add([
                 `<div>
                     <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
-                    <small>${item.time ? item.time  : 'N/A'}</small>
+                    <small>
+                        ${item.time ? new Date('1970-01-01T' + item.time + 'Z').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'N/A'}
+                    </small>
                 </div>`,
                 `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
                 `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
@@ -690,7 +692,9 @@ function startAutoUpdate() {
                 historyTable.clear().rows.add(history.map(item => [
                     `<div>
                         <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
-                        <small>${item.time ? item.time : 'N/A'}</small>
+                        <small>
+                        ${item.time ? new Date('1970-01-01T' + item.time + 'Z').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'N/A'}
+                        </small>
                     </div>`,
                     `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
                     `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
