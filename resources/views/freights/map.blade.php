@@ -700,13 +700,10 @@ function startAutoUpdate() {
                     // Formatar a hora corretamente (HH:MM)
                     let formattedTime = 'N/A';
                     if (item.time) {
-                         console.log('item.time', item.time)
-                  
-                        const timeParts = item.time.split(':');
-                        console.log('timeParts', timeParts)
-                        if (timeParts.length >= 2) {
-                             formattedTime = timeParts[0] + ':' + timeParts[1];
-                        }
+                        const dateObj = new Date(item.time);
+                        const horas = String(dateObj.getHours()).padStart(2, '0');
+                        const minutos = String(dateObj.getMinutes()).padStart(2, '0');
+                        formattedTime = `${horas}:${minutos}`;
                     }
                     
                     return [
