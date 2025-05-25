@@ -811,7 +811,7 @@ function initializeDataTable() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: '{{ route('freights.data') }}',
+            url: '{{ route('freights.cliente.data') }}',
             type: 'GET',
             data: function(d) {
                 d.status_filter = $('#status-filter').val();

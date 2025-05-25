@@ -235,14 +235,83 @@ class FreightController extends Controller
     public function getDataTable(Request $request)
     {
 
+       $query = Freight::with(['freightStatus', 'company', 'shipment', 'charge', 'freightsDriver.driver']);
        
-        $query = $this->buildFreightQuery($request);
-        
+    
+        // Aplica os filtros antes de passar para o DataTables
+        if ($request->status_filter) {
+            $query->where('status_id', $request->status_filter);
+        }
+    
+        if ($request->driver_filter) {
+            $query->where('driver_id', $request->driver_filter);
+        }
+    
+        // Filtros de data
+        if ($request->start_date) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+    
+        if ($request->end_date) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+    
+        // Ordenação padrão
+        $query->orderBy('id', 'desc');
+
+        dd('aq');
+    
         return DataTables::of($query)
-            ->addColumn('company_name', fn($freight) => $freight->company->name ?? 'N/A')
-            ->addColumn('driver_name', fn($freight) => $this->getDriverNameColumn($freight))
-            ->addColumn('status_badge', fn($freight) => $this->getStatusBadge($freight))
-               ->addColumn('payment_button', function($freight) {
+          
+            ->addColumn('driver_name', function($freight) {
+                if (!$freight->freightsDriver) {
+                    return '<span class="badge bg-info text-muted">Não atribuído</span>';
+                }
+                
+                return '
+                <div class="d-flex flex-column">
+                    <span class="badge bg-success mb-1">' . e($freight->freightsDriver->driver->name) . '</span>
+                    <div class="d-flex gap-1 align-self-start">' .
+                        ($freight->freightsDriver->status_id == 9 ? '
+                            <button onclick="aprovar(' . $freight->freightsDriver->id . ', 5); return false;" 
+                                    class="btn btn-sm btn-success">
+                                Aprovar
+                            </button>
+                            <button onclick="reprovar(' . $freight->freightsDriver->id . ', 10); return false;" 
+                                    class="btn btn-sm btn-danger">
+                                Recusar
+                            </button>'
+                            : ''
+                        ) . '
+                        <a href="#" 
+                            onclick="detailsDriverTruck(' . $freight->freightsDriver->id . '); return false;" 
+                            class="btn btn-sm btn-primary">
+                            Ver Detalhes
+                        </a>
+                    </div>
+                </div>';
+            })
+            ->addColumn('status_badge', function($freight) {
+                $status = $freight->freightStatus;
+                if (!$status) return '<span class="badge bg-secondary">N/A</span>';
+                
+                $badgeClass = [
+                    '1' => 'bg-secondary',
+                    '3' => 'bg-warning',
+                    '4' => 'bg-info',
+                    '5' => 'bg-secondary',
+                    '6' => 'bg-primary',
+                    '7' => 'bg-primary',
+                    '8' => 'bg-info',
+                    '9' => 'bg-success',
+                ][$status->id] ?? 'bg-secondary';
+                
+                return '<span class="badge '.$badgeClass.'">'.$status->name.'</span>';
+            })
+            ->addColumn('formatted_value', function($freight) {
+                return $freight->freight_value ? 'R$ '.number_format($freight->freight_value, 2, ',', '.') : 'N/A';
+            })
+            ->addColumn('payment_button', function($freight) {
                 if (!$freight->charge) return '<span class="text-muted">N/A</span>';
                 
                 $status = strtolower($freight->charge->status ?? '');
@@ -250,7 +319,7 @@ class FreightController extends Controller
                 if ($status === 'paid') {
                     if ($freight->charge->receipt_url) {
                         return '
-                            <a href="'.$freight->charge->receipt_url.'" class="btn btn-sm btn-info" target="_blank" title="Visualizar Recibo">
+                            <a href="https://sandbox.asaas.com" class="btn btn-sm btn-info" target="_blank" title="Visualizar Recibo">
                                 <i class="fas fa-file-invoice-dollar"></i> Recibo
                             </a>
                         ';
@@ -259,7 +328,7 @@ class FreightController extends Controller
                 } else {
                     if ($freight->charge->charge_url) {
                         return '
-                            <a href="'.$freight->charge->charge_url.'" class="btn btn-sm btn-success" target="_blank" title="Realizar Pagamento">
+                            <a href="https://sandbox.asaas.com" class="btn btn-sm btn-success" target="_blank" title="Realizar Pagamento">
                                 <i class="fas fa-credit-card"></i> Pagar
                             </a>
                         ';
@@ -267,9 +336,19 @@ class FreightController extends Controller
                     return '<span class="badge bg-warning">Pendente</span>';
                 }
             })
-
-            ->addColumn('formatted_value', fn($freight) => $this->formatCurrency($freight->freight_value))
-            ->rawColumns(['status_badge', 'driver_name'])
+            ->addColumn('actions', function($freight) {
+                return '
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-primary view-freight" data-id="'.$freight->id.'" title="Visualizar">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger delete-freight" data-id="'.$freight->id.'" title="Excluir">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                ';
+            })
+            ->rawColumns(['status_badge', 'actions', 'payment_button', 'driver_name'])
             ->make(true);
     }
     

@@ -382,7 +382,6 @@
                         <thead class="table-light">
                             <tr>
                                 <th>ID</th>
-                                <th>Empresa</th>
                                 <th style="width:10px">Origem</th>
                                 <th>Destino</th>
                                 <th>Motorista</th>
@@ -810,7 +809,7 @@ function initializeDataTable() {
         processing: true,
         serverSide: true,
         ajax: {
-            url: '<?php echo e(route('freights.data')); ?>',
+            url: '<?php echo e(route('freights.cliente.data')); ?>',
             type: 'GET',
             data: function(d) {
                 d.status_filter = $('#status-filter').val();
@@ -832,18 +831,7 @@ function initializeDataTable() {
                 name: 'id',
                 className: 'fw-semibold'
             },
-            { 
-                data: 'company_name', 
-                name: 'company.name',
-                render: function(data, type, row) {
-                    if (!data) return 'N/A';
-                    return `
-                        <div class="text-truncate-container" title="${data}">
-                            <span class="fw-semibold">${data}</span>
-                        </div>
-                    `;
-                }
-            },
+            
             { 
                 data: 'start_address', 
                 name: 'start_address',
@@ -913,7 +901,7 @@ function initializeDataTable() {
                 render: function(data, type, row) {
                     return `
                     <div class="d-flex gap-2">
-                        <a href="/freights/${row.id}" class="btn btn-sm btn-primary view-freight" data-id="${row.id}" title="Visualizar">
+                        <a href="/freights/cliente/${row.id}" class="btn btn-sm btn-primary view-freight" data-id="${row.id}" title="Visualizar">
                             <i class="fas fa-eye"></i>
                         </a>
                         <button class="btn btn-sm btn-danger delete-freight" data-id="${row.id}" title="Excluir">
@@ -1199,4 +1187,4 @@ function updateStats() {
 }
 </script>
 <?php $__env->stopPush(); ?>
-<?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /home/luiz/SiteFretesNasNuvens/resources/views/freights/index.blade.php ENDPATH**/ ?>
+<?php echo $__env->make('layouts.cliente.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /home/luiz/SiteFretesNasNuvens/resources/views/freights/cliente/index.blade.php ENDPATH**/ ?>

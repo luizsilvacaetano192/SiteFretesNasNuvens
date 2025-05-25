@@ -157,7 +157,7 @@ class CliFreightController extends Controller
         }
         
         $statuses = FreightStatus::all();
-        return view('freights.cliente..index', compact('statuses'));
+        return view('freights.cliente.index', compact('statuses'));
     }
 
     // In your controller
