@@ -603,6 +603,14 @@ function updateHistory() {
     
     $.get('{{ route("freights.history", $freight->id) }}', function(data) {
         historyTable.clear();
+
+            let formattedTime = 'N/A';
+            if (item.time) {
+                const timeParts = item.time.split(':');
+                if (timeParts.length >= 2) {
+                        formattedTime = timeParts[0] + ':' + timeParts[1];
+                }
+            }
         
         data.sort((a, b) => {
             const dateA = a.date && a.time ? new Date(`${a.date}T${a.time}`) : 0;
@@ -612,9 +620,7 @@ function updateHistory() {
             historyTable.row.add([
                 `<div>
                     <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
-                    <small>
-                        ${item.time ? new Date('1970-01-01T' + item.time + 'Z').toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) : 'N/A'}
-                    </small>
+                     <small>${formattedTime}</small>
                 </div>`,
                 `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
                 `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
