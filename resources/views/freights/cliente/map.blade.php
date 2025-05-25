@@ -606,6 +606,7 @@ function updateHistory() {
 
             let formattedTime = 'N/A';
             if (item.time) {
+               
                 const timeParts = item.time.split(':');
                 if (timeParts.length >= 2) {
                         formattedTime = timeParts[0] + ':' + timeParts[1];

@@ -700,7 +700,10 @@ function startAutoUpdate() {
                     // Formatar a hora corretamente (HH:MM)
                     let formattedTime = 'N/A';
                     if (item.time) {
+                         console.log('item.time', item.time)
+                  
                         const timeParts = item.time.split(':');
+                        console.log('timeParts', timeParts)
                         if (timeParts.length >= 2) {
                              formattedTime = timeParts[0] + ':' + timeParts[1];
                         }
