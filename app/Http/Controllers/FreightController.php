@@ -259,7 +259,7 @@ class FreightController extends Controller
         // Ordenação padrão
         $query->orderBy('id', 'desc');
 
-        dd('aq');
+        
     
         return DataTables::of($query)
           
