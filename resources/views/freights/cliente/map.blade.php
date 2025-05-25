@@ -175,7 +175,7 @@
                                     <td>
                                         <div class="d-flex flex-column">
                                             <small>{{ $location->date ? \Carbon\Carbon::parse($location->date)->format('d/m/Y') : 'N/A' }}</small>
-                                            <small>{{ $location->time ? \Carbon\Carbon::parse($location->time)->format('H:i:s') : 'N/A' }}</small>
+                                            <small>{{ $location->time ? $location->time : 'N/A' }}</small>
                                         </div>
                                     </td>
                                     <td>
