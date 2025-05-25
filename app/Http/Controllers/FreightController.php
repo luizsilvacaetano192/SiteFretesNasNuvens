@@ -258,8 +258,6 @@ class FreightController extends Controller
     
         // Ordenação padrão
         $query->orderBy('id', 'desc');
-
-        
     
         return DataTables::of($query)
           
@@ -319,7 +317,7 @@ class FreightController extends Controller
                 if ($status === 'paid') {
                     if ($freight->charge->receipt_url) {
                         return '
-                            <a href="https://sandbox.asaas.com" class="btn btn-sm btn-info" target="_blank" title="Visualizar Recibo">
+                            <a href="'.$freight->charge->receipt_url.'" class="btn btn-sm btn-info" target="_blank" title="Visualizar Recibo">
                                 <i class="fas fa-file-invoice-dollar"></i> Recibo
                             </a>
                         ';
@@ -328,7 +326,7 @@ class FreightController extends Controller
                 } else {
                     if ($freight->charge->charge_url) {
                         return '
-                            <a href="https://sandbox.asaas.com" class="btn btn-sm btn-success" target="_blank" title="Realizar Pagamento">
+                            <a href="'.$freight->charge->charge_url.'" class="btn btn-sm btn-success" target="_blank" title="Realizar Pagamento">
                                 <i class="fas fa-credit-card"></i> Pagar
                             </a>
                         ';
