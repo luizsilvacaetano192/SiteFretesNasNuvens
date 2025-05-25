@@ -74,7 +74,7 @@
                                     <span id="last-update">
                                         @if($lastLocation && $lastLocation->date && $lastLocation->time)
                                             {{ \Carbon\Carbon::parse($lastLocation->date)->format('d/m/Y') }} às 
-                                            {{ \Carbon\Carbon::parse($lastLocation->time)->format('H:i:s') }}
+                                            {{ $lastLocation->time }}
                                         @else
                                             N/A
                                         @endif
