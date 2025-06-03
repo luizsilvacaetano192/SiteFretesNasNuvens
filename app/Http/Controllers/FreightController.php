@@ -709,7 +709,7 @@ class FreightController extends Controller
                 'billingType' => 'PIX',
                 'value' => $freight->freight_value,
                 'freight_id' => $freight->id,
-                'successUrl' => route('freights.index')
+                'successUrl' => 'https://fretesemnuvens.com.br/freights'
             ]);
 
             $data = $response->json();
