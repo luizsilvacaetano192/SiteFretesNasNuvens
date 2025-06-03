@@ -455,9 +455,7 @@ class FreightController extends Controller
         $validated = $this->validateFreightRequest($request);
         
         try {
-            DB::beginTransaction();
             $freight = Freight::create($validated);
-            DB::commit();
             $paymentData = $this->createAsaasPayment($freight);
             return $paymentData;
         } catch (\Exception $e) {
@@ -706,7 +704,7 @@ class FreightController extends Controller
     protected function createAsaasPayment(Freight $freight)
     {
         try {
-            $response = Http::timeout(15)->post(config('services.asaas.payment_url'), [
+            $response = Http::timeout(15)->post('https://0xjej23ew7.execute-api.us-east-1.amazonaws.com/teste', [
                 'name' => 'Frete #'.$freight->id,
                 'billingType' => 'PIX',
                 'value' => $freight->freight_value,
