@@ -835,16 +835,9 @@ function initializeDataTable() {
                 className: 'fw-semibold'
             },
             { 
-                data: 'compay.name', 
+                data: 'company.name', 
                 name: 'company.name',
-                render: function(data, type, row) {
-                    if (!data) return 'N/A';
-                    return `
-                        <div class="text-truncate-container" title="${data}">
-                            <span class="fw-semibold">${data}</span>
-                        </div>
-                    `;
-                }
+                
             },
             { 
                 data: 'start_address', 
