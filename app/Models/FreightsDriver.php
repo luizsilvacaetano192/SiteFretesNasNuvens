@@ -13,7 +13,7 @@ class FreightsDriver extends Model
         'freight_id',
         'driver_id', 
         'truck_id',
-        // any other pivot fields
+        'status_id'
     ];
 
     public function freight()

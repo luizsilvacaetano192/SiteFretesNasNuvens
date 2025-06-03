@@ -202,15 +202,10 @@ class FreightController extends Controller
     {
         $validated = $request->validate([
             'status_id' => 'required|integer|exists:freight_statuses,id'
-        ]);
-
-
-    
+        ]);    
 
         $response = $freightsDriver->update(['status_id' => $validated['status_id']]);
 
-        dd($response);
-        
         $this->callExternalApis($freightsDriver);
         
         return response()->json([
