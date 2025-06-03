@@ -456,17 +456,19 @@ class FreightController extends Controller
         
         try {
             DB::beginTransaction();
-            
             $freight = Freight::create($validated);
-            $paymentData = $this->createAsaasPayment($freight);
-            
             DB::commit();
-            
+            $paymentData = $this->createAsaasPayment($freight);
             return $paymentData;
         } catch (\Exception $e) {
             DB::rollBack();
+            if (isset($freight)) {
+                $freight->delete();
+            }
             Log::error('Freight creation failed: '.$e->getMessage());
-            return back()->withInput()->with('error', 'Erro ao criar frete: '.$e->getMessage());
+
+            return back()->withInput()
+                ->with('error', 'Erro ao criar frete: '.$e->getMessage());
         }
     }
     
