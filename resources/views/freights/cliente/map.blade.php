@@ -606,10 +606,10 @@ function updateHistory() {
 
             let formattedTime = 'N/A';
             if (item.time) {
-                const dateObj = new Date(item.time);
-                const horas = String(dateObj.getHours()).padStart(2, '0');
-                const minutos = String(dateObj.getMinutes()).padStart(2, '0');
-                formattedTime = `${horas}:${minutos}`;
+            const dateObj = new Date(item.time);
+            const horas = String(dateObj.getHours()).padStart(2, '0');
+            const minutos = String(dateObj.getMinutes()).padStart(2, '0');
+            formattedTime = `${horas}:${minutos}`;
             }
         
         data.sort((a, b) => {

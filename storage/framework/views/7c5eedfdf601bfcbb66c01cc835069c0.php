@@ -1,268 +1,209 @@
-<?php $__env->startSection('title', 'Detalhes do Frete'); ?>
+<?php $__env->startSection('title', 'Rota e Histórico do Frete'); ?>
 
 <?php $__env->startSection('content'); ?>
 <div class="container-fluid px-4">
-    <!-- Botão Voltar no Topo -->
+    <!-- Cabeçalho -->
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h1 class="h3 mb-0 text-gray-800">
-                <i class="fas fa-truck-moving me-2"></i>Detalhes do Frete #<?php echo e($freight->id); ?>
+                <i class="fas fa-map-marked-alt me-2"></i>Rota do Frete #<?php echo e($freight->id); ?>
 
             </h1>
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
-                    <li class="breadcrumb-item"><a href="<?php echo e(route('dashboard')); ?>">Dashboard</a></li>
+                    <li class="breadcrumb-item"><a href="<?php echo e(route('freights.dashboard')); ?>">Dashboard</a></li>
                     <li class="breadcrumb-item"><a href="<?php echo e(route('freights.index')); ?>">Fretes</a></li>
-                    <li class="breadcrumb-item active" aria-current="page">Detalhes</li>
+                    <li class="breadcrumb-item active" aria-current="page">Rota</li>
                 </ol>
             </nav>
         </div>
         <div>
             <a href="<?php echo e(route('freights.index')); ?>" class="btn btn-secondary me-2">
-                <i class="fas fa-arrow-left me-1"></i>Voltar para Fretes
+                <i class="fas fa-arrow-left me-1"></i>Voltar para Frete
             </a>
-            <a href="#" class="btn btn-primary" onclick="window.print()">
-                <i class="fas fa-print me-1"></i>Imprimir
-            </a>
+            <button id="export-route" class="btn btn-primary">
+                <i class="fas fa-file-pdf me-1"></i>Exportar Rota
+            </button>
         </div>
     </div>
 
     <div class="row">
-        <!-- Coluna Esquerda -->
-        <div class="col-lg-8">
-            <!-- Card de Status -->
+        <!-- Coluna do Mapa -->
+        <div class="col-lg-6">
+            <!-- Card do Mapa -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">
-                        <i class="fas fa-info-circle me-2"></i>Status do Frete
+                        <i class="fas fa-map me-2"></i>Mapa da Rota
                     </h6>
-                    <span class="badge bg-<?php echo e($statusBadgeClass); ?>"><?php echo e($freight->freightStatus->name); ?></span>
-                </div>
-                <div class="card-body">
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <h6 class="text-muted mb-2">Informações Básicas</h6>
-                                <p class="mb-1"><strong>Empresa:</strong> <?php echo e($freight->company->name); ?></p>
-                                <p class="mb-1"><strong>Criado em:</strong> <?php echo e($freight->created_at->format('d/m/Y H:i')); ?></p>
-                                <p class="mb-1"><strong>Valor Total:</strong> R$ <?php echo e(number_format($freight->freight_value, 2, ',', '.')); ?></p>
-                                <p class="mb-1"><strong>Valor Motorista:</strong> R$ <?php echo e(number_format($freight->driver_freight_value, 2, ',', '.')); ?></p>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <h6 class="text-muted mb-2">Datas Importantes</h6>
-                                <p class="mb-1"><strong>Coleta:</strong> <?php echo e($freight->pickup_date ? $freight->pickup_date->format('d/m/Y H:i') : 'N/A'); ?></p>
-                                <p class="mb-1"><strong>Entrega:</strong> <?php echo e($freight->delivery_date ? $freight->delivery_date->format('d/m/Y H:i') : 'N/A'); ?></p>
-                                <p class="mb-1"><strong>Concluído em:</strong> <?php echo e($freight->completed_at ? $freight->completed_at->format('d/m/Y H:i') : 'N/A'); ?></p>
-                            </div>
-                        </div>
+                    <div class="btn-group">
+                        <button id="map-type-road" class="btn btn-sm btn-outline-secondary active">
+                            <i class="fas fa-road"></i> Padrão
+                        </button>
+                        <button id="map-type-satellite" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-satellite"></i> Satélite
+                        </button>
+                        <button id="map-type-hybrid" class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-layer-group"></i> Híbrido
+                        </button>
                     </div>
                 </div>
-            </div>
-
-            <!-- Card de Rota e Mapa -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white py-3">
-                    <h6 class="mb-0">
-                        <i class="fas fa-map-marked-alt me-2"></i>Rota e Localização
-                    </h6>
-                </div>
                 <div class="card-body p-0">
-                    <div id="map-container" style="position: relative;">
+                    <div id="map-container">
+                        <!-- Informações de Localização -->
                         <div id="location-info" class="p-3 bg-light border-bottom">
                             <div class="d-flex justify-content-between">
                                 <div>
                                     <strong>📍 Posição atual:</strong> 
-                                    <span id="current-position"><?php echo e($freight->current_position ?? 'Não disponível'); ?></span>
+                                    <span id="current-position">
+                                        <?php
+                                            $lastLocation = $freight->history()
+                                                ->orderBy('date', 'desc')
+                                                ->orderBy('time', 'desc')
+                                                ->first();
+                                        ?>
+                                        <?php echo e($lastLocation->address ?? 'Não disponível'); ?>
+
+                                    </span>
+                                    <span id="updating-indicator" class="d-none ms-2">
+                                        <i class="fas fa-sync-alt fa-spin"></i> Atualizando...
+                                    </span>
                                 </div>
                                 <div>
                                     <strong>🔄 Atualizado em:</strong> 
-                                    <span id="last-update"><?php echo e(now()->format('d/m/Y H:i:s')); ?></span>
+                                    <span id="last-update">
+                                        <?php if($lastLocation && $lastLocation->date && $lastLocation->time): ?>
+                                            <?php echo e(\Carbon\Carbon::parse($lastLocation->date)->format('d/m/Y')); ?> às 
+                                            <?php echo e(substr($lastLocation->time, 0, 5)); ?>
+
+                                        <?php else: ?>
+                                            N/A
+                                        <?php endif; ?>
+                                    </span>
                                 </div>
                             </div>
                         </div>
-                        <div id="map" style="height: 400px;"></div>
+                        
+                        <!-- Controles do Mapa -->
+                        <div id="map-controls" class="d-flex justify-content-end pe-3 pt-2 bg-white">
+                            <div class="btn-group shadow-sm">
+                                <button id="track-toggle" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-lock"></i> Travar
+                                </button>
+                                <button id="zoom-toggle" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-search-plus"></i> Zoom
+                                </button>
+                                <button id="center-route" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-expand"></i> Rota
+                                </button>
+                                <button id="toggle-auto-update" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-power-off"></i> Auto
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- Mapa Google -->
+                        <div id="map"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Coluna do Histórico -->
+        <div class="col-lg-6">
+            <!-- Card de Status -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-white py-3">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>Status do Frete
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="flex-shrink-0">
+                            <span class="badge bg-<?php echo e($statusBadgeClass); ?> p-2">
+                                <i class="fas fa-truck me-1"></i> <?php echo e($freight->freightStatus->name); ?>
+
+                            </span>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Informações</h6>
+                                <p class="mb-1"><strong>Empresa:</strong> <?php echo e($freight->company->name); ?></p>
+                                <p class="mb-1"><strong>Motorista:</strong> <?php echo e($freight->driver->name ?? 'N/A'); ?></p>
+                                <p class="mb-1"><strong>Veículo:</strong> <?php echo e($freight->truck_plate ?? 'N/A'); ?></p>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <h6 class="text-muted mb-2">Datas</h6>
+                                <p class="mb-1"><strong>Início:</strong> <?php echo e($freight->created_at ? $freight->created_at->format('d/m/Y H:i') : 'N/A'); ?></p>
+                                <p class="mb-1"><strong>Coleta:</strong> <?php echo e($freight->pickup_date ? $freight->pickup_date->format('d/m/Y H:i') : 'N/A'); ?></p>
+                                <p class="mb-1"><strong>Entrega:</strong> <?php echo e($freight->delivery_date ? $freight->delivery_date->format('d/m/Y H:i') : 'N/A'); ?></p>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
 
             <!-- Card de Histórico -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h6 class="mb-0">
-                        <i class="fas fa-history me-2"></i>Histórico de Atividades
+                        <i class="fas fa-history me-2"></i>Histórico de Localização
                     </h6>
+                    <div>
+                        <button id="refresh-history" class="btn btn-sm btn-primary">
+                            <i class="fas fa-sync-alt me-1"></i> Atualizar
+                        </button>
+                    </div>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body p-0" style="max-height: 400px; overflow-y: auto;">
                     <div class="table-responsive">
                         <table class="table table-hover mb-0" id="history-table">
-                            <thead>
+                            <thead class="thead-light sticky-top">
                                 <tr>
-                                    <th width="120">Data/Hora</th>
-                                    <th>Evento</th>
-                                    <th>Detalhes</th>
+                                    <th width="20%">Data/Hora</th>
+                                    <th width="70%">Localização</th>
+                                    <th width="10%">Status</th>
                                 </tr>
                             </thead>
-                            <tbody id="activity-history">
-                                <?php $__empty_1 = true; $__currentLoopData = $freight->history; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $activity): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
-                                <tr>
-                                    <td><?php echo e($activity->created_at->format('d/m/Y H:i')); ?></td>
-                                    <td><?php echo e($activity->event); ?></td>
-                                    <td><?php echo e($activity->details); ?></td>
+                            <tbody>
+                                <?php $__empty_1 = true; $__currentLoopData = $freight->history()->orderBy('date', 'desc')->orderBy('time', 'desc')->get(); $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $location): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+                                <tr data-lat="<?php echo e($location->latitude ?? 0); ?>" data-lng="<?php echo e($location->longitude ?? 0); ?>">
+                                    <td>
+                                        <div class="d-flex flex-column">
+                                            <small><?php echo e($location->date ? \Carbon\Carbon::parse($location->date)->format('d/m/Y') : 'N/A'); ?></small>
+                                            <small><?php echo e($location->time ? substr($location->time, 0, 5) : 'N/A'); ?></small>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div class="text-truncate" style="max-width: 250px;" title="<?php echo e($location->address ?? 'N/A'); ?>">
+                                            <?php echo e($location->address ?? 'N/A'); ?>
+
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <span class="badge bg-<?php echo e($location->status === 'em_transito' ? 'info' : ($location->status === 'entregue' ? 'success' : 'warning')); ?>">
+                                            <?php echo e($location->status ? ucfirst(str_replace('_', ' ', $location->status)) : 'N/A'); ?>
+
+                                        </span>
+                                    </td>
                                 </tr>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <tr>
-                                    <td colspan="3" class="text-center">Nenhum histórico disponível</td>
+                                    <td colspan="3" class="text-center py-4">Nenhum registro de localização encontrado</td>
                                 </tr>
                                 <?php endif; ?>
                             </tbody>
                         </table>
                     </div>
                 </div>
-            </div>
-        </div>
-
-        <!-- Coluna Direita -->
-        <div class="col-lg-4">
-            <!-- Card de Carga -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">
-                        <i class="fas fa-boxes me-2"></i>Detalhes da Carga
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-2">Informações Gerais</h6>
-                        <p class="mb-1"><strong>Tipo:</strong> <?php echo e($freight->shipment->cargo_type); ?></p>
-                        <p class="mb-1"><strong>Peso:</strong> <?php echo e($freight->shipment->weight); ?> kg</p>
-                        <p class="mb-1"><strong>Dimensões:</strong> <?php echo e($freight->shipment->dimensions); ?></p>
-                        <p class="mb-1"><strong>Volume:</strong> <?php echo e($freight->shipment->volume); ?></p>
-                        <p class="mb-1"><strong>Descrição:</strong> <?php echo e($freight->shipment->description ?? 'N/A'); ?></p>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-2">Características</h6>
-                        <p class="mb-1"><strong>Frágil:</strong> <?php echo e($freight->shipment->is_fragile ? 'Sim' : 'Não'); ?></p>
-                        <p class="mb-1"><strong>Perigosa:</strong> <?php echo e($freight->shipment->is_hazardous ? 'Sim' : 'Não'); ?></p>
-                        <p class="mb-1"><strong>Controle de Temperatura:</strong> <?php echo e($freight->shipment->requires_temperature_control ? 'Sim' : 'Não'); ?></p>
-                        <?php if($freight->shipment->requires_temperature_control): ?>
-                        <p class="mb-1"><strong>Faixa de Temperatura:</strong> 
-                            <?php echo e($freight->shipment->min_temperature); ?>°<?php echo e($freight->shipment->temperature_unit); ?> a 
-                            <?php echo e($freight->shipment->max_temperature); ?>°<?php echo e($freight->shipment->temperature_unit); ?>
-
-                        </p>
-                        <?php endif; ?>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card de Motorista e Veículo -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">
-                        <i class="fas fa-truck me-2"></i>Motorista e Veículo
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <?php if($freight->driver): ?>
-                    <div class="d-flex align-items-center mb-3">
-                        <div class="flex-shrink-0">
-                            <img src="<?php echo e($freight->driver->photo_url ?? asset('img/default-driver.png')); ?>" 
-                                 class="rounded-circle" width="50" height="50" alt="Foto do Motorista">
-                        </div>
-                        <div class="flex-grow-1 ms-3">
-                            <h6 class="mb-0"><?php echo e($freight->driver->name); ?></h6>
-                            <small class="text-muted"><?php echo e($freight->driver->phone); ?></small>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-2">Informações do Veículo</h6>
-                        <p class="mb-1"><strong>Tipo:</strong> <?php echo e($freight->truck_type ? ucwords(str_replace('_', ' ', $freight->truck_type)) : 'N/A'); ?></p>
-                        <p class="mb-1"><strong>Placa:</strong> <?php echo e($freight->driver->truck_plate ?? 'N/A'); ?></p>
-                        <p class="mb-1"><strong>Capacidade:</strong> <?php echo e($freight->driver->truck_capacity ?? 'N/A'); ?></p>
-                    </div>
-                    <?php else: ?>
-                    <div class="alert alert-warning mb-0">
-                        <i class="fas fa-exclamation-circle me-2"></i>Nenhum motorista atribuído a este frete.
-                    </div>
-                    <?php endif; ?>
-                </div>
-            </div>
-
-            <!-- Card de Endereços -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">
-                        <i class="fas fa-map-marker-alt me-2"></i>Endereços
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-2">Origem</h6>
-                        <p class="mb-1"><strong>Endereço:</strong> <?php echo e($freight->start_address); ?></p>
-                        <p class="mb-1"><strong>Instruções:</strong> <?php echo e($freight->loading_instructions ?? 'N/A'); ?></p>
-                        <p class="mb-0"><strong>Contato:</strong> <?php echo e($freight->start_contact ?? 'N/A'); ?></p>
-                    </div>
-                    
-                    <div class="mb-0">
-                        <h6 class="text-muted mb-2">Destino</h6>
-                        <p class="mb-1"><strong>Endereço:</strong> <?php echo e($freight->destination_address); ?></p>
-                        <p class="mb-1"><strong>Instruções:</strong> <?php echo e($freight->unloading_instructions ?? 'N/A'); ?></p>
-                        <p class="mb-0"><strong>Contato:</strong> <?php echo e($freight->destination_contact ?? 'N/A'); ?></p>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Card de Pagamento -->
-            <div class="card shadow-sm mb-4">
-                <div class="card-header bg-white">
-                    <h6 class="mb-0">
-                        <i class="fas fa-money-bill-wave me-2"></i>Pagamento
-                    </h6>
-                </div>
-                <div class="card-body">
-                    <div class="mb-3">
-                        <p class="mb-1"><strong>Status:</strong> 
-                            <span class="badge bg-<?php echo e($paymentBadgeClass); ?>"><?php echo e($freight->payment_status); ?></span>
-                        </p>
-                        <p class="mb-1"><strong>Método:</strong> <?php echo e($freight->payment_method ? strtoupper($freight->payment_method) : 'N/A'); ?></p>
-                        <p class="mb-1"><strong>Seguradoras:</strong> 
-                            <?php if($freight->insurance_carriers && count($freight->insurance_carriers) > 0): ?>
-                                <?php echo e(implode(', ', array_map(function($item) { return ucwords(str_replace('_', ' ', $item)); }, $freight->insurance_carriers))); ?>
-
-                            <?php else: ?>
-                                Nenhuma seguradora específica
-                            <?php endif; ?>
-                        </p>
-                    </div>
-                    
-                    <?php if($freight->charge): ?>
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div>
-                            <h6 class="text-muted mb-2">Distância</h6>
-                            <p class="h5"><?php echo e($freight->distance ?? 'N/A'); ?></p>
-                        </div>
-                        <div>
-                            <h6 class="text-muted mb-2">Tempo Estimado</h6>
-                            <p class="h5"><?php echo e($freight->duration ?? 'N/A'); ?></p>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-3">
-                        <?php if($freight->payment_status === 'paid' && $freight->charge->receipt_url): ?>
-                        <a href="<?php echo e($freight->charge->receipt_url); ?>" class="btn btn-sm btn-info" target="_blank">
-                            <i class="fas fa-file-invoice-dollar me-1"></i>Recibo
-                        </a>
-                        <?php elseif($freight->charge->charge_url): ?>
-                        <a href="<?php echo e($freight->charge->charge_url); ?>" class="btn btn-sm btn-success" target="_blank">
-                            <i class="fas fa-credit-card me-1"></i>Pagar
-                        </a>
-                        <?php endif; ?>
-                    </div>
-                    <?php endif; ?>
+                <div class="card-footer bg-white py-2">
+                    <small class="text-muted">Mostrando <?php echo e($freight->history()->count()); ?> registros</small>
                 </div>
             </div>
         </div>
@@ -271,243 +212,560 @@
 <?php $__env->stopSection(); ?>
 
 <?php $__env->startPush('styles'); ?>
+<link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css">
 <style>
-    .card {
-        border: none;
-        box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-    }
-    
-    .card-header {
-        background-color: #f8f9fc;
-        border-bottom: 1px solid #e3e6f0;
-    }
-    
+    /* Estilos do Mapa */
     #map-container {
-        border-radius: 0.35rem;
-        overflow: hidden;
-        border: 1px solid #e3e6f0;
+        display: flex;
+        flex-direction: column;
+        height: 550px;
+        position: relative;
     }
     
-    .badge {
-        font-weight: 500;
-        padding: 0.35em 0.65em;
+    #location-info {
+        order: 1;
+        z-index: 10;
     }
     
-    .bg-warning {
-        background-color: #f6c23e !important;
+    #map-controls {
+        order: 2;
+        background: white;
+        padding: 5px 0;
+        z-index: 10;
     }
     
-    .bg-success {
-        background-color: #1cc88a !important;
+    #map {
+        order: 3;
+        flex-grow: 1;
+        width: 100%;
     }
     
-    .bg-danger {
-        background-color: #e74a3b !important;
+    /* Estilos da Tabela */
+    #history-table {
+        width: 100% !important;
     }
     
-    .bg-primary {
-        background-color: #4e73df !important;
+    #history-table thead th {
+        background-color: #f8f9fa;
+        position: sticky;
+        top: 0;
+        z-index: 10;
     }
     
-    .bg-secondary {
-        background-color: #858796 !important;
+    #history-table tbody tr {
+        cursor: pointer;
     }
     
-    .text-muted {
-        color: #5a5c69 !important;
+    #history-table tbody tr:hover {
+        background-color: rgba(0,0,0,0.03);
     }
     
-    @media print {
-        .no-print {
-            display: none !important;
+    /* Estilos dos Botões */
+    .btn-group-vertical .btn,
+    .btn-group .btn {
+        margin: 2px;
+    }
+    
+    /* Indicador de Atualização */
+    #updating-indicator {
+        font-size: 0.8rem;
+        color: #4e73df;
+    }
+    
+    /* Janela de Informações do Mapa */
+    .gm-style .gm-style-iw-c {
+        padding: 12px !important;
+        max-width: 300px !important;
+    }
+    
+    /* Badges de Status */
+    .badge.bg-info { background-color: #17a2b8 !important; }
+    .badge.bg-success { background-color: #28a745 !important; }
+    .badge.bg-warning { background-color: #ffc107 !important; color: #212529; }
+    .badge.bg-danger { background-color: #dc3545 !important; }
+    .badge.bg-secondary { background-color: #6c757d !important; }
+    
+    /* Responsividade */
+    @media (max-width: 992px) {
+        #map-container {
+            height: 400px;
         }
         
-        body {
-            background-color: white !important;
+        .col-lg-6 {
+            flex: 0 0 100%;
+            max-width: 100%;
         }
         
-        .card {
-            box-shadow: none !important;
-            border: 1px solid #e3e6f0 !important;
+        #map-controls .btn-group {
+            flex-wrap: wrap;
+            justify-content: flex-end;
         }
         
-        .container-fluid {
-            padding: 0 !important;
-        }
-        
-        #map {
-            height: 300px !important;
+        #map-controls .btn {
+            font-size: 0.8rem;
+            padding: 0.25rem 0.5rem;
         }
     }
 </style>
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startPush('scripts'); ?>
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initMap" async defer></script>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=geometry"></script>
+
 <script>
-    let map;
-    let directionsRenderer;
-    let truckMarker;
-    let updateInterval;
+// Configurações globais
+const UPDATE_INTERVAL = 30000; // 30 segundos
+let map, directionsService, directionsRenderer;
+let currentMarker, routePolyline;
+let isTracking = true;
+let isAutoUpdateActive = true;
+let updateInterval;
+let historyTable;
+let lastPosition = null;
 
-    function initMap() {
-        const mapElement = document.getElementById("map");
-        if (!mapElement) return;
-        
-        const defaultCenter = { lat: -15.7801, lng: -47.9292 };
-        
-        try {
-            map = new google.maps.Map(mapElement, {
-                zoom: 7,
-                center: defaultCenter,
-                mapTypeId: google.maps.MapTypeId.ROADMAP
-            });
-
-            directionsRenderer = new google.maps.DirectionsRenderer({
-                suppressMarkers: true,
-                map: map,
-                polylineOptions: {
-                    strokeColor: '#4e73df',
-                    strokeOpacity: 0.8,
-                    strokeWeight: 4
-                }
-            });
-
-            initRoute();
-            startAutoUpdate();
-
-        } catch (error) {
-            console.error("Erro ao inicializar o mapa:", error);
+// Inicialização do Mapa
+function initMap() {
+    const defaultCenter = { lat: -15.7801, lng: -47.9292 }; // Centro do Brasil
+    
+    map = new google.maps.Map(document.getElementById('map'), {
+        center: defaultCenter,
+        zoom: 12,
+        mapTypeId: 'roadmap',
+        streetViewControl: false,
+        fullscreenControl: false
+    });
+    
+    directionsService = new google.maps.DirectionsService();
+    directionsRenderer = new google.maps.DirectionsRenderer({
+        suppressMarkers: true,
+        preserveViewport: false,
+        polylineOptions: {
+            strokeColor: '#4e73df',
+            strokeOpacity: 0.8,
+            strokeWeight: 5
         }
-    }
+    });
+    directionsRenderer.setMap(map);
+    
+    initRoute();
+    setupMapEvents();
+    initHistoryTable();
+    startAutoUpdate();
+}
 
-    function initRoute() {
-        const directionsService = new google.maps.DirectionsService();
-
-        <?php if($freight->start_lat && $freight->start_lng && $freight->destination_lat && $freight->destination_lng): ?>
-            const start = new google.maps.LatLng(<?php echo e($freight->start_lat); ?>, <?php echo e($freight->start_lng); ?>);
-            const end = new google.maps.LatLng(<?php echo e($freight->destination_lat); ?>, <?php echo e($freight->destination_lng); ?>);
-
-            directionsService.route({
-                origin: start,
-                destination: end,
-                travelMode: google.maps.TravelMode.DRIVING
-            }, (response, status) => {
-                if (status === 'OK') {
-                    directionsRenderer.setDirections(response);
-                    
-                    // Marcador de origem
-                    new google.maps.Marker({
-                        position: start,
-                        map: map,
-                        icon: {
-                            url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
-                            scaledSize: new google.maps.Size(32, 32)
-                        },
-                        title: "Ponto de Partida"
-                    });
-
-                    // Marcador de destino
-                    new google.maps.Marker({
-                        position: end,
-                        map: map,
-                        icon: {
-                            url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
-                            scaledSize: new google.maps.Size(32, 32)
-                        },
-                        title: "Ponto de Destino"
-                    });
-
-                    <?php if($freight->current_lat && $freight->current_lng): ?>
-                        updateTruckPosition(<?php echo e($freight->current_lat); ?>, <?php echo e($freight->current_lng); ?>, true);
-                    <?php endif; ?>
-                }
-            });
-        <?php endif; ?>
-    }
-
-    function updateTruckPosition(lat, lng, position, initialLoad = false) {
-        const truckPosition = new google.maps.LatLng(lat, lng);
+// Inicializar Rota
+function initRoute() {
+    <?php if($freight->start_lat && $freight->start_lng && $freight->destination_lat && $freight->destination_lng): ?>
+        const startPoint = { 
+            lat: parseFloat(<?php echo e($freight->start_lat); ?>), 
+            lng: parseFloat(<?php echo e($freight->start_lng); ?>) 
+        };
+        const endPoint = { 
+            lat: parseFloat(<?php echo e($freight->destination_lat); ?>), 
+            lng: parseFloat(<?php echo e($freight->destination_lng); ?>) 
+        };
         
-        if (truckMarker) {
-            truckMarker.setMap(null);
-        }
-        
-        truckMarker = new google.maps.Marker({
-            position: truckPosition,
+        // Marcadores de origem e destino
+        new google.maps.Marker({
+            position: startPoint,
             map: map,
             icon: {
-                url: "https://img.icons8.com/ios-filled/50/000000/truck.png",
-                scaledSize: new google.maps.Size(40, 40)
+                url: "https://maps.google.com/mapfiles/ms/icons/green-dot.png",
+                scaledSize: new google.maps.Size(30, 30)
             },
-            title: "Posição Atual do Caminhão"
+            title: "Origem: <?php echo e($freight->start_address); ?>"
         });
         
-        document.getElementById('current-position').textContent = position;
-        document.getElementById('last-update').textContent = new Date().toLocaleString();
+        new google.maps.Marker({
+            position: endPoint,
+            map: map,
+            icon: {
+                url: "https://maps.google.com/mapfiles/ms/icons/red-dot.png",
+                scaledSize: new google.maps.Size(30, 30)
+            },
+            title: "Destino: <?php echo e($freight->destination_address); ?>"
+        });
         
-        if (!initialLoad) {
-            // Ajusta o zoom para nível 15 (ruas visíveis) e centraliza no caminhão
-            map.setCenter(truckPosition);
-            map.setZoom(15);
-            
-            // Efeito de animação
-            truckMarker.setAnimation(google.maps.Animation.BOUNCE);
-            setTimeout(() => {
-                truckMarker.setAnimation(null);
-            }, 1500);
+        calculateAndDisplayRoute(startPoint, endPoint);
+    <?php endif; ?>
+    
+    <?php if($lastLocation = $freight->history()->orderBy('date', 'desc')->orderBy('time', 'desc')->first()): ?>
+        const lat = parseFloat(<?php echo e($lastLocation->latitude ?? 0); ?>);
+        const lng = parseFloat(<?php echo e($lastLocation->longitude ?? 0); ?>);
+        
+        if (!isNaN(lat) && !isNaN(lng)) {
+            lastPosition = { lat, lng };
+            updateCurrentPosition(lastPosition, "<?php echo e($lastLocation->address ?? 'N/A'); ?>");
         }
-    }
+    <?php endif; ?>
+}
 
-    function startAutoUpdate() {
-        if (updateInterval) {
-            clearInterval(updateInterval);
+// Calcular e exibir rota
+function calculateAndDisplayRoute(startPoint, endPoint) {
+    directionsService.route({
+        origin: startPoint,
+        destination: endPoint,
+        travelMode: 'DRIVING'
+    }, (response, status) => {
+        if (status === 'OK') {
+            directionsRenderer.setDirections(response);
+            
+            try {
+                const bounds = new google.maps.LatLngBounds();
+                const route = response.routes[0];
+                
+                bounds.extend(startPoint);
+                bounds.extend(endPoint);
+                
+                if (route.legs) {
+                    route.legs.forEach(leg => {
+                        if (leg.steps) {
+                            leg.steps.forEach(step => {
+                                if (step.path) {
+                                    step.path.forEach(point => {
+                                        bounds.extend(point);
+                                    });
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
+            } catch (error) {
+                console.error('Erro ao ajustar rota:', error);
+                map.setCenter(startPoint);
+                map.setZoom(10);
+            }
+        } else {
+            console.error('Falha ao calcular rota:', status);
+            const bounds = new google.maps.LatLngBounds();
+            bounds.extend(startPoint);
+            bounds.extend(endPoint);
+            map.fitBounds(bounds);
         }
+    });
+}
+
+// Atualizar posição atual
+function updateCurrentPosition(position, address) {
+    if (!position || typeof position.lat !== 'number' || typeof position.lng !== 'number') {
+        console.error('Posição inválida:', position);
+        return;
+    }
+    
+    if (currentMarker) {
+        currentMarker.setMap(null);
+    }
+    
+    currentMarker = new google.maps.Marker({
+        position: position,
+        map: map,
+        icon: {
+            url: "<?php echo e(asset('images/icon-truck.png')); ?>",
+            scaledSize: new google.maps.Size(64, 64)
+        },
+        title: "Posição atual: " + (address || 'Não disponível')
+    });
+    
+    const infoWindow = new google.maps.InfoWindow({
+        content: `
+            <div class="p-2">
+                <h6 class="mb-1">Posição Atual</h6>
+                <p class="mb-1"><strong>Endereço:</strong> ${address || 'N/A'}</p>
+                <p class="mb-1"><strong>Latitude:</strong> ${position.lat.toFixed(6)}</p>
+                <p class="mb-0"><strong>Longitude:</strong> ${position.lng.toFixed(6)}</p>
+            </div>
+        `
+    });
+    
+    infoWindow.open(map, currentMarker);
+    setTimeout(() => infoWindow.close(), 5000);
+    
+    $('#current-position').text(address || 'N/A');
+    $('#last-update').text(new Date().toLocaleString('pt-BR'));
+    
+    if (isTracking) {
+        map.setCenter(position);
+        map.setZoom(15);
+    }
+    
+    lastPosition = position;
+}
+
+// Configurar eventos do mapa
+function setupMapEvents() {
+    $('#track-toggle').click(function() {
+        isTracking = !isTracking;
+        $(this).html(isTracking ? 
+            '<i class="fas fa-lock"></i> Travar' : 
+            '<i class="fas fa-lock-open"></i> Acompanhar');
         
-        updateInterval = setInterval(() => {
-            fetch(`/freights/<?php echo e($freight->id); ?>/position`)
-                .then(response => response.json())
-                .then(data => {
-                    if (data.current_lat && data.current_lng) {
-                        updateTruckPosition(data.current_lat, data.current_lng, data.position);
+        if (isTracking && lastPosition) {
+            map.setCenter(lastPosition);
+            map.setZoom(15);
+        }
+    });
+    
+    $('#zoom-toggle').click(function() {
+        if (map.getZoom() >= 15) {
+            map.setZoom(12);
+            $(this).html('<i class="fas fa-search-plus"></i> Zoom');
+        } else {
+            map.setZoom(15);
+            $(this).html('<i class="fas fa-search-minus"></i> Zoom');
+        }
+    });
+    
+    $('#center-route').click(function() {
+        if (directionsRenderer.getDirections()) {
+            try {
+                const bounds = new google.maps.LatLngBounds();
+                const route = directionsRenderer.getDirections().routes[0];
+                
+                route.legs.forEach(leg => {
+                    leg.steps.forEach(step => {
+                        step.path.forEach(point => {
+                            bounds.extend(point);
+                        });
+                    });
+                });
+                
+                map.fitBounds(bounds, {top: 50, bottom: 50, left: 50, right: 50});
+            } catch (error) {
+                console.error('Erro ao centralizar rota:', error);
+            }
+        }
+    });
+    
+    $('#map-type-road').click(function() {
+        map.setMapTypeId('roadmap');
+        $(this).addClass('active').siblings().removeClass('active');
+    });
+    
+    $('#map-type-satellite').click(function() {
+        map.setMapTypeId('satellite');
+        $(this).addClass('active').siblings().removeClass('active');
+    });
+    
+    $('#map-type-hybrid').click(function() {
+        map.setMapTypeId('hybrid');
+        $(this).addClass('active').siblings().removeClass('active');
+    });
+    
+    $('#export-route').click(exportMapToPDF);
+    $('#refresh-history').click(updateHistory);
+    
+    $('#toggle-auto-update').click(function() {
+        isAutoUpdateActive = !isAutoUpdateActive;
+        $(this).toggleClass('btn-primary btn-outline-primary')
+               .html(isAutoUpdateActive ? 
+                   '<i class="fas fa-power-off"></i> Auto' : 
+                   '<i class="fas fa-power-off"></i> Auto');
+        
+        if (isAutoUpdateActive) {
+            startAutoUpdate();
+        } else if (updateInterval) {
+            clearInterval(updateInterval);
+            updateInterval = null;
+        }
+    });
+}
+
+// Inicializar tabela de histórico
+function initHistoryTable() {
+    historyTable = $('#history-table').DataTable({
+        order: [[0, 'desc']],
+        pageLength: 10,
+        scrollY: '300px',
+        scrollCollapse: true,
+        language: {
+            url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/pt-BR.json'
+        }
+    });
+    
+    $('#history-table tbody').on('click', 'tr', function() {
+        const lat = parseFloat($(this).data('lat')) || 0;
+        const lng = parseFloat($(this).data('lng')) || 0;
+        
+        if (!isNaN(lat) && !isNaN(lng)) {
+            map.setCenter({ lat, lng });
+            map.setZoom(15);
+        }
+    });
+}
+
+// Atualizar histórico
+function updateHistory() {
+    $('#refresh-history').html('<i class="fas fa-spinner fa-spin me-1"></i>');
+    $('#updating-indicator').removeClass('d-none');
+    
+    $.get('<?php echo e(route("freights.history", $freight->id)); ?>', function(data) {
+        historyTable.clear();
+        
+        data.sort((a, b) => {
+            const dateA = a.date && a.time ? new Date(`${a.date}T${a.time}`) : 0;
+            const dateB = b.date && b.time ? new Date(`${b.date}T${b.time}`) : 0;
+            return dateB - dateA;
+        }).forEach(item => {
+            // Formatar a hora corretamente (HH:MM)
+            let formattedTime = 'N/A';
+            if (item.time) {
+                const timeParts = item.time.split(':');
+                if (timeParts.length >= 2) {
+                    formattedTime = `${timeParts[0]}:${timeParts[1]}`;
+                }
+            }
+            
+            historyTable.row.add([
+                `<div>
+                    <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
+                    <small>${formattedTime}</small>
+                </div>`,
+                `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
+                `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
+            ]).nodes().to$()
+              .attr('data-lat', item.latitude || 0)
+              .attr('data-lng', item.longitude || 0);
+        });
+        
+        historyTable.draw();
+        
+        if (data.length > 0) {
+            const last = data[0];
+            const lat = parseFloat(last.latitude) || 0;
+            const lng = parseFloat(last.longitude) || 0;
+            
+            if (!isNaN(lat) && !isNaN(lng)) {
+                lastPosition = { lat, lng };
+                updateCurrentPosition(lastPosition, last.address || 'N/A');
+            }
+            
+            updateFreightStatus();
+        }
+    }).always(() => {
+        $('#refresh-history').html('<i class="fas fa-sync-alt me-1"></i> Atualizar');
+        $('#updating-indicator').addClass('d-none');
+    });
+}
+
+// Atualizar status do frete
+function updateFreightStatus() {
+    $.get('<?php echo e(route("freights.status", $freight->id)); ?>', function(data) {
+        if (data.status) {
+            $('.card-body .badge')
+                .removeClass('bg-info bg-success bg-warning bg-danger bg-secondary')
+                .addClass(`bg-${getStatusClass(data.status)}`)
+                .html(`<i class="fas fa-truck me-1"></i> ${data.status}`);
+        }
+    });
+}
+
+// Helper para classes de status
+function getStatusClass(status) {
+    if (!status) return 'secondary';
+    status = status.toLowerCase();
+    if (status.includes('transito')) return 'info';
+    if (status.includes('entregue')) return 'success';
+    if (status.includes('cancelado')) return 'danger';
+    if (status.includes('pendente')) return 'warning';
+    return 'secondary';
+}
+
+// Iniciar atualização automática
+function startAutoUpdate() {
+    if (updateInterval) clearInterval(updateInterval);
+    
+    const update = () => {
+        if (!isAutoUpdateActive) return;
+        
+        $('#updating-indicator').removeClass('d-none');
+        
+        Promise.all([
+            $.get('<?php echo e(route("freights.last-position", $freight->id)); ?>'),
+            $.get('<?php echo e(route("freights.history", $freight->id)); ?>')
+        ]).then(([position, history]) => {
+            if (position && position.latitude && position.longitude) {
+                const lat = parseFloat(position.latitude);
+                const lng = parseFloat(position.longitude);
+                
+                if (!isNaN(lat) && !isNaN(lng)) {
+                    updateCurrentPosition({ lat, lng }, position.address || 'N/A');
+                }
+            }
+            
+            if (history && history.length) {
+                historyTable.clear().rows.add(history.map(item => {
+                    // Formatar a hora corretamente (HH:MM)
+                    let formattedTime = 'N/A';
+                    if (item.time) {
+                        const dateObj = new Date(item.time);
+                        const horas = String(dateObj.getHours()).padStart(2, '0');
+                        const minutos = String(dateObj.getMinutes()).padStart(2, '0');
+                        formattedTime = `${horas}:${minutos}`;
                     }
                     
-                    if (data.history && data.history.length > 0) {
-                        updateHistoryTable(data.history);
-                    }
-                })
-                .catch(error => {
-                    console.error("Erro ao atualizar posição:", error);
-                });
-        }, 10000);
-    }
-
-    function updateHistoryTable(history) {
-        const historyTable = document.getElementById('activity-history');
-        historyTable.innerHTML = '';
-        
-        history.forEach(item => {
-            const row = document.createElement('tr');
-            row.innerHTML = `
-                <td>${new Date(item.created_at).toLocaleString()}</td>
-                <td>${item.event}</td>
-                <td>${item.details}</td>
-            `;
-            historyTable.appendChild(row);
+                    return [
+                        `<div>
+                            <small>${item.date ? new Date(item.date).toLocaleDateString('pt-BR') : 'N/A'}</small>
+                            <small>${formattedTime}</small>
+                        </div>`,
+                        `<div class="text-truncate" title="${item.address || 'N/A'}">${item.address || 'N/A'}</div>`,
+                        `<span class="badge bg-${getStatusClass(item.status)}">${item.status ? item.status.replace('_', ' ') : 'N/A'}</span>`
+                    ];
+                })).draw();
+            }
+            
+            updateFreightStatus();
+        }).finally(() => {
+            $('#updating-indicator').addClass('d-none');
         });
-    }
+    };
+    
+    update();
+    updateInterval = setInterval(update, UPDATE_INTERVAL);
+}
 
-    document.addEventListener('DOMContentLoaded', function() {
-        if (typeof google !== 'undefined') {
-            startAutoUpdate();
-        }
+// Exportar mapa para PDF
+function exportMapToPDF() {
+    const { jsPDF } = window.jspdf;
+    $('#export-route').html('<i class="fas fa-spinner fa-spin me-1"></i>');
+    
+    html2canvas(document.querySelector('#map-container'), {
+        scale: 2,
+        logging: false,
+        useCORS: true
+    }).then(canvas => {
+        const pdf = new jsPDF('landscape');
+        const imgData = canvas.toDataURL('image/png');
+        const pdfWidth = pdf.internal.pageSize.getWidth();
+        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+        
+        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+        pdf.save(`rota-frete-<?php echo e($freight->id); ?>.pdf`);
+    }).catch(error => {
+        console.error('Erro ao exportar:', error);
+        alert('Erro ao gerar PDF');
+    }).finally(() => {
+        $('#export-route').html('<i class="fas fa-file-pdf me-1"></i> Exportar');
     });
+}
 
-    window.addEventListener('beforeunload', function() {
+// Inicializar quando o documento estiver pronto
+$(document).ready(function() {
+    initMap();
+    
+    $(window).on('beforeunload', function() {
         if (updateInterval) {
             clearInterval(updateInterval);
         }
     });
+});
 </script>
 <?php $__env->stopPush(); ?>
 <?php echo $__env->make('layouts.app', \Illuminate\Support\Arr::except(get_defined_vars(), ['__data', '__path']))->render(); ?><?php /**PATH /home/luiz/SiteFretesNasNuvens/resources/views/freights/map.blade.php ENDPATH**/ ?>
