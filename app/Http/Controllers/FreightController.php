@@ -205,9 +205,11 @@ class FreightController extends Controller
         ]);
 
 
-        dd($validated['status_id']);
-        
-        $freightsDriver->update(['status_id' => $validated['status_id']]);
+    
+
+        $response = $freightsDriver->update(['status_id' => $validated['status_id']]);
+
+        dd($response);
         
         $this->callExternalApis($freightsDriver);
         
