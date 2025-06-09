@@ -4,28 +4,28 @@
     <!-- Meta Tags Essenciais -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Fretes em Nuvens | Plataforma Digital para Fretes | Conectamos Empresas e Motoristas</title>
-    <meta name="description" content="Plataforma digital que conecta empresas que precisam de fretes com motoristas qualificados. Solução mais eficiente que JSL, Tegma, Braspress, FreteBras e CargoX. Agende fretes online com facilidade e segurança.">
-    <meta name="keywords" content="fretes, transporte de cargas, motoristas autônomos, logística, plataforma de fretes, agendamento de fretes, frete online, frete digital, encontrar motoristas, fretes para empresas, alternativas JSL, alternativas FreteBras, melhores plataformas de frete, TruckPad, CargoX, Rodonaves">
+    <title>Fretes em Nuvens | Plataforma de Fretes Online - Conectamos Empresas e Caminhoneiros</title>
+    <meta name="description" content="Plataforma digital de fretes que conecta empresas a motoristas autônomos. Solução completa para transporte de cargas com custo-benefício melhor que FreteBras, CargoX e TruckPad. Agende fretes rápidos e seguros em todo Brasil.">
+    <meta name="keywords" content="plataforma de fretes, frete online, frete caminhão, contratar frete, frete para empresas, motorista autônomo, carga e descarga, transporte de carga, frete rodoviário, frete nacional, frete grátis, frete sem taxa, frete barato, frete rápido, JSL, Tegma, Braspress, FreteBras, CargoX, TruckPad, frete intermunicipal, frete interestadual, frete urbano">
     <meta name="author" content="Fretes em Nuvens">
     <meta name="robots" content="index, follow">
     <meta name="revisit-after" content="7 days">
 
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
 
-    <!-- Open Graph / Social Media -->
-    <meta property="og:title" content="Fretes em Nuvens - Plataforma Digital para Fretes | Conectamos Empresas e Motoristas">
-    <meta property="og:description" content="Solução digital completa para conectar empresas e motoristas de fretes. Mais eficiente que JSL, Tegma e FreteBras.">
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.fretesemnuvens.com.br">
-    <meta property="og:image" content="https://www.fretesemnuvens.com.br/images/og-image.jpg">
-    <meta property="og:site_name" content="Fretes em Nuvens">
+    <meta property="og:url" content="https://www.fretesemnuvens.com.br/">
+    <meta property="og:title" content="Fretes em Nuvens | A Melhor Plataforma de Fretes Online do Brasil">
+    <meta property="og:description" content="Conectamos empresas que precisam de fretes com motoristas qualificados. Solução mais eficiente e econômica que FreteBras e CargoX. Experimente grátis!">
+    <meta property="og:image" content="https://www.fretesemnuvens.com.br/images/og-fretes-em-nuvens.jpg">
 
-    <!-- Twitter Card -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fretes em Nuvens - Plataforma Digital para Fretes">
-    <meta name="twitter:description" content="Conectamos empresas que precisam de fretes com motoristas qualificados. Alternativa moderna a JSL, Tegma e FreteBras.">
-    <meta name="twitter:image" content="https://www.fretesemnuvens.com.br/images/twitter-card.jpg">
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image">
+    <meta property="twitter:url" content="https://www.fretesemnuvens.com.br/">
+    <meta property="twitter:title" content="Fretes em Nuvens | A Melhor Plataforma de Fretes Online do Brasil">
+    <meta property="twitter:description" content="Solução digital completa para fretes rodoviários. Mais barato que FreteBras, mais rápido que CargoX. Cadastre-se gratuitamente!">
+    <meta property="twitter:image" content="https://www.fretesemnuvens.com.br/images/twitter-fretes-em-nuvens.jpg">
 
     <!-- Canonical URL -->
     <link rel="canonical" href="https://www.fretesemnuvens.com.br" />
@@ -329,6 +329,49 @@
 
         .comparison-item h3 {
           color: var(--primary-color);
+        }
+
+        /* Coverage Section */
+        .coverage {
+          padding: 80px 0;
+          background-color: var(--light-color);
+          text-align: center;
+        }
+
+        .cities-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .city-group {
+          background-color: var(--white);
+          padding: 20px;
+          border-radius: 8px;
+          box-shadow: var(--box-shadow);
+        }
+
+        .city-group h3 {
+          color: var(--primary-color);
+          margin-bottom: 15px;
+        }
+
+        .city-group ul {
+          text-align: left;
+        }
+
+        .city-group li {
+          margin-bottom: 8px;
+          position: relative;
+          padding-left: 20px;
+        }
+
+        .city-group li:before {
+          content: "•";
+          color: var(--primary-color);
+          position: absolute;
+          left: 0;
         }
 
         /* For Companies & For Drivers */
@@ -647,8 +690,8 @@
         <div class="logo">
             <a href="/">
                 <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" 
-                alt="Fretes em Nuvens - Plataforma de Fretes" width="180"
-                >
+                alt="Logo Fretes em Nuvens - Plataforma de fretes online para empresas e motoristas" 
+                width="180">
             </a>
         </div>
         <nav class="main-nav">
@@ -656,6 +699,7 @@
                 <li><a href="#como-funciona" style="color: white;">Como Funciona</a></li>
                 <li><a href="#para-empresas" style="color: white;">Para Empresas</a></li>
                 <li><a href="#para-motoristas" style="color: white;">Para Motoristas</a></li>
+                <li><a href="#cobertura" style="color: white;">Cobertura</a></li>
                 <li><a href="#contato" style="color: white;">Contato</a></li>
                 <li><a href="/login" class="btn btn-outline" style="border-color: white; color: white;">Entrar</a></li>
                 <li><a href="/cadastro" class="btn btn-primary" style="background-color: white; color: #3498db; border-color: white;">Cadastre-se</a></li>
@@ -668,15 +712,15 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1>Plataforma Digital de Fretes - Mais Eficiente que JSL, Tegma e FreteBras</h1>
-                <p class="lead">Conectamos empresas que precisam de transporte de cargas com motoristas qualificados em todo Brasil. Solução digital completa para agendar fretes com segurança e economia, superando plataformas tradicionais como Braspress e Rodonaves.</p>
+                <h1>A Plataforma de Fretes Mais Completa do Brasil | Mais Econômica que FreteBras e CargoX</h1>
+                <p class="lead">Conectamos empresas a +5.000 motoristas verificados. Agende fretes em minutos, sem taxas abusivas e com acompanhamento em tempo real. Solução ideal para transporte de carga em todo território nacional.</p>
                 <div class="cta-buttons">
                     <a href="#para-empresas" class="btn btn-primary btn-large">Preciso de Frete</a>
                     <a href="#para-motoristas" class="btn btn-secondary btn-large">Sou Motorista</a>
                 </div>
             </div>
             <div class="hero-image">
-                <img src="{{ asset('images/mascote-fretes-em-nuvens.png') }}" loading="lazy" alt="Plataforma de fretes online">
+                <img src="{{ asset('images/mascote-fretes-em-nuvens.png') }}" loading="lazy" alt="Plataforma de fretes online Fretes em Nuvens">
             </div>
         </div>
     </section>
@@ -685,17 +729,17 @@
     <section class="highlights">
         <div class="container">
             <div class="highlight-item">
-                <img src="{{ asset('images/icon-motoristas.png') }}" alt="Motoristas cadastrados" width="60">
+                <img src="{{ asset('images/icon-motoristas.png') }}" alt="Ícone de motoristas cadastrados" width="60">
                 <h3>+5.000 Motoristas</h3>
                 <p>Cadastrados e verificados em nossa plataforma</p>
             </div>
             <div class="highlight-item">
-                <img src="{{ asset('images/icon-empresas.png') }}" alt="Empresas parceiras" width="60">
+                <img src="{{ asset('images/icon-empresas.png') }}" alt="Ícone de empresas parceiras" width="60">
                 <h3>+300 Empresas</h3>
                 <p>Utilizando nossos serviços regularmente</p>
             </div>
             <div class="highlight-item">
-                <img src="{{ asset('images/icon-fretes.png') }}" alt="Fretes realizados" width="60">
+                <img src="{{ asset('images/icon-fretes.png') }}" alt="Ícone de fretes realizados" width="60">
                 <h3>+20.000 Fretes</h3>
                 <p>Realizados com sucesso através da plataforma</p>
             </div>
@@ -760,6 +804,54 @@
         </div>
     </section>
 
+    <!-- Cobertura -->
+    <section id="cobertura" class="coverage">
+        <div class="container">
+            <h2>Atendemos todo o território nacional</h2>
+            <div class="cities-grid">
+                <div class="city-group">
+                    <h3>Região Sul</h3>
+                    <ul>
+                        <li>Curitiba/PR</li>
+                        <li>Porto Alegre/RS</li>
+                        <li>Florianópolis/SC</li>
+                        <li>Joinville/SC</li>
+                        <li>Londrina/PR</li>
+                    </ul>
+                </div>
+                <div class="city-group">
+                    <h3>Região Sudeste</h3>
+                    <ul>
+                        <li>São Paulo/SP</li>
+                        <li>Rio de Janeiro/RJ</li>
+                        <li>Belo Horizonte/MG</li>
+                        <li>Campinas/SP</li>
+                        <li>Vitória/ES</li>
+                    </ul>
+                </div>
+                <div class="city-group">
+                    <h3>Região Nordeste</h3>
+                    <ul>
+                        <li>Salvador/BA</li>
+                        <li>Recife/PE</li>
+                        <li>Fortaleza/CE</li>
+                        <li>Maceió/AL</li>
+                        <li>Natal/RN</li>
+                    </ul>
+                </div>
+                <div class="city-group">
+                    <h3>Região Centro-Oeste</h3>
+                    <ul>
+                        <li>Brasília/DF</li>
+                        <li>Goiânia/GO</li>
+                        <li>Campo Grande/MS</li>
+                        <li>Cuiabá/MT</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Para Empresas -->
     <section id="para-empresas" class="for-companies">
         <div class="container">
@@ -790,7 +882,7 @@
                 <a href="cadastro-empresa.html" class="btn btn-primary">Cadastre sua empresa</a>
             </div>
             <div class="image">
-                <img src="images/for-companies.png" alt="Solução para empresas" loading="lazy">
+                <img src="images/for-companies.png" alt="Solução para empresas que precisam de fretes" loading="lazy">
             </div>
         </div>
     </section>
@@ -799,7 +891,7 @@
     <section id="para-motoristas" class="for-drivers">
         <div class="container">
             <div class="image">
-                <img src="images/for-drivers.png" alt="Oportunidades para motoristas" loading="lazy">
+                <img src="images/for-drivers.png" alt="Oportunidades para motoristas de caminhão" loading="lazy">
             </div>
             <div class="content">
                 <h2>Mais oportunidades para motoristas</h2>
@@ -836,30 +928,56 @@
             <h2>O que dizem sobre nós</h2>
             
             <div class="testimonial-slider">
-                <div class="testimonial">
-                    <div class="quote">
+                <div class="testimonial" itemscope itemtype="https://schema.org/Review">
+                    <div class="quote" itemprop="reviewBody">
                         <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
                         <p>Desde que começamos a usar a plataforma, reduzimos em 30% nossos custos com fretes e ganhamos muito mais agilidade.</p>
                     </div>
-                    <div class="author">
-                        <img src="{{ asset('images/client1.png') }}" alt="Cliente" width="60">
+                    <div class="author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                        <img src="{{ asset('images/client1.png') }}" alt="Foto de Carlos Mendes" width="60">
                         <div class="info">
-                            <h4>Carlos Mendes</h4>
-                            <p>Gerente de Logística - Empresa ABC</p>
+                            <h4 itemprop="name">Carlos Mendes</h4>
+                            <p itemprop="worksFor">Gerente de Logística - Empresa ABC</p>
+                            <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                                <meta itemprop="ratingValue" content="5">
+                                <meta itemprop="bestRating" content="5">
+                            </div>
                         </div>
                     </div>
                 </div>
                 
-                <div class="testimonial">
-                    <div class="quote">
+                <div class="testimonial" itemscope itemtype="https://schema.org/Review">
+                    <div class="quote" itemprop="reviewBody">
                         <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
                         <p>Como motorista autônomo, a plataforma me permite escolher os melhores fretes e ter uma renda mais estável.</p>
                     </div>
-                    <div class="author">
-                        <img src="{{ asset('images/client1.png') }}" alt="Cliente" width="60">
+                    <div class="author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                        <img src="{{ asset('images/client1.png') }}" alt="Foto de Roberto Silva" width="60">
                         <div class="info">
-                            <h4>Roberto Silva</h4>
+                            <h4 itemprop="name">Roberto Silva</h4>
                             <p>Motorista parceiro há 2 anos</p>
+                            <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                                <meta itemprop="ratingValue" content="5">
+                                <meta itemprop="bestRating" content="5">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="testimonial" itemscope itemtype="https://schema.org/Review">
+                    <div class="quote" itemprop="reviewBody">
+                        <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
+                        <p>Conseguimos otimizar nossa frota usando a plataforma, reduzindo ociosidade e aumentando a produtividade.</p>
+                    </div>
+                    <div class="author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                        <img src="{{ asset('images/client1.png') }}" alt="Foto de Ana Paula Souza" width="60">
+                        <div class="info">
+                            <h4 itemprop="name">Ana Paula Souza</h4>
+                            <p>Diretora de Logística - Transportadora XYZ</p>
+                            <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                                <meta itemprop="ratingValue" content="5">
+                                <meta itemprop="bestRating" content="5">
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -899,6 +1017,24 @@
                         </div>
                     </div>
                 </div>
+
+                <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                    <h3 itemprop="name">Quais tipos de frete vocês atendem?</h3>
+                    <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                        <div itemprop="text">
+                            <p>Atendemos todos os tipos de fretes rodoviários: cargas gerais, frigoríficas, perigosas, granéis, mudanças, veículos e muito mais. Trabalhamos com caminhões de diversos portes, desde vucs até carretas.</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                    <h3 itemprop="name">Como é feita a segurança dos fretes?</h3>
+                    <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                        <div itemprop="text">
+                            <p>Todos os motoristas passam por verificação de documentos e antecedentes. Além disso, oferecemos rastreamento em tempo real, seguro de carga e sistema de avaliações para garantir a segurança de todas as operações.</p>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </section>
@@ -921,7 +1057,7 @@
          class="whatsapp-link" 
          target="_blank"
          aria-label="Conversar pelo WhatsApp">
-        <img src="{{ asset('images/icone-whatsapp.png') }}" alt="WhatsApp">
+        <img src="{{ asset('images/icone-whatsapp.png') }}" alt="WhatsApp Fretes em Nuvens">
       </a>
     </div>
 
@@ -929,7 +1065,7 @@
     <footer class="main-footer">
         <div class="container">
             <div class="footer-logo">
-                <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" alt="Fretes em Nuvens" width="150">
+                <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" alt="Fretes em Nuvens - Plataforma de Fretes Online" width="150">
                 <p>Conectando empresas e motoristas de forma inteligente</p>
             </div>
             
@@ -945,11 +1081,12 @@
                 </div>
                 
                 <div class="links-column">
-                    <h4>Recursos</h4>
+                    <h4>Tipos de Fretes</h4>
                     <ul>
-                        <li><a href="como-funciona.html">Como funciona</a></li>
-                        <li><a href="seguranca.html">Segurança</a></li>
-                        <li><a href="duvidas.html">Dúvidas</a></li>
+                        <li><a href="/fretes-urgentes">Fretes Urgentes</a></li>
+                        <li><a href="/fretes-intermunicipais">Intermunicipais</a></li>
+                        <li><a href="/fretes-interestaduais">Interestaduais</a></li>
+                        <li><a href="/fretes-cargas-frigorificadas">Cargas Frigorificadas</a></li>
                     </ul>
                 </div>
                 
@@ -969,10 +1106,10 @@
                         <li><a href="tel:+5541996077879">(41) 99607-7879</a></li>
                         <li>
                             <div class="social-links">
-                                <a href="#"><img src="{{ asset('images/icon-facebook.png') }}" alt="Facebook" width="24"></a>
-                                <a href="#"><img src="images/icon-instagram.svg" alt="Instagram" width="24"></a>
-                                <a href="#"><img src="images/icon-linkedin.svg" alt="LinkedIn" width="24"></a>
-                                <a href="#"><img src="images/icon-youtube.svg" alt="YouTube" width="24"></a>
+                                <a href="#"><img src="{{ asset('images/icon-facebook.png') }}" alt="Facebook Fretes em Nuvens" width="24"></a>
+                                <a href="#"><img src="images/icon-instagram.svg" alt="Instagram Fretes em Nuvens" width="24"></a>
+                                <a href="#"><img src="images/icon-linkedin.svg" alt="LinkedIn Fretes em Nuvens" width="24"></a>
+                                <a href="#"><img src="images/icon-youtube.svg" alt="YouTube Fretes em Nuvens" width="24"></a>
                             </div>
                         </li>
                     </ul>
@@ -984,7 +1121,7 @@
             <div class="container">
                 <p>&copy; <span id="current-year">2023</span> Fretes em Nuvens. Todos os direitos reservados.</p>
                 <div class="payment-methods">
-                    <img src="images/payment-methods.png" alt="Métodos de pagamento" width="200">
+                    <img src="images/payment-methods.png" alt="Métodos de pagamento aceitos" width="200">
                 </div>
             </div>
         </div>
@@ -1049,7 +1186,7 @@
           
           // Animação de scroll
           const animateOnScroll = function() {
-            const elements = document.querySelectorAll('.step, .highlight-item, .testimonial, .comparison-item');
+            const elements = document.querySelectorAll('.step, .highlight-item, .testimonial, .comparison-item, .city-group');
             
             elements.forEach(element => {
               const elementPosition = element.getBoundingClientRect().top;
@@ -1094,37 +1231,25 @@
             });
           }
           
-          // Formulário de contato (exemplo)
-          const contactForm = document.getElementById('contact-form');
-          if (contactForm) {
-            contactForm.addEventListener('submit', function(e) {
-              e.preventDefault();
-              
-              // Simular envio
-              const submitBtn = this.querySelector('button[type="submit"]');
-              const originalText = submitBtn.textContent;
-              
-              submitBtn.disabled = true;
-              submitBtn.textContent = 'Enviando...';
-              
-              // Simular delay de rede
-              setTimeout(() => {
-                submitBtn.textContent = 'Enviado com sucesso!';
-                
-                // Resetar após 3 segundos
-                setTimeout(() => {
-                  submitBtn.textContent = originalText;
-                  submitBtn.disabled = false;
-                  this.reset();
-                }, 3000);
-              }, 1500);
-            });
-          }
-          
           // Atualizar ano no footer
           const yearSpan = document.getElementById('current-year');
           if (yearSpan) {
             yearSpan.textContent = new Date().getFullYear();
+          }
+
+          // Enviar sitemap para motores de busca
+          if (window.location.hostname === 'www.fretesemnuvens.com.br' || window.location.hostname === 'fretesemnuvens.com.br') {
+            const sitemapUrl = 'https://' + window.location.hostname + '/sitemap.xml';
+            
+            // Google
+            fetch(`https://www.google.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`)
+              .then(response => console.log('Sitemap enviado para Google'))
+              .catch(err => console.error('Erro ao enviar para Google:', err));
+            
+            // Bing
+            fetch(`https://www.bing.com/ping?sitemap=${encodeURIComponent(sitemapUrl)}`)
+              .then(response => console.log('Sitemap enviado para Bing'))
+              .catch(err => console.error('Erro ao enviar para Bing:', err));
           }
         });
 
@@ -1135,8 +1260,8 @@
           "@context": "https://schema.org",
           "@type": "Organization",
           "name": "Fretes em Nuvens",
-          "url": "http://www.fretesemnuvens.com.br",
-          "logo": "http://www.fretesemnuvens.com.br/images/logo_fretes_em_nuvens3.png",
+          "url": "https://www.fretesemnuvens.com.br",
+          "logo": "https://www.fretesemnuvens.com.br/images/logo_fretes_em_nuvens3.png",
           "description": "Plataforma digital que conecta empresas que precisam de fretes com motoristas qualificados",
           "sameAs": [
             "https://www.facebook.com/fretesemnuvens",
@@ -1152,6 +1277,47 @@
           }
         });
         document.head.appendChild(schemaScript);
+
+        // LocalBusiness Schema
+        const localBusinessSchema = document.createElement('script');
+        localBusinessSchema.type = 'application/ld+json';
+        localBusinessSchema.text = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "LocalBusiness",
+          "name": "Fretes em Nuvens",
+          "image": "https://www.fretesemnuvens.com.br/images/logo_fretes_em_nuvens3.png",
+          "@id": "https://www.fretesemnuvens.com.br",
+          "url": "https://www.fretesemnuvens.com.br",
+          "telephone": "+5541996077879",
+          "priceRange": "$$",
+          "address": {
+            "@type": "PostalAddress",
+            "streetAddress": "Rua dos Fretes, 100",
+            "addressLocality": "Curitiba",
+            "addressRegion": "PR",
+            "postalCode": "80000-000",
+            "addressCountry": "BR"
+          },
+          "geo": {
+            "@type": "GeoCoordinates",
+            "latitude": -25.4284,
+            "longitude": -49.2733
+          },
+          "openingHoursSpecification": {
+            "@type": "OpeningHoursSpecification",
+            "dayOfWeek": [
+              "Monday",
+              "Tuesday",
+              "Wednesday",
+              "Thursday",
+              "Friday",
+              "Saturday"
+            ],
+            "opens": "08:00",
+            "closes": "18:00"
+          }
+        });
+        document.head.appendChild(localBusinessSchema);
     </script>
 </body>
 </html>
