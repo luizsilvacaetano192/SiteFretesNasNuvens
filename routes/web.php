@@ -51,7 +51,7 @@ Route::middleware(['guest', 'throttle:5,1'])->group(function () {
 
 //======================================================================================================    
     // Redireciona raiz para login
-    Route::redirect('/', '/institucial');
+    Route::redirect('/', '/institucional');
 
     // Companies ciente
     Route::prefix('companies/cliente')->group(function () {
