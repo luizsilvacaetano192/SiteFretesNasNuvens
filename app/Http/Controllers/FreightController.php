@@ -204,7 +204,7 @@ class FreightController extends Controller
             'status_id' => 'required|integer|exists:freight_statuses,id'
         ]);    
 
-        $response = $freightsDriver->update(['status_id' => $validated['status_id']]);
+        $freightsDriver->update(['status_id' => $validated['status_id']]);
 
         $this->callExternalApis($freightsDriver);
         
@@ -222,6 +222,7 @@ class FreightController extends Controller
         ];
         
         if (array_key_exists($freightsDriver->status_id, $statusActions)) {
+           
             try {
                 Http::timeout(10)->post($statusActions[$freightsDriver->status_id], [
                     'freights_driver_id' => $freightsDriver->id

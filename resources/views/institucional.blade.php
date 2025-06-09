@@ -4,27 +4,42 @@
     <!-- Meta Tags Essenciais -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="Conectamos empresas que precisam de fretes com motoristas qualificados através de nossa plataforma digital. Solução rápida, segura e eficiente para seu transporte de cargas.">
-    <meta name="keywords" content="fretes, transporte de cargas, motoristas autônomos, logística, plataforma de fretes, agendamento de fretes, frete online">
+    <title>Fretes em Nuvens | Plataforma Digital para Fretes | Conectamos Empresas e Motoristas</title>
+    <meta name="description" content="Plataforma digital que conecta empresas que precisam de fretes com motoristas qualificados. Solução mais eficiente que JSL, Tegma, Braspress, FreteBras e CargoX. Agende fretes online com facilidade e segurança.">
+    <meta name="keywords" content="fretes, transporte de cargas, motoristas autônomos, logística, plataforma de fretes, agendamento de fretes, frete online, frete digital, encontrar motoristas, fretes para empresas, alternativas JSL, alternativas FreteBras, melhores plataformas de frete, TruckPad, CargoX, Rodonaves">
     <meta name="author" content="Fretes em Nuvens">
-    <meta property="og:title" content="Fretes em Nuvens - Plataforma Digital para Fretes">
-    <meta property="og:description" content="Solução completa para conectar empresas e motoristas de fretes.">
+    <meta name="robots" content="index, follow">
+    <meta name="revisit-after" content="7 days">
+
+    <!-- Open Graph / Social Media -->
+    <meta property="og:title" content="Fretes em Nuvens - Plataforma Digital para Fretes | Conectamos Empresas e Motoristas">
+    <meta property="og:description" content="Solução digital completa para conectar empresas e motoristas de fretes. Mais eficiente que JSL, Tegma e FreteBras.">
     <meta property="og:type" content="website">
-    <meta property="og:url" content="https://www.seusite.com">
-    <meta property="og:image" content="https://www.seusite.com/images/og-image.jpg">
-    
-    <title>Fretes em Nuvens | Plataforma Digital para Fretes</title>
+    <meta property="og:url" content="https://www.fretesemnuvens.com.br">
+    <meta property="og:image" content="https://www.fretesemnuvens.com.br/images/og-image.jpg">
+    <meta property="og:site_name" content="Fretes em Nuvens">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Fretes em Nuvens - Plataforma Digital para Fretes">
+    <meta name="twitter:description" content="Conectamos empresas que precisam de fretes com motoristas qualificados. Alternativa moderna a JSL, Tegma e FreteBras.">
+    <meta name="twitter:image" content="https://www.fretesemnuvens.com.br/images/twitter-card.jpg">
+
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://www.fretesemnuvens.com.br" />
+
+    <!-- Geo Tags -->
+    <meta name="geo.region" content="BR" />
+    <meta name="geo.placename" content="Curitiba" />
+    <meta name="geo.position" content="-25.4284;-49.2733" />
+    <meta name="ICBM" content="-25.4284, -49.2733" />
     
     <!-- Favicon -->
     <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
     <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
 
-    
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
-    
-    <!-- Canonical URL -->
-    <link rel="canonical" href="http://www.fretesemnuvens.com.br" />
     
     <!-- CSS Inline -->
     <style>
@@ -166,7 +181,7 @@
 
         /* Header */
         .main-header {
-          background-color: #f0f8ff; /* Azul Alice - bem clarinho */
+          background-color: #f0f8ff;
           position: fixed;
           top: 0;
           left: 0;
@@ -285,6 +300,35 @@
           margin-bottom: 20px;
         }
 
+        /* Comparison Section */
+        .comparison {
+          padding: 80px 0;
+          background-color: var(--white);
+        }
+
+        .comparison-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+
+        .comparison-item {
+          background-color: var(--light-color);
+          padding: 30px;
+          border-radius: 8px;
+          box-shadow: var(--box-shadow);
+          transition: var(--transition);
+        }
+
+        .comparison-item:hover {
+          transform: translateY(-5px);
+        }
+
+        .comparison-item h3 {
+          color: var(--primary-color);
+        }
+
         /* For Companies & For Drivers */
         .for-companies, .for-drivers {
           padding: 80px 0;
@@ -358,6 +402,32 @@
 
         .author .info h4 {
           margin-bottom: 5px;
+        }
+
+        /* FAQ Section */
+        .faq {
+          padding: 80px 0;
+          background-color: var(--white);
+        }
+
+        .faq .container {
+          max-width: 800px;
+        }
+
+        .faq h2 {
+          text-align: center;
+          margin-bottom: 40px;
+        }
+
+        .faq h3 {
+          color: var(--primary-color);
+          margin-bottom: 15px;
+          padding-bottom: 10px;
+          border-bottom: 1px solid var(--light-gray);
+        }
+
+        .faq div[itemscope] {
+          margin-bottom: 30px;
         }
 
         /* Final CTA */
@@ -596,15 +666,15 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1>Conectamos empresas a motoristas de fretes de forma inteligente</h1>
-                <p class="lead">Solução digital completa para agilizar seu transporte de cargas com segurança e eficiência.</p>
+                <h1>Plataforma Digital de Fretes - Mais Eficiente que JSL, Tegma e FreteBras</h1>
+                <p class="lead">Conectamos empresas que precisam de transporte de cargas com motoristas qualificados em todo Brasil. Solução digital completa para agendar fretes com segurança e economia, superando plataformas tradicionais como Braspress e Rodonaves.</p>
                 <div class="cta-buttons">
                     <a href="#para-empresas" class="btn btn-primary btn-large">Preciso de Frete</a>
                     <a href="#para-motoristas" class="btn btn-secondary btn-large">Sou Motorista</a>
                 </div>
             </div>
             <div class="hero-image">
-                <img src="{{ asset('images/mascote-fretes-em-nuvens.png') }}" loading="lazy">
+                <img src="{{ asset('images/mascote-fretes-em-nuvens.png') }}" loading="lazy" alt="Plataforma de fretes online">
             </div>
         </div>
     </section>
@@ -639,27 +709,50 @@
             <div class="steps">
                 <div class="step">
                     <div class="step-number">1</div>
-                   
                     <h3>Cadastro</h3>
                     <p>Empresas e motoristas se cadastram em nossa plataforma</p>
                 </div>
                 <div class="step">
                     <div class="step-number">2</div>
-                 
                     <h3>Publicação</h3>
                     <p>Empresas publicam suas necessidades de fretes</p>
                 </div>
                 <div class="step">
                     <div class="step-number">3</div>
-                 
                     <h3>Propostas</h3>
                     <p>Motoristas candidatam-se aos fretes disponíveis</p>
                 </div>
                 <div class="step">
                     <div class="step-number">4</div>
-                  
                     <h3>Fechamento</h3>
                     <p>A empresa aprova o candidato e o frete é realizado</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Comparação com Concorrentes -->
+    <section class="comparison">
+        <div class="container">
+            <h2>Por que escolher a Fretes em Nuvens?</h2>
+            <p class="section-description">Comparado a outras soluções como FreteBras, CargoX e TruckPad, oferecemos:</p>
+            
+            <div class="comparison-grid">
+                <div class="comparison-item">
+                    <h3>✔ Taxas mais baixas</h3>
+                    <p>Cobramos menos que plataformas tradicionais como JSL e Tegma</p>
+                </div>
+                <div class="comparison-item">
+                    <h3>✔ Cadastro simplificado</h3>
+                    <p>Processo mais rápido que em FreteBras e CargoX</p>
+                </div>
+                <div class="comparison-item">
+                    <h3>✔ Suporte dedicado</h3>
+                    <p>Atendimento personalizado, diferente das grandes transportadoras</p>
+                </div>
+                <div class="comparison-item">
+                    <h3>✔ Tecnologia avançada</h3>
+                    <p>Plataforma mais moderna que Rodonaves e Expresso São Miguel</p>
                 </div>
             </div>
         </div>
@@ -677,7 +770,7 @@
                     </li>
                     <li>
                         <img src="{{ asset('images/icone-check.png') }}" alt="Benefício" width="24">
-                        <span>Escolha o melhor o caminhão perfeito para o transporte</span>
+                        <span>Escolha o melhor caminhão para o transporte</span>
                     </li>
                     <li>
                         <img src="{{ asset('images/icone-check.png') }}" alt="Benefício" width="24">
@@ -744,9 +837,7 @@
                 <div class="testimonial">
                     <div class="quote">
                         <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
-                        <p>Desde que começamos a usar a plataforma, reduzimos em 30% nossos custos com fretes e ganhamos muito mais agilidade.
-
-                        </p>
+                        <p>Desde que começamos a usar a plataforma, reduzimos em 30% nossos custos com fretes e ganhamos muito mais agilidade.</p>
                     </div>
                     <div class="author">
                         <img src="{{ asset('images/client1.png') }}" alt="Cliente" width="60">
@@ -774,6 +865,42 @@
         </div>
     </section>
 
+    <!-- FAQ -->
+    <section class="faq">
+        <div class="container">
+            <h2>Perguntas Frequentes</h2>
+            
+            <div itemscope itemtype="https://schema.org/FAQPage">
+                <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                    <h3 itemprop="name">Como a Fretes em Nuvens se compara ao FreteBras?</h3>
+                    <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                        <div itemprop="text">
+                            <p>Nossa plataforma oferece taxas mais competitivas que o FreteBras, interface mais intuitiva e suporte mais ágil. Diferente do FreteBras, focamos em atendimento personalizado para cada cliente.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                    <h3 itemprop="name">É melhor que contratar a JSL ou Tegma?</h3>
+                    <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                        <div itemprop="text">
+                            <p>Para empresas que buscam agilidade e custo-benefício, somos a melhor opção. Enquanto JSL e Tegma são tradicionais com estruturas grandes, oferecemos tecnologia moderna e preços mais acessíveis para o mesmo serviço de qualidade.</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question">
+                    <h3 itemprop="name">Como se compara ao TruckPad e CargoX?</h3>
+                    <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer">
+                        <div itemprop="text">
+                            <p>Temos a tecnologia similar ao TruckPad e CargoX, mas com foco maior na experiência do usuário e suporte personalizado. Nossa plataforma é mais intuitiva para motoristas autônomos e pequenas transportadoras.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- CTA Final -->
     <section class="final-cta">
         <div class="container">
@@ -792,7 +919,8 @@
          class="whatsapp-link" 
          target="_blank"
          aria-label="Conversar pelo WhatsApp">
-        <img src="{{ asset('images/icone-whatsapp.png') }}"></a>
+        <img src="{{ asset('images/icone-whatsapp.png') }}" alt="WhatsApp">
+      </a>
     </div>
 
     <!-- Rodapé -->
@@ -835,7 +963,7 @@
                 <div class="links-column">
                     <h4 id="contato">Contato</h4>
                     <ul>
-                        <li><a href="mailto:contato@empresa.com">fretesnasnuvens.carlospugas@gmail.com</a></li>
+                        <li><a href="mailto:fretesnasnuvens.carlospugas@gmail.com">fretesnasnuvens.carlospugas@gmail.com</a></li>
                         <li><a href="tel:+5541996077879">(41) 99607-7879</a></li>
                         <li>
                             <div class="social-links">
@@ -919,7 +1047,7 @@
           
           // Animação de scroll
           const animateOnScroll = function() {
-            const elements = document.querySelectorAll('.step, .highlight-item, .testimonial');
+            const elements = document.querySelectorAll('.step, .highlight-item, .testimonial, .comparison-item');
             
             elements.forEach(element => {
               const elementPosition = element.getBoundingClientRect().top;
@@ -1006,18 +1134,18 @@
           "@type": "Organization",
           "name": "Fretes em Nuvens",
           "url": "http://www.fretesemnuvens.com.br",
-          "logo": "http://www.fretesemnuvens.com.br/images/logo.svg",
+          "logo": "http://www.fretesemnuvens.com.br/images/logo_fretes_em_nuvens3.png",
           "description": "Plataforma digital que conecta empresas que precisam de fretes com motoristas qualificados",
           "sameAs": [
-            "https://www.facebook.com/empresa",
-            "https://www.instagram.com/empresa",
-            "https://www.linkedin.com/company/empresa"
+            "https://www.facebook.com/fretesemnuvens",
+            "https://www.instagram.com/fretesemnuvens",
+            "https://www.linkedin.com/company/fretes-em-nuvens"
           ],
           "contactPoint": {
             "@type": "ContactPoint",
-            "telephone": "+5511999999999",
+            "telephone": "+5541996077879",
             "contactType": "customer service",
-            "email": "contato@empresa.com",
+            "email": "fretesnasnuvens.carlospugas@gmail.com",
             "availableLanguage": "Portuguese"
           }
         });
