@@ -11,6 +11,8 @@
     <meta name="robots" content="index, follow">
     <meta name="revisit-after" content="7 days">
 
+    <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+
     <!-- Open Graph / Social Media -->
     <meta property="og:title" content="Fretes em Nuvens - Plataforma Digital para Fretes | Conectamos Empresas e Motoristas">
     <meta property="og:description" content="Solução digital completa para conectar empresas e motoristas de fretes. Mais eficiente que JSL, Tegma e FreteBras.">
@@ -739,8 +741,8 @@
             
             <div class="comparison-grid">
                 <div class="comparison-item">
-                    <h3>✔ Taxas mais baixas</h3>
-                    <p>Cobramos menos que plataformas tradicionais como JSL e Tegma</p>
+                    <h3>✔ Sem Taxas</h3>
+                    <p>O valor oferecido pelo frete vai totalmente pra o seu bolso</p>
                 </div>
                 <div class="comparison-item">
                     <h3>✔ Cadastro simplificado</h3>

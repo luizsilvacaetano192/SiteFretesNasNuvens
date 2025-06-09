@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin/
+Disallow: /painel/
+Disallow: /private/
+
+Sitemap: https://www.fretesemnuvens.com.br/sitemap.xml
