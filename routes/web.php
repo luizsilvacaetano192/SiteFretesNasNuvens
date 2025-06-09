@@ -280,7 +280,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
-Route::get('/institucial', function () {
+Route::get('/institucional', function () {
    
     return view('institucional');
 });
