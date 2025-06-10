@@ -8,18 +8,22 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     /**
-     * Define the application's command schedule.
+     * Registra os comandos personalizados.
+     */
+    protected $commands = [
+        \App\Console\Commands\ApiSchedulerDaemon::class, // 👈 Adicionado aqui
+    ];
+
+    /**
+     * Define agendamentos (cron jobs).
      */
     protected function schedule(Schedule $schedule): void
     {
-       /*  protected $commands = [
-            \App\Console\Commands\cron_push_notication::class,
-        ]; */
-
+        // Nenhum cron aqui — o processo é contínuo via comando
     }
 
     /**
-     * Register the commands for the application.
+     * Carrega os comandos adicionais da aplicação.
      */
     protected function commands(): void
     {
@@ -27,10 +31,4 @@ class Kernel extends ConsoleKernel
 
         require base_path('routes/console.php');
     }
-
-   /*  protected function schedule(Schedule $schedule)
-    {
-        $schedule->command('app:cron_push_notication')->everyMinute();
-    } */
-
 }
