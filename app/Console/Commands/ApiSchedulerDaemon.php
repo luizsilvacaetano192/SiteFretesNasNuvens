@@ -31,7 +31,7 @@ class ApiSchedulerDaemon extends Command
             }
 
             $this->info('Sleeping for 5 minutes...');
-            sleep(300); // 5 minutos
+        sleep(300); // 5 minutos
         }
     }
 }
