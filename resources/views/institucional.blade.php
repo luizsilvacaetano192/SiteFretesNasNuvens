@@ -37,8 +37,11 @@
     <meta name="ICBM" content="-25.4284, -49.2733" />
     
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
-    <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon-96x96.png') }}" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images//favicon.svg') }}" />
+    <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}" />
+    <link rel="manifest" href="{{ asset('images/site.webmanifest') }}" />
 
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">

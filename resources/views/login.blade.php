@@ -4,9 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="csrf-token" content="{{ csrf_token() }}">
-        <!-- Favicon -->
-    <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
-    <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="{{ asset('images/favicon-96x96.png') }}" sizes="96x96" />
+    <link rel="icon" type="image/svg+xml" href="{{ asset('images//favicon.svg') }}" />
+    <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" />
+    <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}" />
+    <link rel="manifest" href="{{ asset('images/site.webmanifest') }}" />
+    
     <title>Login - Fretes em Nuvens</title>
     <style>
         * {
