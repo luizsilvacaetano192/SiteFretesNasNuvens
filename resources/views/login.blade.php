@@ -7,7 +7,7 @@
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/favicon-96x96.png') }}" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="{{ asset('images//favicon.svg') }}" />
-    <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }}" />
+    <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }} sizes='any' " />
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}" />
     <link rel="manifest" href="{{ asset('images/site.webmanifest') }}" />
     
