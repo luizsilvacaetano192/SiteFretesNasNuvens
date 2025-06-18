@@ -325,6 +325,11 @@
                 <i class="fas fa-cog"></i>
                 <span>Configurações</span>
             </a>
+            <a href="{{ route('service-keys.index') }}" class="sidebar-link">
+                <i class="fas fa-key"></i>
+                <span>Chaves de Serviços</span>
+            </a>
+
         </nav>
         
         <div class="sidebar-footer">

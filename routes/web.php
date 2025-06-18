@@ -23,6 +23,8 @@ use App\Http\Controllers\SendSmsController;
 use App\Http\Controllers\TruckController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DriverAnalysisController;
+use App\Http\Controllers\ServiceKeyController;
+
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 
@@ -150,6 +152,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/{driver}/activate', [DriverController::class, 'activate']);
         Route::post('/{driver}/block', [DriverController::class, 'block']);
         Route::post('/{id}/update-status', [DriverController::class, 'updateStatus'])->name('drivers.updateStatus');
+        Route::get('/map', [DriverController::class, 'map'])->name('drivers.map');
+        
     });
 
     // Transfers
@@ -239,6 +243,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/store', [FreightStatusController::class, 'store'])->name('freight-statuses.store');
     });
 
+    
+    Route::resource('service-keys', ServiceKeyController::class);
+
+
     // Pending Tasks
     Route::prefix('pending-tasks')->group(function () {
         Route::get('/', function () {
@@ -283,4 +291,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 Route::get('/institucional', function () {
    
     return view('institucional');
+});
+
+Route::get('/politica_de_privacidade', function () {
+   
+    return view('politica_de_privacidade');
 });

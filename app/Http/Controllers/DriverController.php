@@ -26,6 +26,12 @@ class DriverController extends Controller
         return Driver::orderBy('name')->get(['id', 'name']);
     }
 
+    public function map()
+    {
+        $drivers = Driver::whereNotNull('address')->get();
+        return view('drivers.map', compact('drivers'));
+    }
+
     public function show($id)
     {
         $driver = Driver::findOrFail($id);
