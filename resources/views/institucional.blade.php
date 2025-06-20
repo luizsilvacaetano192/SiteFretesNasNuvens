@@ -5,39 +5,50 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fretes em Nuvens | Plataforma de Fretes Online - Conectamos Empresas e Caminhoneiros</title>
-    <meta name="description" content="Plataforma digital de fretes que conecta empresas a motoristas autônomos. Solução completa para transporte de cargas com custo-benefício melhor que FreteBras, CargoX e TruckPad. Agende fretes rápidos e seguros em todo Brasil.">
-    <meta name="keywords" content="plataforma de fretes, frete online, frete caminhão, contratar frete, frete para empresas, motorista autônomo, carga e descarga, transporte de carga, frete rodoviário, frete nacional, frete grátis, frete sem taxa, frete barato, frete rápido, JSL, Tegma, Braspress, FreteBras, CargoX, TruckPad, frete intermunicipal, frete interestadual, frete urbano">
+    <meta name="description" content="Precisa de fretes ou é motorista de caminhão? Encontre a melhor solução para transporte de cargas. Plataforma mais barata que FreteBras, CargoX e TruckPad. Agende fretes rápidos em todo Brasil para mudanças, carretos e todos tipos de carga.">
+    <meta name="keywords" content="plataforma de fretes, frete online, frete caminhão, contratar frete, frete para empresas, motorista autônomo, carga e descarga, transporte de carga, frete rodoviário, frete nacional, frete grátis, frete sem taxa, frete barato, frete rápido, JSL, Tegma, Braspress, FreteBras, CargoX, TruckPad, frete intermunicipal, frete interestadual, frete urbano, preciso de fretes, motorista de fretes, mudança, carreto, transporte, transportadora, aplicativo de transporte">
     <meta name="author" content="Fretes em Nuvens">
     <meta name="robots" content="index, follow">
     <meta name="revisit-after" content="7 days">
     <link rel="sitemap" type="application/xml" title="Sitemap" href="/sitemap.xml">
+    
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.fretesemnuvens.com.br/"> 
     <meta property="og:title" content="Fretes em Nuvens | A Melhor Plataforma de Fretes Online do Brasil">
     <meta property="og:description" content="Conectamos empresas que precisam de fretes com motoristas qualificados. Solução mais eficiente e econômica que FreteBras e CargoX. Experimente grátis!">
     <meta property="og:image" content="https://www.fretesemnuvens.com.br/images/og-fretes-em-nuvens.jpg"> 
+    
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://www.fretesemnuvens.com.br/"> 
     <meta property="twitter:title" content="Fretes em Nuvens | A Melhor Plataforma de Fretes Online do Brasil">
     <meta property="twitter:description" content="Solução digital completa para fretes rodoviários. Mais barato que FreteBras, mais rápido que CargoX. Cadastre-se gratuitamente!">
     <meta property="twitter:image" content="https://www.fretesemnuvens.com.br/images/twitter-fretes-em-nuvens.jpg"> 
+    
     <!-- Canonical URL -->
-    <link rel="canonical" href="https://www.fretesemnuvens.com.br"  />
+    <link rel="canonical" href="https://www.fretesemnuvens.com.br" />
+    
     <!-- Geo Tags -->
     <meta name="geo.region" content="BR" />
     <meta name="geo.placename" content="Curitiba" />
     <meta name="geo.position" content="-25.4284;-49.2733" />
     <meta name="ICBM" content="-25.4284, -49.2733" />
+    
     <!-- Favicon -->
     <link rel="icon" type="image/png" href="{{ asset('images/favicon-96x96.png') }}" sizes="96x96" />
     <link rel="icon" type="image/svg+xml" href="{{ asset('images//favicon.svg') }}" />
     <link rel="shortcut icon" href="{{ asset('images/favicon.ico') }} sizes='any' " />
     <link rel="apple-touch-icon" sizes="180x180" href="{{ asset('images/apple-touch-icon.png') }}" />
     <link rel="manifest" href="{{ asset('images/site.webmanifest') }}" />
-    <!-- Google Fonts -->
+    
+    <!-- Preload e Preconnect -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;700&display=swap" rel="stylesheet">
+    <link rel="preload" href="{{ asset('images/logo_fretes_em_nuvens3.png') }}" as="image">
+    <link rel="preload" href="{{ asset('images/mascote-fretes-em-nuvens.png') }}" as="image">
+    
     <!-- CSS Inline -->
     <style>
         /* Reset e Base */
@@ -85,6 +96,7 @@
         ul {
           list-style: none;
         }
+        
         /* Tipografia */
         h1, h2, h3, h4 {
           font-weight: 700;
@@ -112,6 +124,7 @@
           margin-bottom: 2rem;
           text-align: center;
         }
+        
         /* Botões */
         .btn {
           display: inline-block;
@@ -153,15 +166,15 @@
           padding: 15px 30px;
           font-size: 1.1rem;
         }
+        
         /* Header */
         .main-header {
-          background-color: #f0f8ff;
+          background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
           position: fixed;
           top: 0;
           left: 0;
           width: 100%;
-          background-color: var(--white);
-          box-shadow: var(--box-shadow);
+          box-shadow: 0 2px 10px rgba(0,0,0,0.2);
           z-index: 1000;
           padding: 15px 0;
         }
@@ -170,6 +183,10 @@
           justify-content: space-between;
           align-items: center;
         }
+        .logo img {
+          height: 50px;
+          width: auto;
+        }
         .main-nav ul {
           display: flex;
           align-items: center;
@@ -177,14 +194,16 @@
         }
         .main-nav a {
           font-weight: 500;
+          color: white;
           transition: var(--transition);
         }
         .main-nav a:hover {
-          color: var(--primary-color);
+          color: var(--light-gray);
         }
+        
         /* Hero Section */
         .hero {
-          padding: 250px 0 80px;
+          padding: 180px 0 80px;
           background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%);
         }
         .hero .container {
@@ -203,6 +222,33 @@
           gap: 15px;
           margin-top: 30px;
         }
+        
+        /* Nova Seção de Palavras-Chave */
+        .keyword-target {
+          padding: 60px 0;
+          background-color: var(--light-color);
+        }
+        .keyword-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+          gap: 30px;
+          margin-top: 40px;
+        }
+        .keyword-item {
+          background-color: var(--white);
+          padding: 30px;
+          border-radius: 8px;
+          box-shadow: var(--box-shadow);
+          text-align: center;
+          transition: var(--transition);
+        }
+        .keyword-item:hover {
+          transform: translateY(-5px);
+        }
+        .keyword-item h3 {
+          color: var(--primary-color);
+        }
+        
         /* Highlights */
         .highlights {
           padding: 60px 0;
@@ -212,13 +258,20 @@
           display: flex;
           justify-content: space-around;
           text-align: center;
+          flex-wrap: wrap;
         }
         .highlight-item {
           padding: 0 20px;
+          flex: 1;
+          min-width: 200px;
+          margin-bottom: 30px;
         }
         .highlight-item img {
           margin-bottom: 15px;
+          height: 60px;
+          width: auto;
         }
+        
         /* How It Works */
         .how-it-works {
           padding: 80px 0;
@@ -255,6 +308,7 @@
           line-height: 40px;
           margin-bottom: 20px;
         }
+        
         /* Comparison Section */
         .comparison {
           padding: 80px 0;
@@ -279,6 +333,7 @@
         .comparison-item h3 {
           color: var(--primary-color);
         }
+        
         /* Coverage Section */
         .coverage {
           padding: 80px 0;
@@ -315,6 +370,7 @@
           position: absolute;
           left: 0;
         }
+        
         /* For Companies & For Drivers */
         .for-companies, .for-drivers {
           padding: 80px 0;
@@ -339,6 +395,11 @@
           margin-bottom: 15px;
           gap: 10px;
         }
+        .benefits img {
+          width: 24px;
+          height: 24px;
+        }
+        
         /* Testimonials */
         .testimonials {
           padding: 80px 0;
@@ -365,6 +426,11 @@
           margin-bottom: 20px;
           text-align: left;
         }
+        .quote img {
+          width: 24px;
+          height: auto;
+          margin-bottom: 10px;
+        }
         .author {
           display: flex;
           align-items: center;
@@ -373,10 +439,14 @@
         }
         .author img {
           border-radius: 50%;
+          width: 60px;
+          height: 60px;
+          object-fit: cover;
         }
         .author .info h4 {
           margin-bottom: 5px;
         }
+        
         /* FAQ Section */
         .faq {
           padding: 80px 0;
@@ -398,6 +468,7 @@
         .faq div[itemscope] {
           margin-bottom: 30px;
         }
+        
         /* Final CTA */
         .final-cta {
           padding: 80px 0;
@@ -405,6 +476,7 @@
           background: linear-gradient(135deg, var(--primary-color) 0%, #1E429F 100%);
           color: var(--white);
         }
+        
         /* Footer */
         .main-footer {
           background-color: var(--dark-color);
@@ -429,13 +501,26 @@
         .links-column ul li {
           margin-bottom: 10px;
         }
-        .links-column a:hover {
+        .links-column a {
           color: var(--light-gray);
+          transition: var(--transition);
+        }
+        .links-column a:hover {
+          color: var(--white);
         }
         .social-links {
           display: flex;
           gap: 15px;
           margin-top: 15px;
+        }
+        .social-links img {
+          width: 24px;
+          height: 24px;
+          opacity: 0.8;
+          transition: var(--transition);
+        }
+        .social-links img:hover {
+          opacity: 1;
         }
         .footer-bottom {
           background-color: rgba(0, 0, 0, 0.2);
@@ -445,10 +530,15 @@
           display: flex;
           justify-content: space-between;
           align-items: center;
+          flex-wrap: wrap;
+          gap: 20px;
         }
         .payment-methods img {
           opacity: 0.8;
+          max-width: 200px;
+          height: auto;
         }
+        
         /* WhatsApp Widget */
         .whatsapp-widget {
           position: fixed;
@@ -487,6 +577,16 @@
             box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
           }
         }
+        
+        /* Otimização de imagens */
+        img[loading="lazy"] {
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+        img[loading="lazy"].loaded {
+          opacity: 1;
+        }
+        
         /* Responsividade */
         @media (max-width: 992px) {
           .hero .container, 
@@ -507,7 +607,7 @@
             width: 100%;
           }
           .hero {
-            padding: 120px 0 60px;
+            padding: 150px 0 60px;
           }
           .main-nav ul {
             gap: 15px;
@@ -537,6 +637,7 @@
             border: none;
             font-size: 1.5rem;
             cursor: pointer;
+            color: white;
           }
           .steps {
             flex-direction: column;
@@ -563,6 +664,7 @@
             height: 30px;
           }
         }
+        
         /* Animations */
         @keyframes fadeIn {
           from { opacity: 0; transform: translateY(20px); }
@@ -575,34 +677,36 @@
 </head>
 <body>
     <!-- Cabeçalho -->
-   <header class="main-header" style="background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%); box-shadow: 0 2px 10px rgba(0,0,0,0.2);">
-    <div class="container">
-        <div class="logo">
-            <a href="/">
-                <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" 
-                alt="Logo Fretes em Nuvens - Plataforma de fretes online para empresas e motoristas" 
-                width="180">
-            </a>
+    <header class="main-header">
+        <div class="container">
+            <div class="logo">
+                <a href="/">
+                    <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" 
+                    alt="Logo Fretes em Nuvens - Plataforma de fretes online para empresas e motoristas" 
+                    width="180">
+                </a>
+            </div>
+            <nav class="main-nav">
+                <ul>
+                    <li><a href="#como-funciona">Como Funciona</a></li>
+                    <li><a href="#para-empresas">Para Empresas</a></li>
+                    <li><a href="#para-motoristas">Para Motoristas</a></li>
+                    <li><a href="#cobertura">Cobertura</a></li>
+                    <li><a href="#contato">Contato</a></li>
+                    <li><a href="/login" class="btn btn-outline" style="border-color: white; color: white;">Entrar</a></li>
+                    <li><a href="/cadastro" class="btn btn-primary" style="background-color: white; color: #3498db; border-color: white;">Cadastre-se</a></li>
+                </ul>
+                <button class="mobile-menu-btn">☰</button>
+            </nav>
         </div>
-        <nav class="main-nav">
-            <ul>
-                <li><a href="#como-funciona" style="color: white;">Como Funciona</a></li>
-                <li><a href="#para-empresas" style="color: white;">Para Empresas</a></li>
-                <li><a href="#para-motoristas" style="color: white;">Para Motoristas</a></li>
-                <li><a href="#cobertura" style="color: white;">Cobertura</a></li>
-                <li><a href="#contato" style="color: white;">Contato</a></li>
-                <li><a href="/login" class="btn btn-outline" style="border-color: white; color: white;">Entrar</a></li>
-                <li><a href="/cadastro" class="btn btn-primary" style="background-color: white; color: #3498db; border-color: white;">Cadastre-se</a></li>
-            </ul>
-        </nav>
-    </div>
-</header>
+    </header>
+
     <!-- Hero Section -->
     <section class="hero">
         <div class="container">
             <div class="hero-content">
                 <h1>A Plataforma de Fretes Mais Completa do Brasil | Mais Econômica que FreteBras e CargoX</h1>
-                <p class="lead">Conectamos empresas a +5.000 motoristas verificados. Agende fretes em minutos, sem taxas abusivas e com acompanhamento em tempo real. Solução ideal para transporte de carga em todo território nacional.</p>
+                <p class="lead">Solução completa para quem precisa de fretes ou quer oferecer serviços de transporte. Conectamos empresas a +5.000 motoristas verificados. Ideal para mudanças, carretos, cargas frigoríficas e todos tipos de transporte rodoviário.</p>
                 <div class="cta-buttons">
                     <a href="#para-empresas" class="btn btn-primary btn-large">Preciso de Frete</a>
                     <a href="#para-motoristas" class="btn btn-secondary btn-large">Sou Motorista</a>
@@ -613,6 +717,32 @@
             </div>
         </div>
     </section>
+
+    <!-- Nova Seção de Palavras-Chave -->
+    <section class="keyword-target">
+        <div class="container">
+            <h2>Encontre a solução ideal para seu transporte</h2>
+            <p class="section-description">Plataforma completa para quem precisa de fretes ou quer oferecer serviços de transporte</p>
+            <div class="keyword-grid">
+                <div class="keyword-item">
+                    <h3>Preciso de Fretes</h3>
+                    <p>Encontre motoristas confiáveis para transportar sua carga em todo Brasil. Solução mais rápida e econômica que FreteBras e TruckPad.</p>
+                    <a href="#para-empresas" class="btn btn-outline">Solicitar Frete</a>
+                </div>
+                <div class="keyword-item">
+                    <h3>Sou Motorista de Caminhão</h3>
+                    <p>Encontre fretes para seu caminhão e aumente sua renda. Plataforma com mais oportunidades que CargoX e FreteBras.</p>
+                    <a href="#para-motoristas" class="btn btn-outline">Oferecer Serviços</a>
+                </div>
+                <div class="keyword-item">
+                    <h3>Serviços de Mudança</h3>
+                    <p>Precisa de carreto ou mudança? Conectamos você aos melhores profissionais para transporte de móveis e objetos.</p>
+                    <a href="#mudancas" class="btn btn-outline">Solicitar Mudança</a>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <!-- Seção de Destaques -->
     <section class="highlights">
         <div class="container">
@@ -633,6 +763,7 @@
             </div>
         </div>
     </section>
+
     <!-- Como Funciona -->
     <section id="como-funciona" class="how-it-works">
         <div class="container">
@@ -662,6 +793,7 @@
             </div>
         </div>
     </section>
+
     <!-- Comparação com Concorrentes -->
     <section class="comparison">
         <div class="container">
@@ -687,6 +819,7 @@
             </div>
         </div>
     </section>
+
     <!-- Cobertura -->
     <section id="cobertura" class="coverage">
         <div class="container">
@@ -734,6 +867,7 @@
             </div>
         </div>
     </section>
+
     <!-- Para Empresas -->
     <section id="para-empresas" class="for-companies">
         <div class="container">
@@ -768,6 +902,7 @@
             </div>
         </div>
     </section>
+
     <!-- Para Motoristas -->
     <section id="para-motoristas" class="for-drivers">
         <div class="container">
@@ -802,6 +937,7 @@
             </div>
         </div>
     </section>
+
     <!-- Depoimentos -->
     <section class="testimonials">
         <div class="container">
@@ -861,6 +997,7 @@
             </div>
         </div>
     </section>
+
     <!-- FAQ -->
     <section class="faq">
         <div class="container">
@@ -891,6 +1028,14 @@
                     </div>
                 </div>
                 <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"> 
+                    <h3 itemprop="name">Como funciona para quem precisa de fretes urgentes?</h3>
+                    <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"> 
+                        <div itemprop="text">
+                            <p>Para fretes urgentes, nossa plataforma conecta você diretamente com motoristas disponíveis na região, com tempo médio de resposta de menos de 15 minutos. Solução mais rápida que FreteBras e outras transportadoras tradicionais.</p>
+                        </div>
+                    </div>
+                </div>
+                <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"> 
                     <h3 itemprop="name">Quais tipos de frete vocês atendem?</h3>
                     <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"> 
                         <div itemprop="text">
@@ -909,6 +1054,7 @@
             </div>
         </div>
     </section>
+
     <!-- CTA Final -->
     <section class="final-cta">
         <div class="container">
@@ -920,6 +1066,7 @@
             </div>
         </div>
     </section>
+
     <!-- WhatsApp Widget -->
     <div class="whatsapp-widget">
       <a href="https://wa.me/5541996077879?text=Olá,%20gostaria%20de%20mais%20informações%20sobre%20a%20plataforma%20Fretes%20em%20Nuvens" 
@@ -929,6 +1076,7 @@
         <img src="{{ asset('images/icone-whatsapp.png') }}" alt="WhatsApp Fretes em Nuvens">
       </a>
     </div>
+
     <!-- Rodapé -->
     <footer class="main-footer">
         <div class="container">
@@ -989,19 +1137,18 @@
             </div>
         </div>
     </footer>
+
     <!-- JavaScript Inline -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
           // Mobile Menu Toggle
-          const mobileMenuBtn = document.createElement('button');
-          mobileMenuBtn.className = 'mobile-menu-btn';
-          mobileMenuBtn.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>';
-          const header = document.querySelector('.main-header .container');
-          header.appendChild(mobileMenuBtn);
+          const mobileMenuBtn = document.querySelector('.mobile-menu-btn');
           const nav = document.querySelector('.main-nav ul');
+          
           mobileMenuBtn.addEventListener('click', function() {
             nav.style.display = nav.style.display === 'flex' ? 'none' : 'flex';
           });
+          
           // Fechar menu ao clicar em um link
           const navLinks = document.querySelectorAll('.main-nav a');
           navLinks.forEach(link => {
@@ -1011,6 +1158,7 @@
               }
             });
           });
+          
           // Ajustar menu na mudança de tamanho da tela
           window.addEventListener('resize', function() {
             if (window.innerWidth > 768) {
@@ -1019,6 +1167,7 @@
               nav.style.display = 'none';
             }
           });
+          
           // Scroll suave para links internos
           document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function(e) {
@@ -1036,9 +1185,10 @@
               }
             });
           });
+          
           // Animação de scroll
           const animateOnScroll = function() {
-            const elements = document.querySelectorAll('.step, .highlight-item, .testimonial, .comparison-item, .city-group');
+            const elements = document.querySelectorAll('.step, .highlight-item, .testimonial, .comparison-item, .city-group, .keyword-item');
             elements.forEach(element => {
               const elementPosition = element.getBoundingClientRect().top;
               const screenPosition = window.innerHeight / 1.3;
@@ -1047,25 +1197,31 @@
               }
             });
           };
+          
           window.addEventListener('scroll', animateOnScroll);
           animateOnScroll(); // Executar uma vez ao carregar
+          
           // Testimonial slider navigation
           const testimonialSlider = document.querySelector('.testimonial-slider');
           if (testimonialSlider) {
             let isDown = false;
             let startX;
             let scrollLeft;
+            
             testimonialSlider.addEventListener('mousedown', (e) => {
               isDown = true;
               startX = e.pageX - testimonialSlider.offsetLeft;
               scrollLeft = testimonialSlider.scrollLeft;
             });
+            
             testimonialSlider.addEventListener('mouseleave', () => {
               isDown = false;
             });
+            
             testimonialSlider.addEventListener('mouseup', () => {
               isDown = false;
             });
+            
             testimonialSlider.addEventListener('mousemove', (e) => {
               if (!isDown) return;
               e.preventDefault();
@@ -1074,11 +1230,37 @@
               testimonialSlider.scrollLeft = scrollLeft - walk;
             });
           }
+          
           // Atualizar ano no footer
           const yearSpan = document.getElementById('current-year');
           if (yearSpan) {
             yearSpan.textContent = new Date().getFullYear();
           }
+          
+          // Lazy loading para imagens
+          const lazyImages = document.querySelectorAll("img[loading='lazy']");
+          
+          if ('IntersectionObserver' in window) {
+            const imageObserver = new IntersectionObserver((entries, observer) => {
+              entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                  const img = entry.target;
+                  img.src = img.dataset.src || img.src;
+                  img.classList.add('loaded');
+                  observer.unobserve(img);
+                }
+              });
+            });
+
+            lazyImages.forEach(img => imageObserver.observe(img));
+          } else {
+            // Fallback para navegadores sem suporte
+            lazyImages.forEach(img => {
+              img.src = img.dataset.src || img.src;
+              img.classList.add('loaded');
+            });
+          }
+          
           // Enviar sitemap para motores de busca
           if (window.location.hostname === 'www.fretesemnuvens.com.br' || window.location.hostname === 'fretesemnuvens.com.br') {
             const sitemapUrl = 'https://'  + window.location.hostname + '/sitemap.xml';
@@ -1092,6 +1274,7 @@
               .catch(err => console.error('Erro ao enviar para Bing:', err));
           }
         });
+        
         // Schema Markup
         const schemaScript = document.createElement('script');
         schemaScript.type = 'application/ld+json';
@@ -1116,6 +1299,7 @@
           }
         });
         document.head.appendChild(schemaScript);
+        
         // LocalBusiness Schema
         const localBusinessSchema = document.createElement('script');
         localBusinessSchema.type = 'application/ld+json';
@@ -1156,6 +1340,68 @@
           }
         });
         document.head.appendChild(localBusinessSchema);
+        
+        // WebSite Schema
+        const websiteSchema = document.createElement('script');
+        websiteSchema.type = 'application/ld+json';
+        websiteSchema.text = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "WebSite",
+          "name": "Fretes em Nuvens",
+          "url": "https://www.fretesemnuvens.com.br",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": "https://www.fretesemnuvens.com.br/busca?q={search_term_string}",
+            "query-input": "required name=search_term_string"
+          }
+        });
+        document.head.appendChild(websiteSchema);
+        
+        // Service Schema
+        const serviceSchema = document.createElement('script');
+        serviceSchema.type = 'application/ld+json';
+        serviceSchema.text = JSON.stringify({
+          "@context": "https://schema.org",
+          "@type": "Service",
+          "serviceType": "Plataforma de Fretes Online",
+          "provider": {
+            "@type": "Organization",
+            "name": "Fretes em Nuvens"
+          },
+          "hasOfferCatalog": {
+            "@type": "OfferCatalog",
+            "name": "Serviços de Frete",
+            "itemListElement": [
+              {
+                "@type": "OfferCatalog",
+                "name": "Fretes Urgentes",
+                "itemListElement": [
+                  {
+                    "@type": "Offer",
+                    "itemOffered": {
+                      "@type": "Service",
+                      "name": "Frete Urgente"
+                    }
+                  }
+                ]
+              },
+              {
+                "@type": "OfferCatalog",
+                "name": "Mudanças",
+                "itemListElement": [
+                  {
+                    "@type": "Offer",
+                    "itemOffered": {
+                      "@type": "Service",
+                      "name": "Serviço de Mudança"
+                    }
+                  }
+                ]
+              }
+            ]
+          }
+        });
+        document.head.appendChild(serviceSchema);
     </script>
 </body>
 </html>
