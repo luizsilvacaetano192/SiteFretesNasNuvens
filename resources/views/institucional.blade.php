@@ -938,65 +938,78 @@
         </div>
     </section>
 
-    <!-- Depoimentos -->
-    <section class="testimonials">
-        <div class="container">
-            <h2>O que dizem sobre nós</h2>
-            <div class="testimonial-slider">
-                <div class="testimonial" itemscope itemtype="https://schema.org/Review"> 
-                    <div class="quote" itemprop="reviewBody">
-                        <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
-                        <p>Desde que começamos a usar a plataforma, reduzimos em 30% nossos custos com fretes e ganhamos muito mais agilidade.</p>
-                    </div>
-                    <div class="author" itemprop="author" itemscope itemtype="https://schema.org/Person"> 
-                        <img src="{{ asset('images/client1.png') }}" alt="Foto de Carlos Mendes" width="60">
-                        <div class="info">
-                            <h4 itemprop="name">Carlos Mendes</h4>
-                            <p itemprop="worksFor">Gerente de Logística - Empresa ABC</p>
-                            <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating"> 
-                                <meta itemprop="ratingValue" content="5">
-                                <meta itemprop="bestRating" content="5">
-                            </div>
+   <!-- Depoimentos -->
+<section class="testimonials">
+    <div class="container">
+        <h2>O que dizem sobre nós</h2>
+        <div class="testimonial-slider">
+            <div class="testimonial" itemscope itemtype="https://schema.org/Review">
+                <meta itemprop="itemReviewed" itemscope itemtype="https://schema.org/Service" />
+                <meta itemprop="name" content="Plataforma de Gestão de Fretes" />
+                
+                <div class="quote" itemprop="reviewBody">
+                    <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
+                    <p>Desde que começamos a usar a plataforma, reduzimos em 30% nossos custos com fretes e ganhamos muito mais agilidade.</p>
+                </div>
+                <div class="author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <img src="{{ asset('images/client1.png') }}" alt="Foto de Carlos Mendes" width="60">
+                    <div class="info">
+                        <h4 itemprop="name">Carlos Mendes</h4>
+                        <p itemprop="worksFor">Gerente de Logística - Empresa ABC</p>
+                        <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                            <meta itemprop="ratingValue" content="5">
+                            <meta itemprop="bestRating" content="5">
                         </div>
                     </div>
                 </div>
-                <div class="testimonial" itemscope itemtype="https://schema.org/Review"> 
-                    <div class="quote" itemprop="reviewBody">
-                        <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
-                        <p>Como motorista autônomo, a plataforma me permite escolher os melhores fretes e ter uma renda mais estável.</p>
-                    </div>
-                    <div class="author" itemprop="author" itemscope itemtype="https://schema.org/Person"> 
-                        <img src="{{ asset('images/client1.png') }}" alt="Foto de Roberto Silva" width="60">
-                        <div class="info">
-                            <h4 itemprop="name">Roberto Silva</h4>
-                            <p>Motorista parceiro há 2 anos</p>
-                            <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating"> 
-                                <meta itemprop="ratingValue" content="5">
-                                <meta itemprop="bestRating" content="5">
-                            </div>
+            </div>
+
+            <!-- Repetir para os demais depoimentos -->
+            <div class="testimonial" itemscope itemtype="https://schema.org/Review">
+                <meta itemprop="itemReviewed" itemscope itemtype="https://schema.org/Service" />
+                <meta itemprop="name" content="Plataforma de Gestão de Fretes" />
+                
+                <div class="quote" itemprop="reviewBody">
+                    <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
+                    <p>Como motorista autônomo, a plataforma me permite escolher os melhores fretes e ter uma renda mais estável.</p>
+                </div>
+                <div class="author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <img src="{{ asset('images/client1.png') }}" alt="Foto de Roberto Silva" width="60">
+                    <div class="info">
+                        <h4 itemprop="name">Roberto Silva</h4>
+                        <p>Motorista parceiro há 2 anos</p>
+                        <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                            <meta itemprop="ratingValue" content="5">
+                            <meta itemprop="bestRating" content="5">
                         </div>
                     </div>
                 </div>
-                <div class="testimonial" itemscope itemtype="https://schema.org/Review"> 
-                    <div class="quote" itemprop="reviewBody">
-                        <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
-                        <p>Conseguimos otimizar nossa frota usando a plataforma, reduzindo ociosidade e aumentando a produtividade.</p>
-                    </div>
-                    <div class="author" itemprop="author" itemscope itemtype="https://schema.org/Person"> 
-                        <img src="{{ asset('images/client1.png') }}" alt="Foto de Ana Paula Souza" width="60">
-                        <div class="info">
-                            <h4 itemprop="name">Ana Paula Souza</h4>
-                            <p>Diretora de Logística - Transportadora XYZ</p>
-                            <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating"> 
-                                <meta itemprop="ratingValue" content="5">
-                                <meta itemprop="bestRating" content="5">
-                            </div>
+            </div>
+
+            <div class="testimonial" itemscope itemtype="https://schema.org/Review">
+                <meta itemprop="itemReviewed" itemscope itemtype="https://schema.org/Service" />
+                <meta itemprop="name" content="Plataforma de Gestão de Fretes" />
+                
+                <div class="quote" itemprop="reviewBody">
+                    <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
+                    <p>Conseguimos otimizar nossa frota usando a plataforma, reduzindo ociosidade e aumentando a produtividade.</p>
+                </div>
+                <div class="author" itemprop="author" itemscope itemtype="https://schema.org/Person">
+                    <img src="{{ asset('images/client1.png') }}" alt="Foto de Ana Paula Souza" width="60">
+                    <div class="info">
+                        <h4 itemprop="name">Ana Paula Souza</h4>
+                        <p>Diretora de Logística - Transportadora XYZ</p>
+                        <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
+                            <meta itemprop="ratingValue" content="5">
+                            <meta itemprop="bestRating" content="5">
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-    </section>
+    </div>
+</section>
+
 
     <!-- FAQ -->
     <section class="faq">
