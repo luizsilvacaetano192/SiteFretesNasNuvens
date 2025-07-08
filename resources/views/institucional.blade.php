@@ -949,13 +949,23 @@
     </section>
 
    <!-- Depoimentos -->
+          <!-- Depoimentos -->
 <section class="testimonials">
     <div class="container">
         <h2>O que dizem sobre nós</h2>
         <div class="testimonial-slider">
+            <!-- Depoimento 1 -->
             <div class="testimonial" itemscope itemtype="https://schema.org/Review">
-                <meta itemprop="itemReviewed" itemscope itemtype="https://schema.org/Service" />
-                <meta itemprop="name" content="Plataforma de Gestão de Fretes" />
+                <div itemprop="itemReviewed" itemscope itemtype="https://schema.org/WebApplication">
+                    <meta itemprop="name" content="Plataforma de Fretes em Nuvens"/>
+                    <meta itemprop="applicationCategory" content="BusinessApplication"/>
+                    <meta itemprop="operatingSystem" content="Web-based"/>
+                    <link itemprop="url" href="https://www.fretesemnuvens.com.br"/>
+                </div>
+                <meta itemprop="datePublished" content="2023-11-15"/>
+                <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+                    <meta itemprop="name" content="Fretes em Nuvens"/>
+                </div>
                 
                 <div class="quote" itemprop="reviewBody">
                     <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
@@ -965,19 +975,29 @@
                     <img src="{{ asset('images/client1.png') }}" alt="Foto de Carlos Mendes" width="60">
                     <div class="info">
                         <h4 itemprop="name">Carlos Mendes</h4>
-                        <p itemprop="worksFor">Gerente de Logística - Empresa ABC</p>
+                        <p itemprop="worksFor" itemscope itemtype="https://schema.org/Organization">
+                            <span itemprop="name">Gerente de Logística - Empresa ABC</span>
+                        </p>
                         <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
-                            <meta itemprop="ratingValue" content="5">
-                            <meta itemprop="bestRating" content="5">
+                            <meta itemprop="ratingValue" content="5"/>
+                            <meta itemprop="bestRating" content="5"/>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <!-- Repetir para os demais depoimentos -->
+            <!-- Depoimento 2 -->
             <div class="testimonial" itemscope itemtype="https://schema.org/Review">
-                <meta itemprop="itemReviewed" itemscope itemtype="https://schema.org/Service" />
-                <meta itemprop="name" content="Plataforma de Gestão de Fretes" />
+                <div itemprop="itemReviewed" itemscope itemtype="https://schema.org/WebApplication">
+                    <meta itemprop="name" content="Plataforma de Fretes em Nuvens"/>
+                    <meta itemprop="applicationCategory" content="BusinessApplication"/>
+                    <meta itemprop="operatingSystem" content="Web-based"/>
+                    <link itemprop="url" href="https://www.fretesemnuvens.com.br"/>
+                </div>
+                <meta itemprop="datePublished" content="2023-10-28"/>
+                <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+                    <meta itemprop="name" content="Fretes em Nuvens"/>
+                </div>
                 
                 <div class="quote" itemprop="reviewBody">
                     <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
@@ -987,18 +1007,29 @@
                     <img src="{{ asset('images/client1.png') }}" alt="Foto de Roberto Silva" width="60">
                     <div class="info">
                         <h4 itemprop="name">Roberto Silva</h4>
-                        <p>Motorista parceiro há 2 anos</p>
+                        <p itemprop="worksFor" itemscope itemtype="https://schema.org/Organization">
+                            <span itemprop="name">Motorista parceiro há 2 anos</span>
+                        </p>
                         <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
-                            <meta itemprop="ratingValue" content="5">
-                            <meta itemprop="bestRating" content="5">
+                            <meta itemprop="ratingValue" content="5"/>
+                            <meta itemprop="bestRating" content="5"/>
                         </div>
                     </div>
                 </div>
             </div>
 
+            <!-- Depoimento 3 -->
             <div class="testimonial" itemscope itemtype="https://schema.org/Review">
-                <meta itemprop="itemReviewed" itemscope itemtype="https://schema.org/Service" />
-                <meta itemprop="name" content="Plataforma de Gestão de Fretes" />
+                <div itemprop="itemReviewed" itemscope itemtype="https://schema.org/WebApplication">
+                    <meta itemprop="name" content="Plataforma de Fretes em Nuvens"/>
+                    <meta itemprop="applicationCategory" content="BusinessApplication"/>
+                    <meta itemprop="operatingSystem" content="Web-based"/>
+                    <link itemprop="url" href="https://www.fretesemnuvens.com.br"/>
+                </div>
+                <meta itemprop="datePublished" content="2023-09-10"/>
+                <div itemprop="publisher" itemscope itemtype="https://schema.org/Organization">
+                    <meta itemprop="name" content="Fretes em Nuvens"/>
+                </div>
                 
                 <div class="quote" itemprop="reviewBody">
                     <img src="{{ asset('images/quote.png') }}" alt="Aspas" width="24">
@@ -1008,10 +1039,12 @@
                     <img src="{{ asset('images/client1.png') }}" alt="Foto de Ana Paula Souza" width="60">
                     <div class="info">
                         <h4 itemprop="name">Ana Paula Souza</h4>
-                        <p>Diretora de Logística - Transportadora XYZ</p>
+                        <p itemprop="worksFor" itemscope itemtype="https://schema.org/Organization">
+                            <span itemprop="name">Diretora de Logística - Transportadora XYZ</span>
+                        </p>
                         <div itemprop="reviewRating" itemscope itemtype="https://schema.org/Rating">
-                            <meta itemprop="ratingValue" content="5">
-                            <meta itemprop="bestRating" content="5">
+                            <meta itemprop="ratingValue" content="5"/>
+                            <meta itemprop="bestRating" content="5"/>
                         </div>
                     </div>
                 </div>
