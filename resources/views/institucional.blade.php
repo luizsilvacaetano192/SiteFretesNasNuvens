@@ -185,7 +185,8 @@
         }
        .logo img {
             height: auto;
-            max-height: 180px; /* Aumentei de 50px para 60px */
+            max-height: 220px; /* Aumentei de 50px para 60px */
+            min-height: 180px; /* Aumentei de 50px para 60px */
             width: auto;
             max-width: 220px; /* Novo valor */
             min-width: 180px; /* Garante que não fique muito pequeno em mobile */
