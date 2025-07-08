@@ -619,7 +619,7 @@
         }
         @media (max-width: 768px) {
               .logo img {
-              max-height: 50px;
+              max-height: 180px;
               max-width: 180px;
           }
                 
