@@ -170,7 +170,7 @@
         /* Header */
         .main-header {
           background: linear-gradient(135deg, #3498db 0%, #2c3e50 100%);
-          position: fixed;
+          padding: 12px 0;
           top: 0;
           left: 0;
           width: 100%;
@@ -183,9 +183,13 @@
           justify-content: space-between;
           align-items: center;
         }
-        .logo img {
-          height: 50px;
-          width: auto;
+       .logo img {
+            height: auto;
+            max-height: 60px; /* Aumentei de 50px para 60px */
+            width: auto;
+            max-width: 220px; /* Novo valor */
+            min-width: 180px; /* Garante que não fique muito pequeno em mobile */
+            transition: var(--transition);
         }
         .main-nav ul {
           display: flex;
@@ -614,6 +618,11 @@
           }
         }
         @media (max-width: 768px) {
+              .logo img {
+              max-height: 50px;
+              max-width: 180px;
+          }
+                
           h1 {
             font-size: 2rem;
           }
@@ -679,13 +688,13 @@
     <!-- Cabeçalho -->
     <header class="main-header">
         <div class="container">
-            <div class="logo">
-                <a href="/">
-                    <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" 
-                    alt="Logo Fretes em Nuvens - Plataforma de fretes online para empresas e motoristas" 
-                    width="180">
-                </a>
-            </div>
+           <div class="logo">
+              <a href="/">
+                  <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" 
+                  alt="Logo Fretes em Nuvens - Plataforma de fretes online para empresas e motoristas" 
+                  width="220"> <!-- Aumentei de 180 para 220 -->
+              </a>
+          </div>
             <nav class="main-nav">
                 <ul>
                     <li><a href="#como-funciona">Como Funciona</a></li>

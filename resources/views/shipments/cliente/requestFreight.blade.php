@@ -459,22 +459,22 @@
 
     function getSafeSetting(settingName, defaultValue = 0) {
         // Mapear todas as configurações disponíveis
-        const settings = {
-            small_truck_rate: {{ $settings->small_truck_rate ?? 0 }},
-            medium_truck_rate: {{ $settings->medium_truck_rate ?? 0 }},
-            large_truck_rate: {{ $settings->large_truck_rate ?? 0 }},
-            small_refrigerated_rate: {{ $settings->small_refrigerated_rate ?? 0 }},
-            medium_refrigerated_rate: {{ $settings->medium_refrigerated_rate ?? 0 }},
-            large_refrigerated_rate: {{ $settings->large_refrigerated_rate ?? 0 }},
-            small_tanker_rate: {{ $settings->small_tanker_rate ?? 0 }},
-            large_tanker_rate: {{ $settings->large_tanker_rate ?? 0 }},
-            cloud_percentage: {{ $settings->cloud_percentage ?? 0 }},
-            minimum_freight_value: {{ $settings->minimum_freight_value ?? 0 }},
-            weight_surcharge_5000: {{ $settings->weight_surcharge_5000 ?? 1 }},
-            weight_surcharge_3000: {{ $settings->weight_surcharge_3000 ?? 1 }},
-            fragile_surcharge: {{ $settings->fragile_surcharge ?? 1 }},
-            hazardous_surcharge: {{ $settings->hazardous_surcharge ?? 1 }}
-        };
+       const settings = <?php echo json_encode([
+            'small_truck_rate' => $settings->small_truck_rate ?? 0,
+            'medium_truck_rate' => $settings->medium_truck_rate ?? 0,
+            'large_truck_rate' => $settings->large_truck_rate ?? 0,
+            'small_refrigerated_rate' => $settings->small_refrigerated_rate ?? 0,
+            'medium_refrigerated_rate' => $settings->medium_refrigerated_rate ?? 0,
+            'large_refrigerated_rate' => $settings->large_refrigerated_rate ?? 0,
+            'small_tanker_rate' => $settings->small_tanker_rate ?? 0,
+            'large_tanker_rate' => $settings->large_tanker_rate ?? 0,
+            'cloud_percentage' => $settings->cloud_percentage ?? 0,
+            'minimum_freight_value' => $settings->minimum_freight_value ?? 0,
+            'weight_surcharge_5000' => $settings->weight_surcharge_5000 ?? 1,
+            'weight_surcharge_3000' => $settings->weight_surcharge_3000 ?? 1,
+            'fragile_surcharge' => $settings->fragile_surcharge ?? 1,
+            'hazardous_surcharge' => $settings->hazardous_surcharge ?? 1
+        ], JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP); ?>;
 
         // Obter o valor da configuração ou usar o padrão
         const value = settings[settingName] !== undefined ? settings[settingName] : defaultValue;
