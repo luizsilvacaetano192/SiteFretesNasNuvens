@@ -5,8 +5,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Fretes em Nuvens | Plataforma de Fretes Online - Conectamos Empresas e Caminhoneiros</title>
-    <meta name="description" content="Precisa de fretes ou é motorista de caminhão? Encontre a melhor solução para transporte de cargas. Plataforma mais barata que FreteBras, CargoX e TruckPad. Agende fretes rápidos em todo Brasil para mudanças, carretos e todos tipos de carga.">
-    <meta name="keywords" content="plataforma de fretes, frete online, frete caminhão, contratar frete, frete para empresas, motorista autônomo, carga e descarga, transporte de carga, frete rodoviário, frete nacional, frete grátis, frete sem taxa, frete barato, frete rápido, JSL, Tegma, Braspress, FreteBras, CargoX, TruckPad, frete intermunicipal, frete interestadual, frete urbano, preciso de fretes, motorista de fretes, mudança, carreto, transporte, transportadora, aplicativo de transporte">
+    <meta name="description" content="Precisa de fretes ou é motorista de caminhão? Encontre a melhor solução para transporte de cargas. Plataforma completa para agendar fretes rápidos em todo Brasil para mudanças, carretos e todos tipos de carga.">
+    <meta name="keywords" content="plataforma de fretes, frete online, frete caminhão, contratar frete, frete para empresas, motorista autônomo, carga e descarga, transporte de carga, frete rodoviário, frete nacional, frete grátis, frete sem taxa, frete barato, frete rápido, frete intermunicipal, frete interestadual, frete urbano, preciso de fretes, motorista de fretes, mudança, carreto, transporte, transportadora, aplicativo de transporte">
     <meta name="author" content="Fretes em Nuvens">
     <meta name="robots" content="index, follow">
     <meta name="revisit-after" content="7 days">
@@ -16,14 +16,14 @@
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://www.fretesemnuvens.com.br/"> 
     <meta property="og:title" content="Fretes em Nuvens | A Melhor Plataforma de Fretes Online do Brasil">
-    <meta property="og:description" content="Conectamos empresas que precisam de fretes com motoristas qualificados. Solução mais eficiente e econômica que FreteBras e CargoX. Experimente grátis!">
+    <meta property="og:description" content="Conectamos empresas que precisam de fretes com motoristas qualificados. Solução completa para transporte de cargas. Experimente grátis!">
     <meta property="og:image" content="https://www.fretesemnuvens.com.br/images/og-fretes-em-nuvens.jpg"> 
     
     <!-- Twitter -->
     <meta property="twitter:card" content="summary_large_image">
     <meta property="twitter:url" content="https://www.fretesemnuvens.com.br/"> 
     <meta property="twitter:title" content="Fretes em Nuvens | A Melhor Plataforma de Fretes Online do Brasil">
-    <meta property="twitter:description" content="Solução digital completa para fretes rodoviários. Mais barato que FreteBras, mais rápido que CargoX. Cadastre-se gratuitamente!">
+    <meta property="twitter:description" content="Solução digital completa para fretes rodoviários. Cadastre-se gratuitamente!">
     <meta property="twitter:image" content="https://www.fretesemnuvens.com.br/images/twitter-fretes-em-nuvens.jpg"> 
     
     <!-- Canonical URL -->
@@ -185,11 +185,11 @@
         }
        .logo img {
             height: auto;
-            max-height: 220px; /* Aumentei de 50px para 60px */
-            min-height: 180px; /* Aumentei de 50px para 60px */
+            max-height: 220px;
+            min-height: 180px;
             width: auto;
-            max-width: 220px; /* Novo valor */
-            min-width: 180px; /* Garante que não fique muito pequeno em mobile */
+            max-width: 220px;
+            min-width: 180px;
             transition: var(--transition);
         }
         .main-nav ul {
@@ -312,31 +312,6 @@
           font-weight: 700;
           line-height: 40px;
           margin-bottom: 20px;
-        }
-        
-        /* Comparison Section */
-        .comparison {
-          padding: 80px 0;
-          background-color: var(--white);
-        }
-        .comparison-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-          gap: 30px;
-          margin-top: 40px;
-        }
-        .comparison-item {
-          background-color: var(--light-color);
-          padding: 30px;
-          border-radius: 8px;
-          box-shadow: var(--box-shadow);
-          transition: var(--transition);
-        }
-        .comparison-item:hover {
-          transform: translateY(-5px);
-        }
-        .comparison-item h3 {
-          color: var(--primary-color);
         }
         
         /* Coverage Section */
@@ -693,7 +668,7 @@
               <a href="/">
                   <img src="{{ asset('images/logo_fretes_em_nuvens3.png') }}" 
                   alt="Logo Fretes em Nuvens - Plataforma de fretes online para empresas e motoristas" 
-                  width="220"> <!-- Aumentei de 180 para 220 -->
+                  width="220">
               </a>
           </div>
             <nav class="main-nav">
@@ -715,7 +690,7 @@
     <section class="hero">
         <div class="container">
             <div class="hero-content">
-                <h1>A Plataforma de Fretes Mais Completa do Brasil | Mais Econômica que FreteBras e CargoX</h1>
+                <h1>A Plataforma de Fretes Mais Completa do Brasil</h1>
                 <p class="lead">Solução completa para quem precisa de fretes ou quer oferecer serviços de transporte. Conectamos empresas a +5.000 motoristas verificados. Ideal para mudanças, carretos, cargas frigoríficas e todos tipos de transporte rodoviário.</p>
                 <div class="cta-buttons">
                     <a href="#para-empresas" class="btn btn-primary btn-large">Preciso de Frete</a>
@@ -736,12 +711,12 @@
             <div class="keyword-grid">
                 <div class="keyword-item">
                     <h3>Preciso de Fretes</h3>
-                    <p>Encontre motoristas confiáveis para transportar sua carga em todo Brasil. Solução mais rápida e econômica que FreteBras e TruckPad.</p>
+                    <p>Encontre motoristas confiáveis para transportar sua carga em todo Brasil. Solução rápida e econômica para seu transporte.</p>
                     <a href="#para-empresas" class="btn btn-outline">Solicitar Frete</a>
                 </div>
                 <div class="keyword-item">
                     <h3>Sou Motorista de Caminhão</h3>
-                    <p>Encontre fretes para seu caminhão e aumente sua renda. Plataforma com mais oportunidades que CargoX e FreteBras.</p>
+                    <p>Encontre fretes para seu caminhão e aumente sua renda. Plataforma com diversas oportunidades para motoristas.</p>
                     <a href="#para-motoristas" class="btn btn-outline">Oferecer Serviços</a>
                 </div>
                 <div class="keyword-item">
@@ -799,32 +774,6 @@
                     <div class="step-number">4</div>
                     <h3>Fechamento</h3>
                     <p>A empresa aprova o candidato e o frete é realizado</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Comparação com Concorrentes -->
-    <section class="comparison">
-        <div class="container">
-            <h2>Por que escolher a Fretes em Nuvens?</h2>
-            <p class="section-description">Comparado a outras soluções como FreteBras, CargoX e TruckPad, oferecemos:</p>
-            <div class="comparison-grid">
-                <div class="comparison-item">
-                    <h3>✔ Sem Taxas</h3>
-                    <p>O valor oferecido pelo frete vai totalmente pra o seu bolso</p>
-                </div>
-                <div class="comparison-item">
-                    <h3>✔ Cadastro simplificado</h3>
-                    <p>Processo mais rápido que em FreteBras e CargoX</p>
-                </div>
-                <div class="comparison-item">
-                    <h3>✔ Suporte dedicado</h3>
-                    <p>Atendimento personalizado, diferente das grandes transportadoras</p>
-                </div>
-                <div class="comparison-item">
-                    <h3>✔ Tecnologia avançada</h3>
-                    <p>Plataforma mais moderna que Rodonaves e Expresso São Miguel</p>
                 </div>
             </div>
         </div>
@@ -949,8 +898,7 @@
     </section>
 
    <!-- Depoimentos -->
-          <!-- Depoimentos -->
-<section class="testimonials">
+   <section class="testimonials">
     <div class="container">
         <h2>O que dizem sobre nós</h2>
         <div class="testimonial-slider">
@@ -1060,26 +1008,18 @@
             <h2>Perguntas Frequentes</h2>
             <div itemscope itemtype="https://schema.org/FAQPage"> 
                 <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"> 
-                    <h3 itemprop="name">Como a Fretes em Nuvens se compara ao FreteBras?</h3>
+                    <h3 itemprop="name">Como funciona a plataforma Fretes em Nuvens?</h3>
                     <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"> 
                         <div itemprop="text">
-                            <p>Nossa plataforma oferece taxas mais competitivas que o FreteBras, interface mais intuitiva e suporte mais ágil. Diferente do FreteBras, focamos em atendimento personalizado para cada cliente.</p>
+                            <p>Nossa plataforma conecta empresas que precisam de fretes com motoristas qualificados. Você publica sua necessidade de transporte, recebe propostas de motoristas verificados e escolhe a melhor opção para seu frete.</p>
                         </div>
                     </div>
                 </div>
                 <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"> 
-                    <h3 itemprop="name">É melhor que contratar a JSL ou Tegma?</h3>
+                    <h3 itemprop="name">Quais são os benefícios para motoristas?</h3>
                     <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"> 
                         <div itemprop="text">
-                            <p>Para empresas que buscam agilidade e custo-benefício, somos a melhor opção. Enquanto JSL e Tegma são tradicionais com estruturas grandes, oferecemos tecnologia moderna e preços mais acessíveis para o mesmo serviço de qualidade.</p>
-                        </div>
-                    </div>
-                </div>
-                <div itemscope itemprop="mainEntity" itemtype="https://schema.org/Question"> 
-                    <h3 itemprop="name">Como se compara ao TruckPad e CargoX?</h3>
-                    <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"> 
-                        <div itemprop="text">
-                            <p>Temos a tecnologia similar ao TruckPad e CargoX, mas com foco maior na experiência do usuário e suporte personalizado. Nossa plataforma é mais intuitiva para motoristas autônomos e pequenas transportadoras.</p>
+                            <p>Motoristas encontram mais oportunidades de trabalho, podem escolher os fretes que melhor se adequam ao seu veículo e horários, recebem pagamentos seguros e constroem uma reputação através do sistema de avaliações.</p>
                         </div>
                     </div>
                 </div>
@@ -1087,7 +1027,7 @@
                     <h3 itemprop="name">Como funciona para quem precisa de fretes urgentes?</h3>
                     <div itemscope itemprop="acceptedAnswer" itemtype="https://schema.org/Answer"> 
                         <div itemprop="text">
-                            <p>Para fretes urgentes, nossa plataforma conecta você diretamente com motoristas disponíveis na região, com tempo médio de resposta de menos de 15 minutos. Solução mais rápida que FreteBras e outras transportadoras tradicionais.</p>
+                            <p>Para fretes urgentes, nossa plataforma conecta você diretamente com motoristas disponíveis na região, com tempo médio de resposta de menos de 15 minutos.</p>
                         </div>
                     </div>
                 </div>
@@ -1244,7 +1184,7 @@
           
           // Animação de scroll
           const animateOnScroll = function() {
-            const elements = document.querySelectorAll('.step, .highlight-item, .testimonial, .comparison-item, .city-group, .keyword-item');
+            const elements = document.querySelectorAll('.step, .highlight-item, .testimonial, .city-group, .keyword-item');
             elements.forEach(element => {
               const elementPosition = element.getBoundingClientRect().top;
               const screenPosition = window.innerHeight / 1.3;
