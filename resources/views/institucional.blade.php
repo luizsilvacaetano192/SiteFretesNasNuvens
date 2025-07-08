@@ -208,7 +208,7 @@
         
         /* Hero Section */
         .hero {
-          padding: 180px 0 80px;
+          padding: 40px 0 80px;
           background: linear-gradient(135deg, #F7FAFC 0%, #EDF2F7 100%);
         }
         .hero .container {
@@ -612,7 +612,7 @@
             width: 100%;
           }
           .hero {
-            padding: 150px 0 60px;
+            padding: 40px 0 60px;
           }
           .main-nav ul {
             gap: 15px;
