@@ -716,8 +716,8 @@ class FreightController extends Controller
                     'destination_address' => $freight->destination_address,
                     'formatted_value' => $freight->formatted_value,
                     'created_at' => $freight->created_at,
-                    'latitude' => $freight->start_latitude,
-                    'longitude' => $freight->start_longitude
+                    'latitude' => $freight->start_lat,
+                    'longitude' => $freight->start_lng
                 ];
             });
 
