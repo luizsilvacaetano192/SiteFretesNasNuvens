@@ -704,8 +704,7 @@ class FreightController extends Controller
 
      public function waitingDrivers()
     {
-        $freights = Freight::with(['origin', 'destination'])
-            ->where('status_id', 2) // 2 = Aguardando motorista (ajuste conforme seu sistema)
+        $freights = Freight::where('status_id', 2) // 2 = Aguardando motorista (ajuste conforme seu sistema)
             ->whereNotNull('start_lat')
             ->whereNotNull('start_lng')
             ->get()
