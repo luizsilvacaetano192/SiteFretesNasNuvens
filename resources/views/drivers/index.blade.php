@@ -1,6 +1,7 @@
 @extends('layouts.app')
 
 @section('content')
+<link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0"><i class="bi bi-buildings me-2"></i>Gestão de motoristas</h2>
