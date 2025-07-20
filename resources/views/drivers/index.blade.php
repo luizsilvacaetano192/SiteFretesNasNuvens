@@ -308,8 +308,8 @@
         <h5 class="modal-title"><i class="fas fa-map-marked-alt me-2"></i>Localização dos Motoristas</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
-      <div class="modal-body p-0" style="height: 70vh;">
-        <div id="driversMap" style="width: 100%; height: 100%;"></div>
+      <div class="modal-body p-0">
+        <div id="driversMap"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -425,17 +425,23 @@ tr.shown td.dt-control::before {
     z-index: 10;
 }
 
-#driversMap {
-    width: 100%;
-    height: 70vh;
-    min-height: 400px;
-    border-radius: 0.5rem;
-    overflow: hidden;
-    background-color: #f8f9fa;
+/* Map Container Styles */
+#driversLocationModal .modal-dialog {
+    max-width: 95%;
+    height: 90vh;
+    margin: 1rem auto;
 }
 
-#driversLocationModal .modal-body {
-    padding: 0;
+#driversLocationModal .modal-content {
+    height: 100%;
+}
+
+#driversMap {
+    width: 100%;
+    height: calc(100% - 60px); /* Account for header/footer */
+    min-height: 500px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
 }
 
 .leaflet-popup-content {
@@ -448,6 +454,17 @@ tr.shown td.dt-control::before {
 
 #showDriversLocationBtn {
     white-space: nowrap;
+}
+
+/* Modal transition effects */
+#driversLocationModal {
+    display: block !important;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+#driversLocationModal.show {
+    opacity: 1;
 }
 
 @media (max-width: 768px) {
@@ -468,6 +485,16 @@ tr.shown td.dt-control::before {
     .btn-group-sm .btn {
         flex: 1 0 auto;
     }
+
+    #driversLocationModal .modal-dialog {
+        max-width: 100%;
+        height: 100vh;
+        margin: 0;
+    }
+
+    #driversMap {
+        height: calc(100vh - 120px);
+    }
 }
 </style>
 
@@ -485,6 +512,12 @@ const AWS_BUCKET = 'fretes';
 const DEFAULT_MAP_CENTER = [-15.7889, -47.8799]; // Center of Brazil
 const DEFAULT_MAP_ZOOM = 4;
 const MARKER_ZOOM = 12;
+const MAX_MAP_INIT_ATTEMPTS = 5;
+
+// Global variables
+let selectedDriverId = null;
+let mapInitializationAttempts = 0;
+let driversLocationModal = null;
 
 // Utility Functions
 function maskPhone(value) {
@@ -550,8 +583,6 @@ function renderImageColumn(title, src) {
 }
 
 // Driver Management Functions
-let selectedDriverId = null;
-
 function updateDriverStatus(id, status) {
     const reason = $('#blockReason').val().trim();
 
@@ -1429,9 +1460,14 @@ function format(d) {
 }
 
 // Map Functions
-// Map Functions
 function showDriversLocation() {
-    const modal = $('#driversLocationModal');
+    // Reset initialization attempts counter
+    mapInitializationAttempts = 0;
+    
+    // Initialize modal if not already done
+    if (!driversLocationModal) {
+        driversLocationModal = new bootstrap.Modal('#driversLocationModal');
+    }
     
     // Clear any existing map
     if (window.driversMap) {
@@ -1440,68 +1476,67 @@ function showDriversLocation() {
     }
     
     // Show the modal
-    modal.modal('show');
+    driversLocationModal.show();
     
-    // Initialize map after modal is fully shown
-    modal.on('shown.bs.modal', function() {
-        // Small delay to ensure all transitions are complete
-        setTimeout(function() {
-            initDriversMap();
-            // Force a resize event in case the map doesn't render properly
-            if (window.driversMap) {
-                window.driversMap.invalidateSize();
+    // Use MutationObserver to detect when modal is fully visible
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.attributeName === 'class') {
+                const isVisible = $('#driversLocationModal').hasClass('show');
+                if (isVisible) {
+                    observer.disconnect();
+                    initializeMapWithRetry();
+                }
             }
-        }, 300);
+        });
+    });
+
+    observer.observe(document.getElementById('driversLocationModal'), {
+        attributes: true,
+        attributeFilter: ['class']
     });
 }
 
-function initDriversMap() {
+function initializeMapWithRetry() {
+    if (mapInitializationAttempts >= MAX_MAP_INIT_ATTEMPTS) {
+        console.error('Failed to initialize map after multiple attempts');
+        toastr.error('Não foi possível carregar o mapa');
+        return;
+    }
+
+    mapInitializationAttempts++;
+    
+    const mapContainer = document.getElementById('driversMap');
+    if (!mapContainer || mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
+        setTimeout(initializeMapWithRetry, 200);
+        return;
+    }
+
     try {
-        const mapContainer = document.getElementById('driversMap');
-        
-        // Double-check container visibility
-        if (!mapContainer || $(mapContainer).is(':hidden')) {
-            console.error('Map container not ready - retrying...');
-            setTimeout(initDriversMap, 100);
-            return;
-        }
-        
-        // Ensure container has proper dimensions
-        $(mapContainer).css({
-            'width': '100%',
-            'height': '100%',
-            'min-height': '400px'
-        });
-        
         // Initialize the map
         window.driversMap = L.map('driversMap', {
             preferCanvas: true,
             zoomControl: true,
-            tap: false // Fix for some mobile devices
+            tap: false
         }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
-        
+
         // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            attribution: '© OpenStreetMap contributors',
             maxZoom: 18
         }).addTo(window.driversMap);
-        
-        // Load driver locations after tiles are loaded
-        window.driversMap.whenReady(function() {
+
+        // Force resize and load data
+        setTimeout(() => {
+            window.driversMap.invalidateSize(true);
             loadDriverLocations();
-            // Force a resize to ensure proper rendering
-            setTimeout(function() {
-                window.driversMap.invalidateSize(true);
-            }, 100);
-        });
+        }, 100);
         
     } catch (error) {
         console.error('Map initialization error:', error);
-        toastr.error('Erro ao inicializar o mapa');
+        setTimeout(initializeMapWithRetry, 300);
     }
 }
-
-
 
 function loadDriverLocations() {
     $.ajax({
@@ -1556,6 +1591,10 @@ function loadDriverLocations() {
 
 // Main Document Ready Function
 $(document).ready(function () {
+    // Initialize modals
+    driversLocationModal = new bootstrap.Modal('#driversLocationModal');
+    
+    // Initialize drivers table
     const table = $('#drivers-table').DataTable({
         processing: true,
         serverSide: true,
@@ -1645,6 +1684,7 @@ $(document).ready(function () {
         }
     });
 
+    // Expand/collapse driver details
     $('#drivers-table tbody').on('click', 'td.dt-control', function () {
         const tr = $(this).closest('tr');
         const row = table.row(tr);
@@ -1663,13 +1703,12 @@ $(document).ready(function () {
     $('#submitTransfer').click(submitTransfer);
     $('#showDriversLocationBtn').click(showDriversLocation);
     
-   // Modal cleanup
+    // Modal Cleanup
     $('#driversLocationModal').on('hidden.bs.modal', function() {
         if (window.driversMap) {
             window.driversMap.remove();
             window.driversMap = null;
         }
-        $(this).off('shown.bs.modal');
     });
 });
 </script>
