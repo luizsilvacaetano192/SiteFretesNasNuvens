@@ -1425,13 +1425,24 @@ function showDriversLocation() {
 
 // Função para inicializar o mapa
 function initDriversMap() {
+    // Verifica se o container do mapa existe e está visível
+    const mapContainer = document.getElementById('driversMap');
+    if (!mapContainer) {
+        console.error('Container do mapa não encontrado');
+        return;
+    }
+    
     // Destruir o mapa existente se houver
     if (window.driversMap) {
         window.driversMap.remove();
     }
     
+    // Redefine o tamanho do container para evitar problemas de renderização
+    mapContainer.style.width = '100%';
+    mapContainer.style.height = '100%';
+    
     // Criar novo mapa
-    window.driversMap = L.map('driversMap').setView([-15.7889, -47.8799], 4); // Centro do Brasil
+    window.driversMap = L.map('driversMap').setView([-15.7889, -47.8799], 4);
     
     // Adicionar camada do mapa
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -1453,7 +1464,6 @@ function initDriversMap() {
                 }
             });
             
-            // Ajustar o zoom para mostrar todos os marcadores
             if (data.length > 1) {
                 const group = new L.featureGroup(data
                     .filter(d => d.latitude && d.longitude)
@@ -1464,7 +1474,6 @@ function initDriversMap() {
                 window.driversMap.setView([data[0].latitude, data[0].longitude], 12);
             }
         } else {
-            // Mostrar mensagem se não houver localizações
             L.popup()
                 .setLatLng(window.driversMap.getCenter())
                 .setContent('Nenhuma localização de motorista disponível')
