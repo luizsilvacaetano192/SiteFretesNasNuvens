@@ -221,6 +221,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
     // Freights
     Route::prefix('freights')->group(function () {
+        Route::get('/waiting-drivers', [FreightController::class, 'waitingDrivers'])
+        ->name('freights.waitingDrivers');
+
         Route::get('/data', [FreightController::class, 'getDataTable'])->name('freights.data');
         Route::get('/stats', [FreightController::class, 'getStats'])->name('freights.stats');
         Route::get('/statuses', [FreightController::class, 'getStatuses'])->name('freights.statuses');
@@ -243,8 +246,6 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/store', [FreightStatusController::class, 'store'])->name('freight-statuses.store');
     });
 
-    Route::get('/freights/waiting-drivers', [FreightController::class, 'waitingDrivers'])
-        ->name('freights.waitingDrivers');
 
     
     Route::resource('service-keys', ServiceKeyController::class);
