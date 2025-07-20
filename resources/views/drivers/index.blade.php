@@ -1429,8 +1429,9 @@ function format(d) {
 }
 
 // Map Functions
+// Map Functions
 function showDriversLocation() {
-    const modal = new bootstrap.Modal('#driversLocationModal');
+    const modal = $('#driversLocationModal');
     
     // Clear any existing map
     if (window.driversMap) {
@@ -1438,45 +1439,69 @@ function showDriversLocation() {
         window.driversMap = null;
     }
     
-    modal.show();
+    // Show the modal
+    modal.modal('show');
     
-    // Initialize map after modal is shown
-    $('#driversLocationModal').one('shown.bs.modal', function() {
-        setTimeout(initDriversMap, 300);
+    // Initialize map after modal is fully shown
+    modal.on('shown.bs.modal', function() {
+        // Small delay to ensure all transitions are complete
+        setTimeout(function() {
+            initDriversMap();
+            // Force a resize event in case the map doesn't render properly
+            if (window.driversMap) {
+                window.driversMap.invalidateSize();
+            }
+        }, 300);
     });
 }
 
 function initDriversMap() {
-    const mapContainer = document.getElementById('driversMap');
-    
-    // Check if container exists and is visible
-    if (!mapContainer || $(mapContainer).is(':hidden')) {
-        console.error('Map container not ready');
-        return;
+    try {
+        const mapContainer = document.getElementById('driversMap');
+        
+        // Double-check container visibility
+        if (!mapContainer || $(mapContainer).is(':hidden')) {
+            console.error('Map container not ready - retrying...');
+            setTimeout(initDriversMap, 100);
+            return;
+        }
+        
+        // Ensure container has proper dimensions
+        $(mapContainer).css({
+            'width': '100%',
+            'height': '100%',
+            'min-height': '400px'
+        });
+        
+        // Initialize the map
+        window.driversMap = L.map('driversMap', {
+            preferCanvas: true,
+            zoomControl: true,
+            tap: false // Fix for some mobile devices
+        }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+        
+        // Add tile layer
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+            maxZoom: 18
+        }).addTo(window.driversMap);
+        
+        // Load driver locations after tiles are loaded
+        window.driversMap.whenReady(function() {
+            loadDriverLocations();
+            // Force a resize to ensure proper rendering
+            setTimeout(function() {
+                window.driversMap.invalidateSize(true);
+            }, 100);
+        });
+        
+    } catch (error) {
+        console.error('Map initialization error:', error);
+        toastr.error('Erro ao inicializar o mapa');
     }
-    
-    // Force container dimensions
-    mapContainer.style.width = '100%';
-    mapContainer.style.height = '100%';
-    mapContainer.style.minHeight = '400px';
-    
-    // Initialize map with a default center (Brazil)
-    window.driversMap = L.map('driversMap', {
-        preferCanvas: true, // Better for many markers
-        zoomControl: true
-    }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
-    
-    // Add tile layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
-        maxZoom: 18
-    }).addTo(window.driversMap);
-    
-    // Fit bounds after tiles load
-    window.driversMap.whenReady(function() {
-        loadDriverLocations();
-    });
 }
+
+
 
 function loadDriverLocations() {
     $.ajax({
@@ -1638,7 +1663,7 @@ $(document).ready(function () {
     $('#submitTransfer').click(submitTransfer);
     $('#showDriversLocationBtn').click(showDriversLocation);
     
-    // Modal Cleanup
+   // Modal cleanup
     $('#driversLocationModal').on('hidden.bs.modal', function() {
         if (window.driversMap) {
             window.driversMap.remove();
