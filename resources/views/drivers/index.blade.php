@@ -426,8 +426,16 @@ tr.shown td.dt-control::before {
 }
 
 #driversMap {
+    width: 100%;
+    height: 70vh;
+    min-height: 400px;
     border-radius: 0.5rem;
     overflow: hidden;
+    background-color: #f8f9fa;
+}
+
+#driversLocationModal .modal-body {
+    padding: 0;
 }
 
 .leaflet-popup-content {
@@ -472,7 +480,13 @@ tr.shown td.dt-control::before {
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
 <script>
-// Funções utilitárias
+// Constants
+const AWS_BUCKET = 'fretes';
+const DEFAULT_MAP_CENTER = [-15.7889, -47.8799]; // Center of Brazil
+const DEFAULT_MAP_ZOOM = 4;
+const MARKER_ZOOM = 12;
+
+// Utility Functions
 function maskPhone(value) {
     if (!value) return '';
     return value.replace(/\D/g, '').replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
@@ -487,32 +501,16 @@ function maskCPF(cpf) {
     return cpf?.replace(/^(\d{3})(\d{3})(\d{3})(\d{2})$/, "$1.$2.$3-$4") || '';
 }
 
-const maskDateTimeBR = (value) => {
-  if (!value) return '';
-
-  // Remove tudo que não é número
-  value = value.replace(/\D/g, '');
-
-  // Aplica a máscara
-  if (value.length <= 2) {
-    return value;
-  }
-  if (value.length <= 4) {
-    return value.replace(/(\d{2})(\d{1,2})/, '$1/$2');
-  }
-  if (value.length <= 8) {
-    return value.replace(/(\d{2})(\d{2})(\d{1,4})/, '$1/$2/$3');
-  }
-  if (value.length <= 12) {
-    return value.replace(/(\d{2})(\d{2})(\d{4})(\d{1,2})/, '$1/$2/$3 $4');
-  }
-  return value.replace(/(\d{2})(\d{2})(\d{4})(\d{2})(\d{1,2})/, '$1/$2/$3 $4:$5');
-};
-
 function formatDateBR(dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
     return date.toLocaleDateString('pt-BR');
+}
+
+function formatDateTimeBR(dateStr) {
+    if (!dateStr) return '';
+    const date = new Date(dateStr);
+    return date.toLocaleString('pt-BR');
 }
 
 function formatCurrency(value) {
@@ -520,6 +518,16 @@ function formatCurrency(value) {
         style: 'currency',
         currency: 'BRL'
     }).format(value || 0);
+}
+
+function getStatusLabel(status) {
+    const labels = {
+        'create': ['Aguardando Ativação', 'warning'],
+        'active': ['Ativo', 'success'],
+        'block': ['Bloqueado', 'danger'],
+        'transfer_block': ['Transferências Bloqueadas', 'danger'],
+    };
+    return labels[status] || ['Desconhecido', 'secondary'];
 }
 
 function openImageModal(src) {
@@ -541,20 +549,10 @@ function renderImageColumn(title, src) {
     `;
 }
 
-function getStatusLabel(status) {
-    const labels = {
-        'create': ['Aguardando Ativação', 'warning'],
-        'active': ['Ativo', 'success'],
-        'block': ['Bloqueado', 'danger'],
-        'transfer_block': ['Transferências Bloqueadas', 'danger'],
-    };
-    return labels[status] || ['Desconhecido', 'secondary'];
-}
-
+// Driver Management Functions
 let selectedDriverId = null;
 
 function updateDriverStatus(id, status) {
-    console.log('vai atualizar o status do motorista')
     const reason = $('#blockReason').val().trim();
 
     if ((status === 'block' || status === 'transfer_block') && !reason) {
@@ -562,16 +560,24 @@ function updateDriverStatus(id, status) {
         return;
     }
 
-    $.post(`/drivers/${id}/update-status`, {
-        status,
-        reason,
-        _token: '{{ csrf_token() }}'
-    }, () => {
-        $('#drivers-table').DataTable().ajax.reload(null, false);
-        bootstrap.Modal.getInstance(document.getElementById('blockModal'))?.hide();
-        toastr.success(`Status atualizado para ${status}`);
-        $('#blockReason').val('');
-    }).fail(() => toastr.error("Erro ao atualizar status."));
+    $.ajax({
+        url: `/drivers/${id}/update-status`,
+        type: 'POST',
+        data: {
+            status,
+            reason,
+            _token: '{{ csrf_token() }}'
+        },
+        success: function() {
+            $('#drivers-table').DataTable().ajax.reload(null, false);
+            bootstrap.Modal.getInstance(document.getElementById('blockModal'))?.hide();
+            toastr.success(`Status atualizado para ${getStatusLabel(status)[0]}`);
+            $('#blockReason').val('');
+        },
+        error: function() {
+            toastr.error("Erro ao atualizar status.");
+        }
+    });
 }
 
 function activateDriver(id, status) {
@@ -601,10 +607,9 @@ function activateDriver(id, status) {
 
 async function sendSms(apiData) {
     try {
-        // envia sms avisando que ativou
         const body = {
             phone: apiData.phone,
-            message: 'Sr(a) ' + apiData.name + ' seu cadastro de motorista Fretes em nuves foi ativado já pode logar e usar para realizar fretes'
+            message: `Sr(a) ${apiData.name} seu cadastro de motorista Fretes em nuvem foi ativado. Já pode logar e usar para realizar fretes.`
         };
 
         const response = await fetch('/SendSms', {
@@ -621,14 +626,14 @@ async function sendSms(apiData) {
         toastr.clear();
 
         if (result.success) {
-            toastr.success('Enviado aviso de ativação por sms para o motorista...');
+            toastr.success('Enviado aviso de ativação por SMS para o motorista');
         } else {
-            toastr.error('Não foi possível enviar sms avisando o motorista ' + (result.message || 'Erro desconhecido'));
+            toastr.error('Não foi possível enviar SMS: ' + (result.message || 'Erro desconhecido'));
         }
 
     } catch (error) {
         toastr.clear();
-        toastr.error('Erro ao conectar com o serviço de sms');
+        toastr.error('Erro ao conectar com o serviço de SMS');
     }
 }
 
@@ -637,7 +642,8 @@ async function sendCreateAsaasAccount(apiData, id) {
         const response = await fetch('/api/create-asaas-account', {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
             },
             body: JSON.stringify(apiData)
         });
@@ -649,12 +655,10 @@ async function sendCreateAsaasAccount(apiData, id) {
         if (result.success) {
             toastr.success('Conta Asaas criada com sucesso! Ativando motorista...');
             updateDriverStatus(id, 'active');
-            
             sendSms(apiData);
         } else {
             toastr.error('Não foi possível criar a conta Asaas: ' + (result.message || 'Erro desconhecido'));
         }
-
     } catch (error) {
         toastr.clear();
         toastr.error('Erro ao conectar com o serviço de pagamentos');
@@ -671,20 +675,25 @@ function analyzeDriver(driverId) {
     `);
     modal.show();
 
-    $.get(`/drivers/${driverId}/analyze`, result => {
-        $('#analysisContent').html(`
-            <div class="alert alert-info">
-                <h5><i class="fas fa-robot me-2"></i>Resultado da Análise via IA:</h5>
-                <p>${result.message.replace(/\n/g, "<br>")}</p>
-            </div>
-            <div class="row">
-                ${renderImageColumn('Frente CNH', 'https://fretes.s3.amazonaws.com/' + result.driver_license_front_photo)}
-                ${renderImageColumn('Comprovante de Endereço', 'https://fretes.s3.amazonaws.com/' + result.address_proof_photo)}
-                ${renderImageColumn('Foto do Rosto', 'https://fretes.s3.amazonaws.com/' + result.face_photo)}
-            </div>
-        `);
-    }).fail(() => {
-        $('#analysisContent').html(`<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>Erro na análise com IA.</div>`);
+    $.ajax({
+        url: `/drivers/${driverId}/analyze`,
+        method: 'GET',
+        success: function(result) {
+            $('#analysisContent').html(`
+                <div class="alert alert-info">
+                    <h5><i class="fas fa-robot me-2"></i>Resultado da Análise via IA:</h5>
+                    <p>${result.message.replace(/\n/g, "<br>")}</p>
+                </div>
+                <div class="row">
+                    ${renderImageColumn('Frente CNH', result.driver_license_front_photo ? 'https://fretes.s3.amazonaws.com/' + result.driver_license_front_photo : '')}
+                    ${renderImageColumn('Comprovante de Endereço', result.address_proof_photo ? 'https://fretes.s3.amazonaws.com/' + result.address_proof_photo : '')}
+                    ${renderImageColumn('Foto do Rosto', result.face_photo ? 'https://fretes.s3.amazonaws.com/' + result.face_photo : '')}
+                </div>
+            `);
+        },
+        error: function() {
+            $('#analysisContent').html(`<div class="alert alert-danger"><i class="fas fa-exclamation-triangle me-2"></i>Erro na análise com IA.</div>`);
+        }
     });
 }
 
@@ -703,6 +712,31 @@ function openWhatsApp(phone) {
     window.open(`https://wa.me/55${formatted}`, '_blank');
 }
 
+function deleteDriver(id) {
+    if (confirm('Tem certeza que deseja deletar este motorista?')) {
+        $.ajax({
+            url: `/drivers/${id}`,
+            type: 'DELETE',
+            headers: {
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            success: function() {
+                toastr.success('Motorista deletado com sucesso');
+                $('#drivers-table').DataTable().ajax.reload(null, false);
+            },
+            error: function(xhr) {
+                try {
+                    const error = JSON.parse(xhr.responseText);
+                    toastr.error(error.message || 'Erro ao deletar motorista');
+                } catch {
+                    toastr.error('Erro ao deletar motorista');
+                }
+            }
+        });
+    }
+}
+
+// Freight Management Functions
 function showFreightsModal(driverId) {
     const modal = new bootstrap.Modal('#freightsModal');
     
@@ -720,6 +754,10 @@ function showFreightsModal(driverId) {
         },
         pageLength: 5,
         lengthMenu: [5, 10, 25, 50],
+        ajax: {
+            url: `/drivers/${driverId}/freights`,
+            dataSrc: 'freights'
+        },
         columns: [
             { 
                 data: null,
@@ -734,7 +772,7 @@ function showFreightsModal(driverId) {
             { 
                 data: 'freight_date',
                 render: function(data) {
-                    return data ? new Date(data).toLocaleDateString('pt-BR') : '';
+                    return data ? formatDateBR(data) : '';
                 }
             },
             { 
@@ -766,19 +804,9 @@ function showFreightsModal(driverId) {
     $('#selectAllFreights').click(function() {
         $('.freightCheckbox').prop('checked', this.checked);
     });
-
-    $.get(`/drivers/${driverId}/freights`, function(data) {
-        if (data.freights && data.freights.length > 0) {
-            freightsTable.clear().rows.add(data.freights).draw();
-        } else {
-            freightsTable.clear().draw();
-        }
-    }).fail(function() {
-        freightsTable.clear().draw();
-        toastr.error('Erro ao carregar lista de fretes');
-    });
 }
 
+// Transfer Management Functions
 function openTransferModal(driverId) {
     $('#transferDriverId').val(driverId);
     $('#transferForm')[0].reset();
@@ -798,6 +826,10 @@ function openTransferModal(driverId) {
         },
         pageLength: 5,
         lengthMenu: [5, 10, 15],
+        ajax: {
+            url: `/drivers/${driverId}/freights`,
+            dataSrc: 'freights'
+        },
         columns: [
             { 
                 data: null,
@@ -852,25 +884,13 @@ function openTransferModal(driverId) {
         fixedColumns: true
     });
     
-    $.get(`/drivers/${driverId}/freights`, function(data) {
-        if (data.freights && data.freights.length > 0) {
-            table.clear().rows.add(data.freights).draw();
-        } else {
-            table.clear().draw();
+    $('#transferFreightsTable tbody').on('click', '.freightRadio', function() {
+        const rowData = table.row($(this).closest('tr')).data();
+        if (rowData) {
+            $('#transferAmount').val(rowData.value ? rowData.value.toFixed(2) : '');
+            $('#selectedFreightValue').val(rowData.value || '');
+            $('.freightRadio').not(this).prop('checked', false);
         }
-
-        $('#transferFreightsTable tbody').on('click', '.freightRadio', function() {
-            const rowData = table.row($(this).closest('tr')).data();
-            if (rowData) {
-                $('#transferAmount').val(rowData.value ? rowData.value.toFixed(2) : '');
-                $('#selectedFreightValue').val(rowData.value || '');
-                $('.freightRadio').not(this).prop('checked', false);
-            }
-        });
-        
-    }).fail(function() {
-        console.error('Erro ao carregar fretes');
-        table.clear().draw();
     });
 }
 
@@ -899,17 +919,30 @@ function submitTransfer() {
         requestData.freight_value = freightValue;
     }
 
-    $.post(`/transfer/${driverId}`, requestData, function(response) {
-        toastr.success('Transferência realizada com sucesso!');
-        $('#transferModal').modal('hide');
-        showBalanceModal(driverId);
-    }).fail(function(error) {
-        toastr.error(error.responseJSON?.message || 'Erro ao realizar transferência');
-    }).always(function() {
-        $('#submitTransfer').prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Enviar');
+    $.ajax({
+        url: `/transfer/${driverId}`,
+        type: 'POST',
+        data: requestData,
+        success: function(response) {
+            toastr.success('Transferência realizada com sucesso!');
+            $('#transferModal').modal('hide');
+            showBalanceModal(driverId);
+        },
+        error: function(xhr) {
+            try {
+                const error = JSON.parse(xhr.responseText);
+                toastr.error(error.message || 'Erro ao realizar transferência');
+            } catch {
+                toastr.error('Erro ao realizar transferência');
+            }
+        },
+        complete: function() {
+            $('#submitTransfer').prop('disabled', false).html('<i class="fas fa-paper-plane me-2"></i>Enviar');
+        }
     });
 }
 
+// Balance Management Functions
 function showBalanceModal(driverId) {
     const modal = new bootstrap.Modal('#balanceModal');
     selectedDriverId = driverId;
@@ -927,149 +960,148 @@ function showBalanceModal(driverId) {
     
     modal.show();
     
-    $.get(`/drivers/${driverId}/balance-data`, function(data) {
-        $('#asaasIdentifier').text(data.account.asaas_identifier || 'Não informado');
-        $('#totalBalance').text(formatCurrency(data.account.total_balance));
-        $('#blockedBalance').text(formatCurrency(data.account.blocked_balance));
-        $('#availableBalance').text(formatCurrency(data.account.available_balance));
-        
-        $('#balanceModal .modal-body').html(`
-            <div class="row mb-4">
-                <div class="col-md-3 mb-3">
-                    <div class="card h-100 border-0 bg-light">
-                        <div class="card-body text-center">
-                            <h6 class="card-title text-muted">ID Conta Asaas</h6>
-                            <p class="card-text h5" id="asaasIdentifier">${data.account.asaas_identifier || '-'}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card h-100 border-0 bg-success text-white">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Saldo Total</h6>
-                            <p class="card-text h4" id="totalBalance">${formatCurrency(data.account.total_balance)}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card h-100 border-0 bg-warning">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Saldo Bloqueado</h6>
-                            <p class="card-text h4" id="blockedBalance">${formatCurrency(data.account.blocked_balance)}</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-3 mb-3">
-                    <div class="card h-100 border-0 bg-info text-white">
-                        <div class="card-body text-center">
-                            <h6 class="card-title">Saldo Disponível</h6>
-                            <p class="card-text h4" id="availableBalance">${formatCurrency(data.account.available_balance)}</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
+    $.ajax({
+        url: `/drivers/${driverId}/balance-data`,
+        method: 'GET',
+        success: function(data) {
+            $('#asaasIdentifier').text(data.account.asaas_identifier || 'Não informado');
+            $('#totalBalance').text(formatCurrency(data.account.total_balance));
+            $('#blockedBalance').text(formatCurrency(data.account.blocked_balance));
+            $('#availableBalance').text(formatCurrency(data.account.available_balance));
             
-            <div class="d-flex justify-content-between align-items-center mb-3">
-                <h5 class="mb-0">Histórico de Transferências</h5>
-                <button type="button" class="btn btn-success" id="newTransferBtn">
-                    <i class="fas fa-plus me-2"></i>Nova Transferência
-                </button>
-            </div>
+            $('#balanceModal .modal-body').html(`
+                <div class="row mb-4">
+                    <div class="col-md-3 mb-3">
+                        <div class="card h-100 border-0 bg-light">
+                            <div class="card-body text-center">
+                                <h6 class="card-title text-muted">ID Conta Asaas</h6>
+                                <p class="card-text h5" id="asaasIdentifier">${data.account.asaas_identifier || '-'}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card h-100 border-0 bg-success text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Saldo Total</h6>
+                                <p class="card-text h4" id="totalBalance">${formatCurrency(data.account.total_balance)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card h-100 border-0 bg-warning">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Saldo Bloqueado</h6>
+                                <p class="card-text h4" id="blockedBalance">${formatCurrency(data.account.blocked_balance)}</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3 mb-3">
+                        <div class="card h-100 border-0 bg-info text-white">
+                            <div class="card-body text-center">
+                                <h6 class="card-title">Saldo Disponível</h6>
+                                <p class="card-text h4" id="availableBalance">${formatCurrency(data.account.available_balance)}</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="mb-0">Histórico de Transferências</h5>
+                    <button type="button" class="btn btn-success" id="newTransferBtn">
+                        <i class="fas fa-plus me-2"></i>Nova Transferência
+                    </button>
+                </div>
+                
+                <div class="table-responsive">
+                    <table id="transfersTable" class="table table-striped table-hover" style="width:100%">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Tipo</th>
+                                <th>Valor</th>
+                                <th>Descrição</th>
+                                <th>Data</th>
+                                <th>ID Asaas</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            `);
             
-            <div class="table-responsive">
-                <table id="transfersTable" class="table table-striped table-hover" style="width:100%">
-                    <thead class="table-light">
-                        <tr>
-                            <th>Tipo</th>
-                            <th>Valor</th>
-                            <th>Descrição</th>
-                            <th>Data</th>
-                            <th>ID Asaas</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
-            </div>
-        `);
-        
-        $('#transfersTable').DataTable({
-            data: data.transfers,
-            columns: [
-                { 
-                    data: 'type', 
-                    render: type => {
-                        const types = {
-                            'PIX': '<span class="badge bg-success">PIX</span>',
-                            'TED': '<span class="badge bg-primary">TED</span>',
-                            'DOC': '<span class="badge bg-info">DOC</span>',
-                            'INTERNAL': '<span class="badge bg-secondary">Interna</span>',
-                            'available_balance': '<span class="badge bg-success">Liberação de Saldo</span>',
-                            'blocked_balance': '<span class="badge bg-warning">Bloqueio de Saldo</span>',
-                            'debited_balance': '<span class="badge bg-danger">Transferência PIX</span>'
-                        };
-                        return types[type] || type;
+            $('#transfersTable').DataTable({
+                data: data.transfers,
+                columns: [
+                    { 
+                        data: 'type', 
+                        render: type => {
+                            const types = {
+                                'PIX': '<span class="badge bg-success">PIX</span>',
+                                'TED': '<span class="badge bg-primary">TED</span>',
+                                'DOC': '<span class="badge bg-info">DOC</span>',
+                                'INTERNAL': '<span class="badge bg-secondary">Interna</span>',
+                                'available_balance': '<span class="badge bg-success">Liberação de Saldo</span>',
+                                'blocked_balance': '<span class="badge bg-warning">Bloqueio de Saldo</span>',
+                                'debited_balance': '<span class="badge bg-danger">Transferência PIX</span>'
+                            };
+                            return types[type] || type;
+                        }
+                    },
+                    { 
+                        data: 'amount', 
+                        render: amount => formatCurrency(amount) 
+                    },
+                    { 
+                        data: 'description',
+                        render: (description, type, row) => {
+                            if (description) return description;
+                            
+                            const descriptions = {
+                                'available_balance': 'Transferência de liberação de saldo',
+                                'blocked_balance': 'Transferência de saldo bloqueado',
+                                'debited_balance': 'Transferência PIX feita pelo motorista'
+                            };
+                            
+                            return descriptions[row.type] || 'Transferência bancária';
+                        }
+                    },
+                    { 
+                        data: 'transfer_date', 
+                        render: date => formatDateTimeBR(date) 
+                    },
+                    { 
+                        data: 'asaas_identifier' 
                     }
-                },
-                { 
-                    data: 'amount', 
-                    render: amount => formatCurrency(amount) 
-                },
-                { 
-                    data: 'description',
-                    render: (description, type, row) => {
-                        if (description) return description;
-                        
-                        const descriptions = {
-                            'available_balance': 'Transferência de liberação de saldo',
-                            'blocked_balance': 'Transferência de saldo bloqueado',
-                            'debited_balance': 'Transferência PIX feita pelo motorista'
-                        };
-                        
-                        return descriptions[row.type] || 'Transferência bancária';
-                    }
-                },
-                { 
-                    data: 'transfer_date', 
-                    render: date => new Date(date).toLocaleString('pt-BR') 
-                },
-                { 
-                    data: 'asaas_identifier' 
+                ],
+                order: [[3, 'desc']],
+                language: {
+                    url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
                 }
-            ],
-            order: [[3, 'desc']],
-            language: {
-                url: '//cdn.datatables.net/plug-ins/1.13.4/i18n/pt-BR.json'
-            }
-        });
-        
-        $('#newTransferBtn').off('click').on('click', function() {
-            openTransferModal(driverId);
-        });
-    }).fail(function() {
-        $('#balanceModal .modal-body').html(`
-            <div class="alert alert-danger">
-                <i class="fas fa-exclamation-triangle me-2"></i>Erro ao carregar informações financeiras. Tente novamente mais tarde.
-            </div>
-        `);
+            });
+            
+            $('#newTransferBtn').off('click').on('click', function() {
+                openTransferModal(driverId);
+            });
+        },
+        error: function() {
+            $('#balanceModal .modal-body').html(`
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle me-2"></i>Erro ao carregar informações financeiras. Tente novamente mais tarde.
+                </div>
+            `);
+        }
     });
 }
 
+// Truck Management Functions
 function formatTruckDetails(d) {
-    // Verifica se os dados existem
-    if (!d) {
-        return '<div class="alert alert-warning">Dados do caminhão não disponíveis</div>';
-    }
+    if (!d) return '<div class="alert alert-warning">Dados do caminhão não disponíveis</div>';
 
-    // Função para construir URL completa do S3 ou local
     function getS3Url(path) {
         if (!path) return null;
-        // Se já for uma URL completa, retorna como está
         if (path.startsWith('http')) return path;
-        // Se for um path do S3, constrói a URL completa
         return `https://${AWS_BUCKET}.s3.amazonaws.com/${path}`;
     }
 
-    // Função auxiliar para renderizar a coluna de foto
     function renderPhotoColumn(photoUrl, title = '') {
         const fullUrl = getS3Url(photoUrl);
         if (!fullUrl) {
@@ -1105,7 +1137,13 @@ function formatTruckDetails(d) {
         `;
     }
 
-    // Fotos do caminhão - verifica se existe antes de tentar acessar
+    let dimensions = {};
+    try {
+        dimensions = d.dimensions ? JSON.parse(d.dimensions) : {};
+    } catch (e) {
+        console.error('Erro ao parsear dimensões:', e);
+    }
+
     let truckPhotosHtml = '';
     if (d.photos && (d.photos.front || d.photos.rear || d.photos.left_side || d.photos.right_side || d.photos.documents)) {
         truckPhotosHtml = `
@@ -1134,7 +1172,6 @@ function formatTruckDetails(d) {
         </div>`;
     }
 
-    // Implementos - verifica se existe antes de tentar acessar
     let implementsHtml = '';
     if (d.implements && Array.isArray(d.implements) && d.implements.length > 0) {
         implementsHtml = `
@@ -1167,14 +1204,6 @@ function formatTruckDetails(d) {
                 </table>
             </div>
         </div>`;
-    }
-
-    // Dimensões (convertendo de string JSON para objeto)
-    let dimensions = {};
-    try {
-        dimensions = d.dimensions ? JSON.parse(d.dimensions) : {};
-    } catch (e) {
-        console.error('Erro ao parsear dimensões:', e);
     }
 
     return `
@@ -1215,11 +1244,6 @@ function formatTruckDetails(d) {
     `;
 }
 
-// Adicione estas variáveis no topo do seu arquivo JavaScript
-// Substitua com suas configurações reais do AWS S3
-const AWS_BUCKET = 'fretes';
-const AWS_REGION = ''; // Ex: 'us-east-1'
-
 function toggleTruckStatus(truckId, isActive) {
     const action = isActive ? 'deactivate' : 'activate';
     const actionText = isActive ? 'desativação' : 'ativação';
@@ -1231,24 +1255,21 @@ function toggleTruckStatus(truckId, isActive) {
     toastr.info(`Processando ${actionText}...`, 'Aguarde', {timeOut: 0});
 
     $.ajax({
+        url: '/toggle-truck-status',
+        type: 'POST',
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
         },
-        url: '/toggle-truck-status', // Seu endpoint proxy
-        type: 'POST',
-        contentType: 'application/json',
         data: JSON.stringify({
             truck_id: truckId,
             action: action
         }),
+        contentType: 'application/json',
         success: function(response) {
             toastr.clear();
-            if (response.statusCode === 200) {
+            if (response.success) {
                 toastr.success(`Caminhão ${action === 'activate' ? 'ativado' : 'desativado'} com sucesso!`);
-                
-                // Recarrega os dados da tabela
-                const trucksTable = $('#trucksTable').DataTable();
-                trucksTable.ajax.reload(null, false);
+                $('#trucksTable').DataTable().ajax.reload(null, false);
             } else {
                 toastr.error(response.message || `Erro na ${actionText} do caminhão`);
             }
@@ -1286,7 +1307,6 @@ function showTrucksModal(driverId) {
             url: `/trucks?driver_id=${driverId}`,
             dataSrc: function(response) {
                 try {
-                    // Parse o body que é uma string JSON
                     const parsedBody = JSON.parse(response.body);
                     return parsedBody.success ? parsedBody.trucks : [];
                 } catch (e) {
@@ -1347,7 +1367,6 @@ function showTrucksModal(driverId) {
         }
     });
 
-    // Mostrar/ocultar detalhes ao clicar no ícone
     $('#trucksTable tbody').on('click', 'td.dt-control', function () {
         const tr = $(this).closest('tr');
         const row = trucksTable.row(tr);
@@ -1362,6 +1381,7 @@ function showTrucksModal(driverId) {
     });
 }
 
+// Driver Details Formatting
 function format(d) {
     let reason = '';
     if (d.status === 'block' || d.status === 'transfer_block') {
@@ -1408,85 +1428,108 @@ function format(d) {
     `;
 }
 
-// Função para mostrar o modal com o mapa
+// Map Functions
 function showDriversLocation() {
     const modal = new bootstrap.Modal('#driversLocationModal');
     
-    // Garante que o modal está completamente mostrado antes de inicializar o mapa
+    // Clear any existing map
+    if (window.driversMap) {
+        window.driversMap.remove();
+        window.driversMap = null;
+    }
+    
     modal.show();
     
-    $('#driversLocationModal').on('shown.bs.modal', function() {
-        // Pequeno timeout para garantir que o modal está totalmente renderizado
-        setTimeout(() => {
-            initDriversMap();
-        }, 100);
+    // Initialize map after modal is shown
+    $('#driversLocationModal').one('shown.bs.modal', function() {
+        setTimeout(initDriversMap, 300);
     });
 }
 
-// Função para inicializar o mapa
 function initDriversMap() {
-    // Verifica se o container do mapa existe e está visível
     const mapContainer = document.getElementById('driversMap');
-    if (!mapContainer) {
-        console.error('Container do mapa não encontrado');
+    
+    // Check if container exists and is visible
+    if (!mapContainer || $(mapContainer).is(':hidden')) {
+        console.error('Map container not ready');
         return;
     }
     
-    // Destruir o mapa existente se houver
-    if (window.driversMap) {
-        window.driversMap.remove();
-    }
-    
-    // Redefine o tamanho do container para evitar problemas de renderização
+    // Force container dimensions
     mapContainer.style.width = '100%';
     mapContainer.style.height = '100%';
+    mapContainer.style.minHeight = '400px';
     
-    // Criar novo mapa
-    window.driversMap = L.map('driversMap').setView([-15.7889, -47.8799], 4);
+    // Initialize map with a default center (Brazil)
+    window.driversMap = L.map('driversMap', {
+        preferCanvas: true, // Better for many markers
+        zoomControl: true
+    }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
     
-    // Adicionar camada do mapa
+    // Add tile layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        maxZoom: 18
     }).addTo(window.driversMap);
     
-    // Buscar localizações dos motoristas
-    $.get('/drivers/locations', function(data) {
-        if (data && data.length > 0) {
+    // Fit bounds after tiles load
+    window.driversMap.whenReady(function() {
+        loadDriverLocations();
+    });
+}
+
+function loadDriverLocations() {
+    $.ajax({
+        url: '/drivers/locations',
+        method: 'GET',
+        success: function(data) {
+            if (!data || data.length === 0) {
+                window.driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+                L.popup()
+                    .setLatLng(window.driversMap.getCenter())
+                    .setContent('Nenhuma localização disponível')
+                    .openOn(window.driversMap);
+                return;
+            }
+            
+            const markers = [];
+            const bounds = L.latLngBounds();
+            
             data.forEach(driver => {
                 if (driver.latitude && driver.longitude) {
-                    const marker = L.marker([driver.latitude, driver.longitude]).addTo(window.driversMap);
+                    const latLng = L.latLng(driver.latitude, driver.longitude);
+                    const marker = L.marker(latLng).addTo(window.driversMap);
+                    
                     marker.bindPopup(`
                         <b>${driver.name}</b><br>
                         ${driver.address ? `Endereço: ${driver.address}<br>` : ''}
                         ${driver.phone ? `Tel: ${maskPhone(driver.phone)}<br>` : ''}
-                        ${driver.status ? `Status: ${getStatusLabel(driver.status)[0]}` : ''}
+                        Status: ${getStatusLabel(driver.status)[0]}
                     `);
+                    
+                    markers.push(marker);
+                    bounds.extend(latLng);
                 }
             });
             
-            if (data.length > 1) {
-                const group = new L.featureGroup(data
-                    .filter(d => d.latitude && d.longitude)
-                    .map(d => L.marker([d.latitude, d.longitude])));
-                
-                window.driversMap.fitBounds(group.getBounds());
-            } else if (data.length === 1 && data[0].latitude && data[0].longitude) {
-                window.driversMap.setView([data[0].latitude, data[0].longitude], 12);
+            if (markers.length > 0) {
+                if (markers.length === 1) {
+                    window.driversMap.setView(markers[0].getLatLng(), MARKER_ZOOM);
+                } else {
+                    window.driversMap.fitBounds(bounds.pad(0.2));
+                }
             }
-        } else {
+        },
+        error: function() {
             L.popup()
                 .setLatLng(window.driversMap.getCenter())
-                .setContent('Nenhuma localização de motorista disponível')
+                .setContent('Erro ao carregar localizações')
                 .openOn(window.driversMap);
         }
-    }).fail(function() {
-        L.popup()
-            .setLatLng(window.driversMap.getCenter())
-            .setContent('Erro ao carregar localizações')
-            .openOn(window.driversMap);
     });
 }
 
+// Main Document Ready Function
 $(document).ready(function () {
     const table = $('#drivers-table').DataTable({
         processing: true,
@@ -1589,44 +1632,20 @@ $(document).ready(function () {
         }
     });
 
+    // Event Listeners
     $('#blockUserBtn').click(() => updateDriverStatus(selectedDriverId, 'block'));
     $('#blockTransferBtn').click(() => updateDriverStatus(selectedDriverId, 'transfer_block'));
     $('#submitTransfer').click(submitTransfer);
     $('#showDriversLocationBtn').click(showDriversLocation);
     
-    // Limpar mapa quando o modal for fechado
+    // Modal Cleanup
     $('#driversLocationModal').on('hidden.bs.modal', function() {
         if (window.driversMap) {
             window.driversMap.remove();
             window.driversMap = null;
         }
+        $(this).off('shown.bs.modal');
     });
 });
-
-function deleteDriver(id) {
-    if (confirm('Tem certeza que deseja deletar este motorista?')) {
-        fetch(`/drivers/${id}`, {
-            method: 'DELETE',
-            headers: {
-                'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            }
-        })
-        .then(response => {
-            if (response.ok) {
-                toastr.success(`Motorista deletado com sucesso`);
-                $('#drivers-table').DataTable().ajax.reload(null, false);
-            } else {
-                return response.json().then(error => {
-                    throw new Error(error.message || 'Erro ao deletar.');
-                });
-            }
-        })
-        .catch(error => {
-            alert('Erro: ' + error.message);
-        });
-    }
-}
 </script>
 @endsection
