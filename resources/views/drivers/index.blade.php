@@ -31,7 +31,7 @@
 </div>
 
 <!-- Modal de Imagem Ampliada -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true" style="z-index: 1080;">
+<div class="modal fade" id="imageModal" tabindex="-1" style="z-index: 1080;">
   <div class="modal-dialog modal-dialog-centered modal-xl">
     <div class="modal-content">
       <div class="modal-header">
@@ -53,7 +53,7 @@
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title"><i class="fas fa-robot me-2"></i>Análise de Motorista com IA</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body" id="analysisContent"></div>
       <div class="modal-footer">
@@ -69,7 +69,7 @@
     <div class="modal-content">
       <div class="modal-header bg-warning">
         <h5 class="modal-title"><i class="fas fa-lock me-2"></i>Bloqueio de Motorista</h5>
-        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="alert alert-info mb-3">
@@ -95,7 +95,7 @@
 </div>
 
 <!-- Modal de Saldo e Transferências -->
-<div class="modal fade" id="balanceModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="balanceModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
@@ -170,7 +170,7 @@
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title"><i class="fas fa-exchange-alt me-2"></i>Realizar Transferência</h5>
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
         <div class="row">
@@ -234,7 +234,7 @@
 </div>
 
 <!-- Modal de Fretes do Motorista -->
-<div class="modal fade" id="freightsModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="freightsModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
@@ -268,7 +268,7 @@
 </div>
 
 <!-- Modal de Caminhões e Implementos -->
-<div class="modal fade" id="trucksModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="trucksModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
@@ -301,7 +301,7 @@
 </div>
 
 <!-- Modal de Localização dos Motoristas -->
-<div class="modal fade" id="driversLocationModal" tabindex="-1" aria-hidden="true">
+<div class="modal fade" id="driversLocationModal" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
