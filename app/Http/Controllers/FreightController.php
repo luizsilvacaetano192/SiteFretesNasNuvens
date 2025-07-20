@@ -706,8 +706,8 @@ class FreightController extends Controller
     {
         $freights = Freight::with(['origin', 'destination'])
             ->where('status_id', 2) // 2 = Aguardando motorista (ajuste conforme seu sistema)
-            ->whereNotNull('start_latitude')
-            ->whereNotNull('start_longitude')
+            ->whereNotNull('start_lat')
+            ->whereNotNull('start_lng')
             ->get()
             ->map(function($freight) {
                 return [
