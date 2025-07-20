@@ -702,6 +702,28 @@ class FreightController extends Controller
         return Excel::download(new FreightsExport, 'fretes.xlsx');
     }
 
+     public function waitingDrivers()
+    {
+        $freights = Freight::with(['origin', 'destination'])
+            ->where('status_id', 2) // 2 = Aguardando motorista (ajuste conforme seu sistema)
+            ->whereNotNull('start_latitude')
+            ->whereNotNull('start_longitude')
+            ->get()
+            ->map(function($freight) {
+                return [
+                    'id' => $freight->id,
+                    'start_address' => $freight->start_address,
+                    'destination_address' => $freight->destination_address,
+                    'formatted_value' => $freight->formatted_value,
+                    'created_at' => $freight->created_at,
+                    'latitude' => $freight->start_latitude,
+                    'longitude' => $freight->start_longitude
+                ];
+            });
+
+        return response()->json($freights);
+    }
+
     protected function createAsaasPayment(Freight $freight)
     {
         try {

@@ -4,6 +4,7 @@
 
 @section('content')
 
+<!-- Modal de Detalhes do Motorista/Caminhão -->
 <div class="modal fade" id="driverTruckModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-xl">
         <div class="modal-content">
@@ -188,6 +189,30 @@
     </div>
 </div>
 
+<!-- Modal do Mapa -->
+<div class="modal fade" id="freightsMapModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Mapa de Fretes Aguardando Motorista</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div id="mapLoading" class="text-center py-5">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p>Carregando mapa...</p>
+                </div>
+                <div id="freightsMap" style="height: 600px; width: 100%; display: none;"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 <div class="container-fluid px-4 py-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
@@ -202,6 +227,9 @@
             </nav>
         </div>
         <div>
+            <button id="show-waiting-map" class="btn btn-info me-2">
+                <i class="fas fa-map-marked-alt me-1"></i>Mapa de Fretes
+            </button>
             <button id="refresh-table" class="btn btn-outline-primary me-2">
                 <i class="fas fa-sync-alt me-1"></i>Atualizar (10s)
             </button>
@@ -422,6 +450,7 @@
 <link href="https://cdn.datatables.net/buttons/2.3.2/css/buttons.dataTables.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
 
 <style>
 /* CORREÇÕES PARA O SCROLL INDESEJADO */
@@ -536,6 +565,54 @@ body {
     font-size: 0.75em;
 }
 
+/* ESTILO PARA O MAPA */
+#freightsMap {
+    min-height: 600px;
+    width: 100%;
+}
+
+/* Estilo para os marcadores personalizados */
+.custom-marker {
+    background-color: #4e73df;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 0 5px rgba(0,0,0,0.3);
+}
+
+.custom-marker.waiting {
+    background-color: #f6c23e;
+}
+
+.custom-marker.in-progress {
+    background-color: #1cc88a;
+}
+
+.custom-marker.delivered {
+    background-color: #36b9cc;
+}
+
+.custom-marker.cancelled {
+    background-color: #e74a3b;
+}
+
+/* Estilo para o popup do mapa */
+.map-popup {
+    min-width: 200px;
+}
+
+.map-popup h6 {
+    font-size: 1rem;
+    font-weight: bold;
+    margin-bottom: 0.5rem;
+}
+
+.map-popup p {
+    margin-bottom: 0.3rem;
+    font-size: 0.85rem;
+}
+
 /* RESPONSIVIDADE */
 @media (max-width: 992px) {
     .card-header {
@@ -585,11 +662,16 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.7.1/dist/leaflet.js"></script>
 
 <script>
+// Variáveis globais
 let freightTable;
 let countdownInterval;
+let map;
+let markers = [];
 
+// Funções auxiliares
 function formatDateBR(dateStr) {
     if (!dateStr) return '';
     const date = new Date(dateStr);
@@ -629,8 +711,8 @@ function maskPlate(plate) {
     return plate; // Retorna original se não bater com os padrões
 }
 
-function aprovar(id,statusId){
-    
+// Funções para aprovar/reprovar fretes
+function aprovar(id,statusId) {
     Swal.fire({
         title: 'Confirmar Aprovação',
         text: "Deseja realmente aprovar este frete? O motorista será notificado.",
@@ -647,8 +729,7 @@ function aprovar(id,statusId){
     });
 };
 
-function reprovar(id,statusId){
-    
+function reprovar(id,statusId) {
     Swal.fire({
         title: 'Confirmar Recusa',
         text: "Deseja realmente recusar este frete? O motorista será notificado.",
@@ -691,8 +772,8 @@ function updateFreightStatus(id, statusId) {
     });
 }
 
+// Funções para o modal de detalhes do motorista/caminhão
 function detailsDriverTruck(id) {
-    
     $('#driverTruckModal').modal('show');
     $('#modalLoading').show();
     $('#modalContent').hide();
@@ -704,9 +785,9 @@ function detailsDriverTruck(id) {
         $('#driverPhone').text(maskPhone(data.driver.phone));
         $('#driverLicense').text(data.driver.driver_license_number);
         $('#driverLicenseCategory').text(data.driver.driver_license_category);
-        $('#driverLicenseExpiration').text( formatDateBR(data.driver.driver_license_expiration));
+        $('#driverLicenseExpiration').text(formatDateBR(data.driver.driver_license_expiration));
         
-        // Set driver photos - ajuste para os nomes corretos dos campos
+        // Set driver photos
         setPhoto('#driverLicenseFrontPhoto', data.driver.driver_license_front_url);
         setPhoto('#driverLicenseBackPhoto', data.driver.driver_license_back_url);
         setPhoto('#driverFacePhoto', data.driver.face_photo_url);
@@ -772,6 +853,79 @@ function setPhoto(elementId, photoUrl) {
     }
 }
 
+// Funções para o mapa de fretes
+function initFreightsMap() {
+    $('#freightsMapModal').modal('show');
+    $('#mapLoading').show();
+    $('#freightsMap').hide();
+    
+    // Carrega os fretes aguardando motorista
+    $.get('{{ route("freights.waitingDrivers") }}', function(response) {
+        if (response.length === 0) {
+            $('#mapLoading').html('<p class="text-muted">Nenhum frete aguardando motorista encontrado</p>');
+            return;
+        }
+        
+        // Inicializa o mapa
+        initMap(response);
+    }).fail(function() {
+        $('#mapLoading').html('<p class="text-danger">Erro ao carregar dados para o mapa</p>');
+    });
+}
+
+function initMap(freights) {
+    // Esconde o loading e mostra o mapa
+    $('#mapLoading').hide();
+    $('#freightsMap').show();
+    
+    // Cria o mapa centralizado no Brasil
+    map = L.map('freightsMap').setView([-14.2350, -51.9253], 4);
+    
+    // Adiciona o tile layer do OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Limpa marcadores anteriores
+    markers.forEach(marker => map.removeLayer(marker));
+    markers = [];
+    
+    // Adiciona marcadores para cada frete
+    freights.forEach(freight => {
+        if (freight.latitude && freight.longitude) {
+            // Cria um marcador personalizado
+            const marker = L.marker([freight.latitude, freight.longitude], {
+                icon: L.divIcon({
+                    className: 'custom-marker waiting',
+                    html: `<i class="fas fa-truck"></i>`,
+                    iconSize: [30, 30],
+                    popupAnchor: [0, -15]
+                })
+            }).addTo(map);
+            
+            // Adiciona popup com informações
+            marker.bindPopup(`
+                <div class="map-popup">
+                    <h6>Frete #${freight.id}</h6>
+                    <p><strong>Origem:</strong> ${freight.start_address || 'N/A'}</p>
+                    <p><strong>Destino:</strong> ${freight.destination_address || 'N/A'}</p>
+                    <p><strong>Valor:</strong> ${freight.formatted_value || 'N/A'}</p>
+                    <p><strong>Criado em:</strong> ${new Date(freight.created_at).toLocaleDateString('pt-BR')}</p>
+                    <a href="/freights/${freight.id}" class="btn btn-sm btn-primary w-100 mt-2">Ver Detalhes</a>
+                </div>
+            `);
+            
+            markers.push(marker);
+        }
+    });
+    
+    // Ajusta o zoom para mostrar todos os marcadores
+    if (markers.length > 0) {
+        const group = new L.featureGroup(markers);
+        map.fitBounds(group.getBounds().pad(0.5));
+    }
+}
+
 // Configuração do Toastr
 toastr.options = {
     "closeButton": true,
@@ -784,6 +938,7 @@ toastr.options = {
     "tapToDismiss": false
 };
 
+// Inicialização da página
 $(document).ready(function() {
     // Inicializa a tabela
     initializeDataTable();
@@ -842,7 +997,7 @@ function initializeDataTable() {
             { 
                 data: 'start_address', 
                 name: 'start_address',
-                visible: false, // COLUNA ORIGEM OCULTA INICIALMENTE
+                visible: false,
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
@@ -855,7 +1010,7 @@ function initializeDataTable() {
             { 
                 data: 'destination_address', 
                 name: 'destination_address',
-                visible: false, // COLUNA DESTINO OCULTA INICIALMENTE
+                visible: false,
                 render: function(data) {
                     if (!data) return 'N/A';
                     return `
@@ -945,8 +1100,8 @@ function initializeDataTable() {
 }
 
 function setupColumnToggleButtons() {
-    const originColumn = freightTable.column(2); // Índice 2 é a coluna Origem
-    const destinationColumn = freightTable.column(3); // Índice 3 é a coluna Destino
+    const originColumn = freightTable.column(2);
+    const destinationColumn = freightTable.column(3);
     
     // Atualiza o estado inicial dos botões
     updateToggleButtonOrigem('#toggle-origin', originColumn.visible());
@@ -1039,6 +1194,10 @@ function setupEventHandlers() {
 
     $('#delete-all-freights').click(function() {
         confirmDeleteAll();
+    });
+
+    $('#show-waiting-map').click(function() {
+        initFreightsMap();
     });
 
     $(document).on('click', '.delete-freight', function(e) {
