@@ -1411,11 +1411,15 @@ function format(d) {
 // Função para mostrar o modal com o mapa
 function showDriversLocation() {
     const modal = new bootstrap.Modal('#driversLocationModal');
+    
+    // Garante que o modal está completamente mostrado antes de inicializar o mapa
     modal.show();
     
-    // Inicializa o mapa após o modal ser mostrado
     $('#driversLocationModal').on('shown.bs.modal', function() {
-        initDriversMap();
+        // Pequeno timeout para garantir que o modal está totalmente renderizado
+        setTimeout(() => {
+            initDriversMap();
+        }, 100);
     });
 }
 
