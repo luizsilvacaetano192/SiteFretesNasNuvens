@@ -25,7 +25,9 @@ class Driver extends Model
         'face_photo',
         'address_proof_photo',
         'status',
-        'reason'
+        'reason',
+        'latitude',
+        'longitude'
     ];
 
     protected $appends = [

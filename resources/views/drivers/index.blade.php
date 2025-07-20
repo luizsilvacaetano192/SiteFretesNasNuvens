@@ -3,7 +3,10 @@
 @section('content')
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-    <h2 class="mb-0"><i class="bi bi-buildings me-2"></i>Gestão de motoristas</h2>
+        <h2 class="mb-0"><i class="bi bi-buildings me-2"></i>Gestão de motoristas</h2>
+        <button class="btn btn-primary" id="showDriversLocationBtn">
+            <i class="fas fa-map-marked-alt me-2"></i>Ver Localizações
+        </button>
     </div>
 
     <div class="card border-0 shadow-sm">
@@ -27,7 +30,6 @@
     </div>
 </div>
 
-<!-- Modal de Imagem Ampliada -->
 <!-- Modal de Imagem Ampliada -->
 <div class="modal fade" id="imageModal" tabindex="-1" aria-hidden="true" style="z-index: 1080;">
   <div class="modal-dialog modal-dialog-centered modal-xl">
@@ -298,25 +300,38 @@
   </div>
 </div>
 
+<!-- Modal de Localização dos Motoristas -->
+<div class="modal fade" id="driversLocationModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content">
+      <div class="modal-header bg-primary text-white">
+        <h5 class="modal-title"><i class="fas fa-map-marked-alt me-2"></i>Localização dos Motoristas</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body p-0" style="height: 70vh;">
+        <div id="driversMap" style="width: 100%; height: 100%;"></div>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- CSS -->
 <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
 <link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-
-<!-- JavaScript -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 
 <style>
- .btn:hover {
-        transform: scale(1.05);
-        transition: 0.2s ease;
-        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
-    }
+.btn:hover {
+    transform: scale(1.05);
+    transition: 0.2s ease;
+    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+}
+
 .card {
     border-radius: 0.5rem;
     box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
@@ -410,6 +425,23 @@ tr.shown td.dt-control::before {
     z-index: 10;
 }
 
+#driversMap {
+    border-radius: 0.5rem;
+    overflow: hidden;
+}
+
+.leaflet-popup-content {
+    font-size: 0.875rem;
+}
+
+.leaflet-popup-content b {
+    color: #0d6efd;
+}
+
+#showDriversLocationBtn {
+    white-space: nowrap;
+}
+
 @media (max-width: 768px) {
     #transferModal .row {
         flex-direction: column;
@@ -430,6 +462,14 @@ tr.shown td.dt-control::before {
     }
 }
 </style>
+
+<!-- JavaScript -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
+<script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
 <script>
 // Funções utilitárias
@@ -468,7 +508,6 @@ const maskDateTimeBR = (value) => {
   }
   return value.replace(/(\d{2})(\d{2})(\d{4})(\d{2})(\d{1,2})/, '$1/$2/$3 $4:$5');
 };
-
 
 function formatDateBR(dateStr) {
     if (!dateStr) return '';
@@ -562,7 +601,6 @@ function activateDriver(id, status) {
 
 async function sendSms(apiData) {
     try {
-
         // envia sms avisando que ativou
         const body = {
             phone: apiData.phone,
@@ -1334,6 +1372,7 @@ function format(d) {
         <div class="p-3 bg-light rounded">
             <div class="row">
                 <div class="col-md-6">
+                    <p><strong>Endereço:</strong> ${d.address || 'Não informado'}</p>
                     <p><strong>Data de Nascimento:</strong> ${formatDateBR(d.birth_date)}</p>
                     <p><strong>Estado Civil:</strong> ${d.marital_status}</p>
                     <p><strong>CPF:</strong> ${maskCPF(d.cpf)}</p>
@@ -1367,6 +1406,72 @@ function format(d) {
             </div>
         </div>
     `;
+}
+
+// Função para mostrar o modal com o mapa
+function showDriversLocation() {
+    const modal = new bootstrap.Modal('#driversLocationModal');
+    modal.show();
+    
+    // Inicializa o mapa após o modal ser mostrado
+    $('#driversLocationModal').on('shown.bs.modal', function() {
+        initDriversMap();
+    });
+}
+
+// Função para inicializar o mapa
+function initDriversMap() {
+    // Destruir o mapa existente se houver
+    if (window.driversMap) {
+        window.driversMap.remove();
+    }
+    
+    // Criar novo mapa
+    window.driversMap = L.map('driversMap').setView([-15.7889, -47.8799], 4); // Centro do Brasil
+    
+    // Adicionar camada do mapa
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(window.driversMap);
+    
+    // Buscar localizações dos motoristas
+    $.get('/drivers/locations', function(data) {
+        if (data && data.length > 0) {
+            data.forEach(driver => {
+                if (driver.latitude && driver.longitude) {
+                    const marker = L.marker([driver.latitude, driver.longitude]).addTo(window.driversMap);
+                    marker.bindPopup(`
+                        <b>${driver.name}</b><br>
+                        ${driver.address ? `Endereço: ${driver.address}<br>` : ''}
+                        ${driver.phone ? `Tel: ${maskPhone(driver.phone)}<br>` : ''}
+                        ${driver.status ? `Status: ${getStatusLabel(driver.status)[0]}` : ''}
+                    `);
+                }
+            });
+            
+            // Ajustar o zoom para mostrar todos os marcadores
+            if (data.length > 1) {
+                const group = new L.featureGroup(data
+                    .filter(d => d.latitude && d.longitude)
+                    .map(d => L.marker([d.latitude, d.longitude])));
+                
+                window.driversMap.fitBounds(group.getBounds());
+            } else if (data.length === 1 && data[0].latitude && data[0].longitude) {
+                window.driversMap.setView([data[0].latitude, data[0].longitude], 12);
+            }
+        } else {
+            // Mostrar mensagem se não houver localizações
+            L.popup()
+                .setLatLng(window.driversMap.getCenter())
+                .setContent('Nenhuma localização de motorista disponível')
+                .openOn(window.driversMap);
+        }
+    }).fail(function() {
+        L.popup()
+            .setLatLng(window.driversMap.getCenter())
+            .setContent('Erro ao carregar localizações')
+            .openOn(window.driversMap);
+    });
 }
 
 $(document).ready(function () {
@@ -1445,7 +1550,6 @@ $(document).ready(function () {
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
-
                 `
             }
         ],
@@ -1475,6 +1579,15 @@ $(document).ready(function () {
     $('#blockUserBtn').click(() => updateDriverStatus(selectedDriverId, 'block'));
     $('#blockTransferBtn').click(() => updateDriverStatus(selectedDriverId, 'transfer_block'));
     $('#submitTransfer').click(submitTransfer);
+    $('#showDriversLocationBtn').click(showDriversLocation);
+    
+    // Limpar mapa quando o modal for fechado
+    $('#driversLocationModal').on('hidden.bs.modal', function() {
+        if (window.driversMap) {
+            window.driversMap.remove();
+            window.driversMap = null;
+        }
+    });
 });
 
 function deleteDriver(id) {

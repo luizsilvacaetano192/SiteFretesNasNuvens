@@ -137,6 +137,14 @@ Route::middleware(['auth', 'verified'])->group(function () {
   
     // Drivers
     Route::prefix('drivers')->group(function () {
+        Route::get('/locations', function() {
+            $drivers = App\Models\Driver::select('id', 'name', 'phone', 'status', 'latitude', 'longitude','address')
+                ->whereNotNull('latitude')
+                ->whereNotNull('longitude')
+                ->get();
+            
+            return response()->json($drivers);
+        });
         Route::delete('/{id}', [DriverController::class, 'destroy'])->name('drivers.destroy');
         Route::get('/{id}/analyze', [DriverAnalysisController::class, 'analyze']);
         Route::post('/store', [DriverController::class, 'store'])->name('drivers.store');
