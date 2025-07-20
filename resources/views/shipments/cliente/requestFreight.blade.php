@@ -785,6 +785,7 @@
             })
             .then(response => response.json())
             .then(data => {
+                console.log('data.payment_link', data.payment_link);
                 if (data.payment_link) {
                     // Abrir link de pagamento em nova aba
                     const paymentWindow = window.open(data.payment_link, '_blank');
