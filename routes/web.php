@@ -243,6 +243,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/store', [FreightStatusController::class, 'store'])->name('freight-statuses.store');
     });
 
+    Route::get('/freights/waiting-drivers', [FreightController::class, 'waitingDrivers'])
+        ->name('freights.waitingDrivers');
+
     
     Route::resource('service-keys', ServiceKeyController::class);
 
