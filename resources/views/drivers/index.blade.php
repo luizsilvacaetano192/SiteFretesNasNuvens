@@ -1,5 +1,44 @@
 @extends('layouts.app')
 
+@section('styles')
+<style>
+    /* Estilos consolidados e organizados */
+    .driver-table {
+        font-size: 0.875rem;
+    }
+    
+    .driver-table thead th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+    }
+    
+    .driver-actions .btn {
+        transition: all 0.2s ease;
+    }
+    
+    .driver-actions .btn:hover {
+        transform: scale(1.05);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    }
+    
+    /* Estilos específicos para modais */
+    .modal-driver-map {
+        height: 80vh;
+        min-height: 500px;
+    }
+    
+    /* Responsividade */
+    @media (max-width: 768px) {
+        .driver-actions {
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+    }
+</style>
+@endsection
+
 @section('content')
 <link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
 <div class="container-fluid px-4">
