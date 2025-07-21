@@ -520,7 +520,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-0">
-        <div id="driversMap"></div>
+        <div id="driversMap" name="driversMap"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -1506,10 +1506,10 @@ function showDriversLocation() {
         driversLocationModal = new bootstrap.Modal('#driversLocationModal');
     }
     
-    if (window.driversMap) {
+/*     if (window.driversMap) {
         window.driversMap.remove();
         window.driversMap = null;
-    }
+    } */
     
     driversLocationModal.show();
     
