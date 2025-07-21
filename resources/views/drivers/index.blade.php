@@ -556,6 +556,7 @@ const MAX_MAP_INIT_ATTEMPTS = 5;
 let selectedDriverId = null;
 let mapInitializationAttempts = 0;
 let driversLocationModal = null;
+let driversMap = null;
 
 // Utility Functions
 function maskPhone(value) {
@@ -1499,80 +1500,84 @@ function format(d) {
 
 // Map Functions
 function showDriversLocation() {
-    // Reset initialization attempts counter
     mapInitializationAttempts = 0;
     
-    // Initialize modal if not already done
     if (!driversLocationModal) {
         driversLocationModal = new bootstrap.Modal('#driversLocationModal');
     }
     
-    // Clear any existing map
     if (window.driversMap) {
         window.driversMap.remove();
         window.driversMap = null;
     }
     
-    // Show the modal
     driversLocationModal.show();
     
-    // Use MutationObserver to detect when modal is fully visible
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.attributeName === 'class') {
-                const isVisible = $('#driversLocationModal').hasClass('show');
-                if (isVisible) {
-                    observer.disconnect();
-                    initializeMapWithRetry();
-                }
-            }
-        });
-    });
-
-    observer.observe(document.getElementById('driversLocationModal'), {
-        attributes: true,
-        attributeFilter: ['class']
-    });
+    // Verifica se o modal está totalmente visível antes de inicializar o mapa
+    const checkModalVisibility = setInterval(() => {
+        const modal = document.getElementById('driversLocationModal');
+        if (modal && modal.classList.contains('show')) {
+            clearInterval(checkModalVisibility);
+            initializeMapWithRetry();
+        }
+    }, 100);
 }
 
 function initializeMapWithRetry() {
     if (mapInitializationAttempts >= MAX_MAP_INIT_ATTEMPTS) {
         console.error('Failed to initialize map after multiple attempts');
-        toastr.error('Não foi possível carregar o mapa');
+        toastr.error('Não foi possível carregar o mapa após várias tentativas');
         return;
     }
 
     mapInitializationAttempts++;
     
     const mapContainer = document.getElementById('driversMap');
-    if (!mapContainer || mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
-        setTimeout(initializeMapWithRetry, 200);
+    
+    if (!mapContainer) {
+        console.error('Map container not found');
+        toastr.error('Elemento do mapa não encontrado');
+        return;
+    }
+
+    if (mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
+        console.log(`Map container not visible yet (attempt ${mapInitializationAttempts})`);
+        
+        if (mapInitializationAttempts < MAX_MAP_INIT_ATTEMPTS) {
+            setTimeout(initializeMapWithRetry, 300);
+        } else {
+            toastr.error('O container do mapa não está visível');
+        }
         return;
     }
 
     try {
-        // Initialize the map
+        if (window.driversMap) {
+            window.driversMap.remove();
+        }
+        
         window.driversMap = L.map('driversMap', {
             preferCanvas: true,
             zoomControl: true,
             tap: false
         }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
 
-        // Add tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 18
         }).addTo(window.driversMap);
 
-        // Force resize and load data
-        setTimeout(() => {
-            window.driversMap.invalidateSize(true);
-            loadDriverLocations();
-        }, 100);
+        window.driversMap.invalidateSize(true);
+        loadDriverLocations();
         
     } catch (error) {
         console.error('Map initialization error:', error);
-        setTimeout(initializeMapWithRetry, 300);
+        
+        if (mapInitializationAttempts < MAX_MAP_INIT_ATTEMPTS) {
+            setTimeout(initializeMapWithRetry, 500);
+        } else {
+            toastr.error('Erro ao inicializar o mapa: ' + error.message);
+        }
     }
 }
 
