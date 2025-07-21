@@ -36,6 +36,177 @@
             gap: 0.25rem;
         }
     }
+
+    .btn:hover {
+        transform: scale(1.05);
+        transition: 0.2s ease;
+        box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
+    }
+
+    .card {
+        border-radius: 0.5rem;
+        box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    }
+
+    .table {
+        font-size: 0.875rem;
+    }
+
+    .table thead th {
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 0.5px;
+        border-bottom-width: 1px;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: rgba(0, 0, 0, 0.02);
+    }
+
+    .badge {
+        font-weight: 500;
+        padding: 0.35em 0.65em;
+        font-size: 0.75em;
+    }
+
+    #drivers-table {
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+
+    #drivers-table tbody tr {
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    #drivers-table tbody tr:hover {
+        background-color: #f8f9fa;
+    }
+
+    td.dt-control {
+        position: relative;
+    }
+
+    td.dt-control::before {
+        content: "+";
+        font-family: "Font Awesome 6 Free";
+        font-weight: 900;
+        font-size: 1rem;
+        color: #198754;
+        display: inline-block;
+        text-align: center;
+        width: 20px;
+        cursor: pointer;
+    }
+
+    tr.shown td.dt-control::before {
+        content: "-";
+        color: #dc3545;
+    }
+
+    .modal-header {
+        padding: 1rem 1.5rem;
+    }
+
+    .modal-title {
+        font-weight: 600;
+    }
+
+    .btn-group-sm .btn {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+
+    .driver-details-img {
+        max-height: 150px;
+        object-fit: contain;
+        border: 1px solid #dee2e6;
+        border-radius: 0.25rem;
+    }
+
+    #transferFreightsTable {
+        font-size: 0.8rem;
+    }
+
+    #transferFreightsTable thead th {
+        position: sticky;
+        top: 0;
+        background-color: #f8f9fa;
+        z-index: 10;
+    }
+
+    /* Map Container Styles */
+    #driversLocationModal .modal-dialog {
+        max-width: 95%;
+        height: 90vh;
+        margin: 1rem auto;
+    }
+
+    #driversLocationModal .modal-content {
+        height: 100%;
+    }
+
+    #driversMap {
+        width: 100%;
+        height: calc(100% - 60px); /* Account for header/footer */
+        min-height: 500px;
+        background: #f8f9fa;
+        transition: all 0.3s ease;
+    }
+
+    .leaflet-popup-content {
+        font-size: 0.875rem;
+    }
+
+    .leaflet-popup-content b {
+        color: #0d6efd;
+    }
+
+    #showDriversLocationBtn {
+        white-space: nowrap;
+    }
+
+    /* Modal transition effects */
+    #driversLocationModal {
+        display: block !important;
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
+
+    #driversLocationModal.show {
+        opacity: 1;
+    }
+
+    @media (max-width: 768px) {
+        #transferModal .row {
+            flex-direction: column;
+        }
+        
+        #transferModal .col-md-4, 
+        #transferModal .col-md-8 {
+            width: 100%;
+        }
+        
+        .btn-group-sm {
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+        
+        .btn-group-sm .btn {
+            flex: 1 0 auto;
+        }
+
+        #driversLocationModal .modal-dialog {
+            max-width: 100%;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #driversMap {
+            height: calc(100vh - 120px);
+        }
+    }
 </style>
 @endsection
 
@@ -364,179 +535,6 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-
-<style>
-.btn:hover {
-    transform: scale(1.05);
-    transition: 0.2s ease;
-    box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.2);
-}
-
-.card {
-    border-radius: 0.5rem;
-    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
-}
-
-.table {
-    font-size: 0.875rem;
-}
-
-.table thead th {
-    font-weight: 600;
-    text-transform: uppercase;
-    font-size: 0.75rem;
-    letter-spacing: 0.5px;
-    border-bottom-width: 1px;
-}
-
-.table-hover tbody tr:hover {
-    background-color: rgba(0, 0, 0, 0.02);
-}
-
-.badge {
-    font-weight: 500;
-    padding: 0.35em 0.65em;
-    font-size: 0.75em;
-}
-
-#drivers-table {
-    border-collapse: separate;
-    border-spacing: 0;
-}
-
-#drivers-table tbody tr {
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-#drivers-table tbody tr:hover {
-    background-color: #f8f9fa;
-}
-
-td.dt-control {
-    position: relative;
-}
-
-td.dt-control::before {
-    content: "+";
-    font-family: "Font Awesome 6 Free";
-    font-weight: 900;
-    font-size: 1rem;
-    color: #198754;
-    display: inline-block;
-    text-align: center;
-    width: 20px;
-    cursor: pointer;
-}
-
-tr.shown td.dt-control::before {
-    content: "-";
-    color: #dc3545;
-}
-
-.modal-header {
-    padding: 1rem 1.5rem;
-}
-
-.modal-title {
-    font-weight: 600;
-}
-
-.btn-group-sm .btn {
-    padding: 0.25rem 0.5rem;
-    font-size: 0.75rem;
-}
-
-.driver-details-img {
-    max-height: 150px;
-    object-fit: contain;
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-}
-
-#transferFreightsTable {
-    font-size: 0.8rem;
-}
-
-#transferFreightsTable thead th {
-    position: sticky;
-    top: 0;
-    background-color: #f8f9fa;
-    z-index: 10;
-}
-
-/* Map Container Styles */
-#driversLocationModal .modal-dialog {
-    max-width: 95%;
-    height: 90vh;
-    margin: 1rem auto;
-}
-
-#driversLocationModal .modal-content {
-    height: 100%;
-}
-
-#driversMap {
-    width: 100%;
-    height: calc(100% - 60px); /* Account for header/footer */
-    min-height: 500px;
-    background: #f8f9fa;
-    transition: all 0.3s ease;
-}
-
-.leaflet-popup-content {
-    font-size: 0.875rem;
-}
-
-.leaflet-popup-content b {
-    color: #0d6efd;
-}
-
-#showDriversLocationBtn {
-    white-space: nowrap;
-}
-
-/* Modal transition effects */
-#driversLocationModal {
-    display: block !important;
-    opacity: 0;
-    transition: opacity 0.3s;
-}
-
-#driversLocationModal.show {
-    opacity: 1;
-}
-
-@media (max-width: 768px) {
-    #transferModal .row {
-        flex-direction: column;
-    }
-    
-    #transferModal .col-md-4, 
-    #transferModal .col-md-8 {
-        width: 100%;
-    }
-    
-    .btn-group-sm {
-        flex-wrap: wrap;
-        gap: 0.25rem;
-    }
-    
-    .btn-group-sm .btn {
-        flex: 1 0 auto;
-    }
-
-    #driversLocationModal .modal-dialog {
-        max-width: 100%;
-        height: 100vh;
-        margin: 0;
-    }
-
-    #driversMap {
-        height: calc(100vh - 120px);
-    }
-}
-</style>
 
 <!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -1685,28 +1683,27 @@ $(document).ready(function () {
                 searchable: false,
                 className: 'text-end',
                 render: (data, type, row) => `
-                    <div class="btn-group btn-group-sm d-flex flex-wrap gap-2">
-                        <button onclick="showBalanceModal(${row.id})" class="btn btn-success btn-sm" title="Saldo">
+                    <div class="btn-group btn-group-sm d-flex flex-wrap gap-2" data-driver-id="${row.id}">
+                        <button class="btn btn-success btn-sm btn-balance" title="Saldo">
                             <i class="fas fa-wallet"></i>
                         </button>
-                        <button onclick="showFreightsModal(${row.id})" class="btn btn-primary btn-sm" title="Fretes">
+                        <button class="btn btn-primary btn-sm btn-freights" title="Fretes">
                             <i class="fas fa-truck"></i>
                         </button>
-                        <button onclick="showTrucksModal(${row.id})" class="btn btn-dark btn-sm" title="Caminhões">
+                        <button class="btn btn-dark btn-sm btn-trucks" title="Caminhões">
                             <i class="fas fa-truck-pickup"></i>
                         </button>
-                        <button onclick="activateDriver(${row.id}, '${row.status}')" 
-                            class="btn btn-sm ${row.status === 'active' ? 'btn-danger' : 'btn-warning'}" 
-                            title="${row.status === 'active' ? 'Bloquear' : 'Ativar'}">
+                        <button class="btn btn-sm ${row.status === 'active' ? 'btn-danger' : 'btn-warning'} btn-status" 
+                            title="${row.status === 'active' ? 'Bloquear' : 'Ativar'}" data-status="${row.status}">
                             <i class="fas ${row.status === 'active' ? 'fa-lock' : 'fa-check'}"></i>
                         </button>
-                        <button onclick="analyzeDriver(${row.id})" class="btn btn-info btn-sm" title="Analisar">
+                        <button class="btn btn-info btn-sm btn-analyze" title="Analisar">
                             <i class="fas fa-search"></i>
                         </button>
-                        <button onclick="openWhatsApp('${row.phone}')" class="btn btn-success btn-sm" title="WhatsApp">
+                        <button class="btn btn-success btn-sm btn-whatsapp" title="WhatsApp" data-phone="${row.phone}">
                             <i class="fab fa-whatsapp"></i>
                         </button>
-                        <button onclick="deleteDriver('${row.id}')" class="btn btn-danger btn-sm" title="Deletar">
+                        <button class="btn btn-danger btn-sm btn-delete" title="Deletar">
                             <i class="fas fa-trash"></i>
                         </button>
                     </div>
@@ -1737,7 +1734,43 @@ $(document).ready(function () {
         }
     });
 
-    // Event Listeners
+    // Event Listeners using event delegation
+    $(document).on('click', '.btn-balance', function() {
+        const driverId = $(this).closest('.btn-group').data('driver-id');
+        showBalanceModal(driverId);
+    });
+
+    $(document).on('click', '.btn-freights', function() {
+        const driverId = $(this).closest('.btn-group').data('driver-id');
+        showFreightsModal(driverId);
+    });
+
+    $(document).on('click', '.btn-trucks', function() {
+        const driverId = $(this).closest('.btn-group').data('driver-id');
+        showTrucksModal(driverId);
+    });
+
+    $(document).on('click', '.btn-status', function() {
+        const driverId = $(this).closest('.btn-group').data('driver-id');
+        const status = $(this).data('status');
+        activateDriver(driverId, status);
+    });
+
+    $(document).on('click', '.btn-analyze', function() {
+        const driverId = $(this).closest('.btn-group').data('driver-id');
+        analyzeDriver(driverId);
+    });
+
+    $(document).on('click', '.btn-whatsapp', function() {
+        const phone = $(this).data('phone');
+        openWhatsApp(phone);
+    });
+
+    $(document).on('click', '.btn-delete', function() {
+        const driverId = $(this).closest('.btn-group').data('driver-id');
+        deleteDriver(driverId);
+    });
+
     $('#blockUserBtn').click(() => updateDriverStatus(selectedDriverId, 'block'));
     $('#blockTransferBtn').click(() => updateDriverStatus(selectedDriverId, 'transfer_block'));
     $('#submitTransfer').click(submitTransfer);
@@ -1750,6 +1783,12 @@ $(document).ready(function () {
             window.driversMap = null;
         }
     });
+
+    // Error handling
+    window.onerror = function(message, source, lineno, colno, error) {
+        console.error("Erro global:", message, "em", source, "linha:", lineno);
+        return true;
+    };
 });
 </script>
 @endsection
