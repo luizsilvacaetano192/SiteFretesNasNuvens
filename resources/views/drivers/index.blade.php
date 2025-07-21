@@ -1506,10 +1506,10 @@ function showDriversLocation() {
         driversLocationModal = new bootstrap.Modal('#driversLocationModal');
     }
     
-/*     if (window.driversMap) {
+     if (window.driversMap) {
         window.driversMap.remove();
         window.driversMap = null;
-    } */
+    } 
     
     driversLocationModal.show();
     
