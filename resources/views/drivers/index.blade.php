@@ -1541,11 +1541,7 @@ function initializeMapWithRetry() {
     
     const mapContainer = document.getElementById('driversMap');
     
-    if (!mapContainer) {
-        console.error('Map container not found');
-        toastr.error('Elemento do mapa não encontrado');
-        return;
-    }
+   
 
     // Check if container is visible and has dimensions
     if (mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
