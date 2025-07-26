@@ -1514,9 +1514,19 @@ function showDriversLocation() {
     driversLocationModal.show();
     
     // Initialize map only after modal is fully shown
-    $('#driversLocationModal').on('shown.bs.modal', function() {
-        initializeMapWithRetry();
-    });
+  $('#driversLocationModal').on('shown.bs.modal', function () {
+    const mapContainer = document.getElementById("driversMap");
+
+    if (mapContainer && !mapContainer.dataset.initialized) {
+        // Exemplo com Leaflet
+        const map = L.map('driversMap').setView([-23.5, -46.6], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        // Marcar como inicializado (evita reinit)
+        mapContainer.dataset.initialized = "true";
+    }
+});
+
 }
 
 function initializeMapWithRetry() {
