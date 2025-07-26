@@ -544,7 +544,6 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
 
-@push('scripts')
 <script>
 // Constants
 const AWS_BUCKET = 'fretes';
@@ -1527,7 +1526,7 @@ function showDriversLocation() {
     if (window.driversMap) {
         console.log('window.driversMap', window.driversMap)
       //  window.driversMap.remove();
-      //  window.driversMap = null;
+        window.driversMap = null;
 
            console.log('window.driversMap', window.driversMap)
     }
