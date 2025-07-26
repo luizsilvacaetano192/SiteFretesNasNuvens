@@ -1517,6 +1517,8 @@ function showDriversLocation() {
   $('#driversLocationModal').on('shown.bs.modal', function () {
     const mapContainer = document.getElementById("driversMap");
 
+    console.log('mapContainer', mapContainer)
+
     if (mapContainer && !mapContainer.dataset.initialized) {
         // Exemplo com Leaflet
         const map = L.map('driversMap').setView([-23.5, -46.6], 13);
