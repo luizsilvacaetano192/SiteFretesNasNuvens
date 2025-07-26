@@ -1527,6 +1527,8 @@ function showDriversLocation() {
         console.log('window.driversMap', window.driversMap)
         window.driversMap.remove();
         window.driversMap = null;
+
+           console.log('window.driversMap', window.driversMap)
     }
     
     driversLocationModal.show();
