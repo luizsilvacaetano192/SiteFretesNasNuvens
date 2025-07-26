@@ -536,7 +536,6 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
 
-
 <!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
@@ -1500,6 +1499,23 @@ function format(d) {
     `;
 }
 
+  $('#driversLocationModal').on('shown.bs.modal', function () {
+    const elements = document.getElementsByName("driversMap");
+
+    console.log('mapContainer', mapContainer)
+
+    if (mapContainer && !mapContainer.dataset.initialized) {
+        // Exemplo com Leaflet
+        const map = L.map('driversMap').setView([-23.5, -46.6], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        // Marcar como inicializado (evita reinit)
+        mapContainer.dataset.initialized = "true";
+    }
+     initializeMapWithRetry();
+});
+
+
 // Map Functions
 function showDriversLocation() {
     mapInitializationAttempts = 0;
@@ -1509,16 +1525,19 @@ function showDriversLocation() {
     }
     
     if (window.driversMap) {
-        window.driversMap.remove();
-        window.driversMap = null;
+        console.log('window.driversMap', window.driversMap)
+      //  window.driversMap.remove();
+      //  window.driversMap = null;
+
+           console.log('window.driversMap', window.driversMap)
     }
     
     driversLocationModal.show();
+
+     initializeMapWithRetry();
     
     // Initialize map only after modal is fully shown
-    $('#driversLocationModal').on('shown.bs.modal', function() {
-        initializeMapWithRetry();
-    });
+
 }
 
 function initializeMapWithRetry() {
@@ -1532,6 +1551,8 @@ function initializeMapWithRetry() {
     
     const mapContainer = document.getElementById('driversMap');
     
+   
+
     // Check if container is visible and has dimensions
     if (mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
         console.log(`Map container not visible yet (attempt ${mapInitializationAttempts})`);
@@ -1793,6 +1814,5 @@ $(document).ready(function () {
         return true;
     };
 });
-
 </script>
-@endpush
+@endsection
