@@ -520,7 +520,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-0">
-        <div id="driversMap"></div>
+        <div id="driversMap" name="driversMap"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -1498,6 +1498,21 @@ function format(d) {
     `;
 }
 
+  $('#driversLocationModal').on('shown.bs.modal', function () {
+    const elements = document.getElementsByName("driversMap");
+
+    console.log('mapContainer', mapContainer)
+
+    if (mapContainer && !mapContainer.dataset.initialized) {
+        // Exemplo com Leaflet
+        const map = L.map('driversMap').setView([-23.5, -46.6], 13);
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
+        
+        // Marcar como inicializado (evita reinit)
+        mapContainer.dataset.initialized = "true";
+    }
+     initializeMapWithRetry();
+});
 
 
 // Map Functions
