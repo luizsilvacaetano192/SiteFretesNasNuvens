@@ -1524,6 +1524,7 @@ function showDriversLocation() {
     }
     
     if (window.driversMap) {
+        console.log('window.driversMap', window.driversMap)
         window.driversMap.remove();
         window.driversMap = null;
     }
