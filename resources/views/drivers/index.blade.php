@@ -520,7 +520,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-0">
-        <div id="driversMap" name="driversMap"></div>
+        <div id="driversMap"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -1506,21 +1506,17 @@ function showDriversLocation() {
         driversLocationModal = new bootstrap.Modal('#driversLocationModal');
     }
     
-     if (window.driversMap) {
+    if (window.driversMap) {
         window.driversMap.remove();
         window.driversMap = null;
-    } 
+    }
     
     driversLocationModal.show();
     
-    // Verifica se o modal está totalmente visível antes de inicializar o mapa
-    const checkModalVisibility = setInterval(() => {
-        const modal = document.getElementById('driversLocationModal');
-        if (modal && modal.classList.contains('show')) {
-            clearInterval(checkModalVisibility);
-            initializeMapWithRetry();
-        }
-    }, 100);
+    // Initialize map only after modal is fully shown
+    $('#driversLocationModal').on('shown.bs.modal', function() {
+        initializeMapWithRetry();
+    });
 }
 
 function initializeMapWithRetry() {
@@ -1540,6 +1536,7 @@ function initializeMapWithRetry() {
         return;
     }
 
+    // Check if container is visible and has dimensions
     if (mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
         console.log(`Map container not visible yet (attempt ${mapInitializationAttempts})`);
         
@@ -1552,10 +1549,12 @@ function initializeMapWithRetry() {
     }
 
     try {
+        // Remove existing map if it exists
         if (window.driversMap) {
             window.driversMap.remove();
         }
         
+        // Initialize new map
         window.driversMap = L.map('driversMap', {
             preferCanvas: true,
             zoomControl: true,
@@ -1567,7 +1566,10 @@ function initializeMapWithRetry() {
             maxZoom: 18
         }).addTo(window.driversMap);
 
+        // Force map to recalculate its size
         window.driversMap.invalidateSize(true);
+        
+        // Load driver locations
         loadDriverLocations();
         
     } catch (error) {
