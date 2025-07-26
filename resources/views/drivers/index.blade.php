@@ -1525,6 +1525,7 @@ function showDriversLocation() {
         // Marcar como inicializado (evita reinit)
         mapContainer.dataset.initialized = "true";
     }
+     initializeMapWithRetry();
 });
 
 }
