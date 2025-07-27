@@ -706,7 +706,7 @@ class FreightController extends Controller
     {
 
       //  dd(Freight::where('status_id', 2));
-        $freights = Freight::where('status_id', 2) // 2 = Aguardando motorista (ajuste conforme seu sistema)
+        $freights = Freight::where('status_id', 4) // 4 = Aguardando motorista (ajuste conforme seu sistema)
             ->whereNotNull('start_lat')
             ->whereNotNull('start_lng')
             ->get()
