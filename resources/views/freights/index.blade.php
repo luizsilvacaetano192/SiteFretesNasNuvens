@@ -897,7 +897,7 @@ function initMap(freights) {
             const marker = L.marker([freight.latitude, freight.longitude], {
                 icon: L.icon({
                     iconUrl: "{{ asset('images/icon-carga.png') }}", // Substitua pelo caminho correto da sua imagem
-                    iconSize: [30, 30],      // Tamanho do ícone em pixels [largura, altura]
+                    iconSize: [90, 90],      // Tamanho do ícone em pixels [largura, altura]
                     iconAnchor: [15, 30],    // Ponto do ícone que corresponderá à localização do marcador
                     popupAnchor: [0, -15]    // Ponto a partir do qual o popup deve abrir em relação ao iconAnchor
                 })
