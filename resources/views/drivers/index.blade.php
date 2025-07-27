@@ -520,7 +520,7 @@
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-0">
-        <div id="driversMap" name="driversMap"></div>
+        <div id="driversMap"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -1498,23 +1498,6 @@ function format(d) {
     `;
 }
 
-  $('#driversLocationModal').on('shown.bs.modal', function () {
-    const elements = document.getElementsByName("driversMap");
-
-    console.log('mapContainer', mapContainer)
-
-    if (mapContainer && !mapContainer.dataset.initialized) {
-        // Exemplo com Leaflet
-        const map = L.map('driversMap').setView([-23.5, -46.6], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        
-        // Marcar como inicializado (evita reinit)
-        mapContainer.dataset.initialized = "true";
-    }
-     initializeMapWithRetry();
-});
-
-
 // Map Functions
 function showDriversLocation() {
     mapInitializationAttempts = 0;
@@ -1523,20 +1506,9 @@ function showDriversLocation() {
         driversLocationModal = new bootstrap.Modal('#driversLocationModal');
     }
     
-    if (window.driversMap) {
-        console.log('window.driversMap', window.driversMap)
-      //  window.driversMap.remove();
-        window.driversMap = null;
-
-           console.log('window.driversMap', window.driversMap)
-    }
-    
     driversLocationModal.show();
-
-     initializeMapWithRetry();
     
-    // Initialize map only after modal is fully shown
-
+    initializeMapWithRetry();
 }
 
 function initializeMapWithRetry() {
@@ -1550,27 +1522,21 @@ function initializeMapWithRetry() {
     
     const mapContainer = document.getElementById('driversMap');
     
-   
-
-    // Check if container is visible and has dimensions
-    if (mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
-        console.log(`Map container not visible yet (attempt ${mapInitializationAttempts})`);
+    if (!mapContainer || !driversLocationModal._isShown || mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
+        console.log(`Map container not ready yet (attempt ${mapInitializationAttempts})`);
         
         if (mapInitializationAttempts < MAX_MAP_INIT_ATTEMPTS) {
             setTimeout(initializeMapWithRetry, 300);
-        } else {
-            toastr.error('O container do mapa não está visível');
         }
         return;
     }
 
     try {
-        // Remove existing map if it exists
         if (window.driversMap) {
             window.driversMap.remove();
+            window.driversMap = null;
         }
         
-        // Initialize new map
         window.driversMap = L.map('driversMap', {
             preferCanvas: true,
             zoomControl: true,
@@ -1582,10 +1548,10 @@ function initializeMapWithRetry() {
             maxZoom: 18
         }).addTo(window.driversMap);
 
-        // Force map to recalculate its size
-        window.driversMap.invalidateSize(true);
+        setTimeout(() => {
+            window.driversMap.invalidateSize(true);
+        }, 100);
         
-        // Load driver locations
         loadDriverLocations();
         
     } catch (error) {
