@@ -909,7 +909,7 @@ function initMap(freights) {
                     <h6>Frete #${freight.id}</h6>
                     <p><strong>Origem:</strong> ${freight.start_address || 'N/A'}</p>
                     <p><strong>Destino:</strong> ${freight.destination_address || 'N/A'}</p>
-                    <p><strong>Valor:</strong> ${freight.formatted_value || 'N/A'}</p>
+                    <p><strong>Valor:</strong> ${freight.freight_value || 'N/A'}</p>
                     <p><strong>Criado em:</strong> ${new Date(freight.created_at).toLocaleDateString('pt-BR')}</p>
                     <a href="/freights/${freight.id}" class="btn btn-sm btn-primary w-100 mt-2">Ver Detalhes</a>
                 </div>
