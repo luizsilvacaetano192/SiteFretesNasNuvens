@@ -715,7 +715,8 @@ class FreightController extends Controller
                     'id' => $freight->id,
                     'start_address' => $freight->start_address,
                     'destination_address' => $freight->destination_address,
-                    'formatted_value' => $freight->formatted_value,
+                    'formatted_value' => $freight->freight_value,
+                    'value_driver' => $freight->driver_freight_value,
                     'created_at' => $freight->created_at,
                     'latitude' => $freight->start_lat,
                     'longitude' => $freight->start_lng
