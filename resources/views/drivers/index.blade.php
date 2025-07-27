@@ -1,5 +1,7 @@
 @extends('layouts.app')
 
+@section('title', 'Gestão de Motoristas')
+
 @section('styles')
 <style>
     /* Estilos consolidados e organizados */
@@ -23,6 +25,38 @@
         box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
     }
     
+    /* Estilo para o mapa */
+    #driversMap {
+        min-height: 600px;
+        width: 100%;
+    }
+
+    /* Estilo para os marcadores personalizados */
+    .custom-marker {
+        background-color: #4e73df;
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        border: 2px solid white;
+        box-shadow: 0 0 5px rgba(0,0,0,0.3);
+    }
+
+    /* Estilo para o popup do mapa */
+    .map-popup {
+        min-width: 200px;
+    }
+
+    .map-popup h6 {
+        font-size: 1rem;
+        font-weight: bold;
+        margin-bottom: 0.5rem;
+    }
+
+    .map-popup p {
+        margin-bottom: 0.3rem;
+        font-size: 0.85rem;
+    }
+
     /* Estilos específicos para modais */
     .modal-driver-map {
         height: 80vh;
@@ -34,6 +68,16 @@
         .driver-actions {
             flex-wrap: wrap;
             gap: 0.25rem;
+        }
+
+        #driversLocationModal .modal-dialog {
+            max-width: 100%;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #driversMap {
+            height: calc(100vh - 120px);
         }
     }
 
@@ -135,83 +179,10 @@
         background-color: #f8f9fa;
         z-index: 10;
     }
-
-    /* Map Container Styles */
-    #driversLocationModal .modal-dialog {
-        max-width: 95%;
-        height: 90vh;
-        margin: 1rem auto;
-    }
-
-    #driversLocationModal .modal-content {
-        height: 100%;
-    }
-
-    #driversMap {
-        width: 100%;
-        height: calc(100% - 60px); /* Account for header/footer */
-        min-height: 500px;
-        background: #f8f9fa;
-        transition: all 0.3s ease;
-    }
-
-    .leaflet-popup-content {
-        font-size: 0.875rem;
-    }
-
-    .leaflet-popup-content b {
-        color: #0d6efd;
-    }
-
-    #showDriversLocationBtn {
-        white-space: nowrap;
-    }
-
-    /* Modal transition effects */
-    #driversLocationModal {
-        display: block !important;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    #driversLocationModal.show {
-        opacity: 1;
-    }
-
-    @media (max-width: 768px) {
-        #transferModal .row {
-            flex-direction: column;
-        }
-        
-        #transferModal .col-md-4, 
-        #transferModal .col-md-8 {
-            width: 100%;
-        }
-        
-        .btn-group-sm {
-            flex-wrap: wrap;
-            gap: 0.25rem;
-        }
-        
-        .btn-group-sm .btn {
-            flex: 1 0 auto;
-        }
-
-        #driversLocationModal .modal-dialog {
-            max-width: 100%;
-            height: 100vh;
-            margin: 0;
-        }
-
-        #driversMap {
-            height: calc(100vh - 120px);
-        }
-    }
 </style>
 @endsection
 
 @section('content')
-<link rel="icon" href="{{ asset('images/favicon.ico') }}" type="image/x-icon">
 <div class="container-fluid px-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h2 class="mb-0"><i class="bi bi-buildings me-2"></i>Gestão de motoristas</h2>
@@ -513,14 +484,20 @@
 
 <!-- Modal de Localização dos Motoristas -->
 <div class="modal fade" id="driversLocationModal" tabindex="-1">
-  <div class="modal-dialog modal-xl modal-dialog-centered">
+  <div class="modal-dialog modal-xl">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
         <h5 class="modal-title"><i class="fas fa-map-marked-alt me-2"></i>Localização dos Motoristas</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-0">
-        <div id="driversMap" name="driversMap"></div>
+        <div id="mapLoading" class="text-center py-5">
+          <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Carregando...</span>
+          </div>
+          <p>Carregando mapa...</p>
+        </div>
+        <div id="driversMap" style="height: 600px; width: 100%; display: none;"></div>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
@@ -529,14 +506,9 @@
   </div>
 </div>
 
-<!-- CSS -->
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-<link href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css" rel="stylesheet">
-<link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
+@endsection
 
-<!-- JavaScript -->
+@section('scripts')
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
@@ -550,11 +522,9 @@ const AWS_BUCKET = 'fretes';
 const DEFAULT_MAP_CENTER = [-15.7889, -47.8799]; // Center of Brazil
 const DEFAULT_MAP_ZOOM = 4;
 const MARKER_ZOOM = 12;
-const MAX_MAP_INIT_ATTEMPTS = 5;
 
 // Global variables
 let selectedDriverId = null;
-let mapInitializationAttempts = 0;
 let driversLocationModal = null;
 let driversMap = null;
 
@@ -1498,156 +1468,71 @@ function format(d) {
     `;
 }
 
-  $('#driversLocationModal').on('shown.bs.modal', function () {
-    const elements = document.getElementsByName("driversMap");
-
-    console.log('mapContainer', mapContainer)
-
-    if (mapContainer && !mapContainer.dataset.initialized) {
-        // Exemplo com Leaflet
-        const map = L.map('driversMap').setView([-23.5, -46.6], 13);
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png').addTo(map);
-        
-        // Marcar como inicializado (evita reinit)
-        mapContainer.dataset.initialized = "true";
-    }
-     initializeMapWithRetry();
-});
-
-
 // Map Functions
 function showDriversLocation() {
-    mapInitializationAttempts = 0;
+    $('#driversLocationModal').modal('show');
+    $('#mapLoading').show();
+    $('#driversMap').hide();
     
-    if (!driversLocationModal) {
-        driversLocationModal = new bootstrap.Modal('#driversLocationModal');
-    }
-    
-    if (window.driversMap) {
-        console.log('window.driversMap', window.driversMap)
-      //  window.driversMap.remove();
-        window.driversMap = null;
-
-           console.log('window.driversMap', window.driversMap)
-    }
-    
-    driversLocationModal.show();
-
-     initializeMapWithRetry();
-    
-    // Initialize map only after modal is fully shown
-
+    // Carrega as localizações dos motoristas
+    $.get('/drivers/locations', function(response) {
+        if (response.length === 0) {
+            $('#mapLoading').html('<p class="text-muted">Nenhum motorista com localização disponível</p>');
+            return;
+        }
+        
+        // Inicializa o mapa
+        initDriversMap(response);
+    }).fail(function() {
+        $('#mapLoading').html('<p class="text-danger">Erro ao carregar dados para o mapa</p>');
+    });
 }
 
-function initializeMapWithRetry() {
-    if (mapInitializationAttempts >= MAX_MAP_INIT_ATTEMPTS) {
-        console.error('Failed to initialize map after multiple attempts');
-        toastr.error('Não foi possível carregar o mapa após várias tentativas');
-        return;
-    }
-
-    mapInitializationAttempts++;
+function initDriversMap(drivers) {
+    // Esconde o loading e mostra o mapa
+    $('#mapLoading').hide();
+    $('#driversMap').show();
     
-    const mapContainer = document.getElementById('driversMap');
+    // Cria o mapa centralizado no Brasil
+    const map = L.map('driversMap').setView([-14.2350, -51.9253], 4);
     
-   
-
-    // Check if container is visible and has dimensions
-    if (mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
-        console.log(`Map container not visible yet (attempt ${mapInitializationAttempts})`);
-        
-        if (mapInitializationAttempts < MAX_MAP_INIT_ATTEMPTS) {
-            setTimeout(initializeMapWithRetry, 300);
-        } else {
-            toastr.error('O container do mapa não está visível');
-        }
-        return;
-    }
-
-    try {
-        // Remove existing map if it exists
-        if (window.driversMap) {
-            window.driversMap.remove();
-        }
-        
-        // Initialize new map
-        window.driversMap = L.map('driversMap', {
-            preferCanvas: true,
-            zoomControl: true,
-            tap: false
-        }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 18
-        }).addTo(window.driversMap);
-
-        // Force map to recalculate its size
-        window.driversMap.invalidateSize(true);
-        
-        // Load driver locations
-        loadDriverLocations();
-        
-    } catch (error) {
-        console.error('Map initialization error:', error);
-        
-        if (mapInitializationAttempts < MAX_MAP_INIT_ATTEMPTS) {
-            setTimeout(initializeMapWithRetry, 500);
-        } else {
-            toastr.error('Erro ao inicializar o mapa: ' + error.message);
-        }
-    }
-}
-
-function loadDriverLocations() {
-    $.ajax({
-        url: '/drivers/locations',
-        method: 'GET',
-        success: function(data) {
-            if (!data || data.length === 0) {
-                window.driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
-                L.popup()
-                    .setLatLng(window.driversMap.getCenter())
-                    .setContent('Nenhuma localização disponível')
-                    .openOn(window.driversMap);
-                return;
-            }
-            
-            const markers = [];
-            const bounds = L.latLngBounds();
-            
-            data.forEach(driver => {
-                if (driver.latitude && driver.longitude) {
-                    const latLng = L.latLng(driver.latitude, driver.longitude);
-                    const marker = L.marker(latLng).addTo(window.driversMap);
-                    
-                    marker.bindPopup(`
-                        <b>${driver.name}</b><br>
-                        ${driver.address ? `Endereço: ${driver.address}<br>` : ''}
-                        ${driver.phone ? `Tel: ${maskPhone(driver.phone)}<br>` : ''}
-                        Status: ${getStatusLabel(driver.status)[0]}
-                    `);
-                    
-                    markers.push(marker);
-                    bounds.extend(latLng);
-                }
-            });
-            
-            if (markers.length > 0) {
-                if (markers.length === 1) {
-                    window.driversMap.setView(markers[0].getLatLng(), MARKER_ZOOM);
-                } else {
-                    window.driversMap.fitBounds(bounds.pad(0.2));
-                }
-            }
-        },
-        error: function() {
-            L.popup()
-                .setLatLng(window.driversMap.getCenter())
-                .setContent('Erro ao carregar localizações')
-                .openOn(window.driversMap);
+    // Adiciona o tile layer do OpenStreetMap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+    }).addTo(map);
+    
+    // Adiciona marcadores para cada motorista
+    drivers.forEach(driver => {
+        if (driver.latitude && driver.longitude) {
+            // Cria um marcador personalizado
+            const marker = L.marker([driver.latitude, driver.longitude], {
+                icon: L.icon({
+                    iconUrl: "{{ asset('images/icon-driver.png') }}", // Substitua pelo caminho correto da sua imagem
+                    iconSize: [90, 90],      // Tamanho do ícone em pixels [largura, altura]
+                    iconAnchor: [15, 30],    // Ponto do ícone que corresponderá à localização do marcador
+                    popupAnchor: [0, -15]    // Ponto a partir do qual o popup deve abrir em relação ao iconAnchor
+                })
+            }).addTo(map);
+                        
+            // Adiciona popup com informações
+            marker.bindPopup(`
+                <div class="map-popup">
+                    <h6>${driver.name}</h6>
+                    <p><strong>Status:</strong> ${getStatusLabel(driver.status)[0]}</p>
+                    <p><strong>Telefone:</strong> ${maskPhone(driver.phone) || 'N/A'}</p>
+                    <p><strong>Endereço:</strong> ${driver.address || 'N/A'}</p>
+                    <p><strong>Última atualização:</strong> ${driver.updated_at ? new Date(driver.updated_at).toLocaleString('pt-BR') : 'N/A'}</p>
+                </div>
+            `);
         }
     });
+    
+    // Ajusta o zoom para mostrar todos os marcadores
+    if (drivers.length > 0) {
+        const group = new L.featureGroup(drivers.filter(d => d.latitude && d.longitude)
+            .map(d => L.latLng(d.latitude, d.longitude));
+        map.fitBounds(group.getBounds().pad(0.5));
+    }
 }
 
 // Main Document Ready Function
