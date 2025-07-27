@@ -902,6 +902,8 @@ function initMap(freights) {
                     popupAnchor: [0, -15]    // Ponto a partir do qual o popup deve abrir em relação ao iconAnchor
                 })
             }).addTo(map);
+
+            console.log('freight', freight)
                         
             // Adiciona popup com informações
             marker.bindPopup(`
