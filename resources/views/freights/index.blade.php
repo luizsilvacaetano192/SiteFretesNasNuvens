@@ -574,8 +574,8 @@ body {
 /* Estilo para os marcadores personalizados */
 .custom-marker {
     background-color: #4e73df;
-    width: 20px;
-    height: 20px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     border: 2px solid white;
     box-shadow: 0 0 5px rgba(0,0,0,0.3);
