@@ -1566,6 +1566,7 @@ function initializeMapWithRetry() {
 }
 
 function loadDriverLocations() {
+    console.log('chegou aq');
     $.ajax({
         url: '/drivers/locations',
         method: 'GET',
