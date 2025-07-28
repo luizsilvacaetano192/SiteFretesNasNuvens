@@ -1528,7 +1528,11 @@ function initializeMap() {
             preferCanvas: true,
             zoomControl: true,
             tap: false
-        }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+        });
+
+        console.log('driversMap', driversMap);
+
+        driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM)
 
         // Adiciona tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
