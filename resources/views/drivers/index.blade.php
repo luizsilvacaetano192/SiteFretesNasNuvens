@@ -1551,7 +1551,7 @@ function initializeMap() {
             maxZoom: 18
         }).addTo(window.driversMap);
         
-        return true;
+        loadDriverLocations();
     } catch (error) {
         console.error('Erro ao inicializar mapa:', error);
         window.driversMap = null;
