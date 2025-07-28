@@ -139,9 +139,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('drivers')->group(function () {
         Route::get('/locations', function() {
             $drivers = App\Models\Driver::select('id', 'name', 'phone', 'status', 'latitude', 'longitude','address')
-                ->whereNotNull('latitude')
-                ->whereNotNull('longitude')
-                ->get();
+             ->get();
             
             return response()->json($drivers);
         });

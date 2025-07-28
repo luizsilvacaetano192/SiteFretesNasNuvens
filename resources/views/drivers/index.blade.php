@@ -1532,59 +1532,94 @@ function loadDriverLocations() {
 
     console.log('vai chamar o ajax');
 
-    $.ajax({
-        url: '/drivers/locations',
-        method: 'GET',
-        success: function(data) {
-            console.log('data', data)
-            if (!data || data.length === 0) {
-                driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
-                L.popup()
-                    .setLatLng(driversMap.getCenter())
-                    .setContent('Nenhuma localização disponível')
-                    .openOn(driversMap);
-                return;
-            }
-
-
-            // Limpa marcadores existentes
-            driversMap.eachLayer(layer => {
-                if (layer instanceof L.Marker) {
-                    driversMap.removeLayer(layer);
-                }
-            });
-
-            const bounds = L.latLngBounds();
-            data.forEach(driver => {
-                if (driver.latitude && driver.longitude) {
-                    const latLng = L.latLng(driver.latitude, driver.longitude);
-                    const marker = L.marker(latLng).addTo(driversMap);
-                    
-                    marker.bindPopup(`
-                        <b>${driver.name}</b><br>
-                        ${driver.address ? `Endereço: ${driver.address}<br>` : ''}
-                        ${driver.phone ? `Tel: ${maskPhone(driver.phone)}<br>` : ''}
-                        Status: ${getStatusLabel(driver.status)[0]}
-                    `);
-                    
-                    bounds.extend(latLng);
-                }
-            });
-
-            if (bounds.isValid()) {
-                driversMap.fitBounds(bounds, { padding: [50, 50] });
-            }
-        },
-        error: function(error) {
-            console.error('Erro ao carregar localizações:', error);
-            if (driversMap) {
-                L.popup()
-                    .setLatLng(driversMap.getCenter())
-                    .setContent('Erro ao carregar localizações')
-                    .openOn(driversMap);
-            }
+  $.ajax({
+    url: '/drivers/locations',
+    method: 'GET',
+    success: function(data) {
+        console.log('data', data)
+        if (!data || data.length === 0) {
+            driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+            L.popup()
+                .setLatLng(driversMap.getCenter())
+                .setContent('Nenhuma localização disponível')
+                .openOn(driversMap);
+            return;
         }
-    });
+
+        // Limpa marcadores existentes
+        driversMap.eachLayer(layer => {
+            if (layer instanceof L.Marker) {
+                driversMap.removeLayer(layer);
+            }
+        });
+
+        const bounds = L.latLngBounds();
+        const geocoder = new google.maps.Geocoder();
+        let pendingGeocodes = 0;
+
+        data.forEach(driver => {
+            if (driver.latitude && driver.longitude) {
+                // Se já tem coordenadas, adiciona o marcador normalmente
+                addDriverMarker(driver, driver.latitude, driver.longitude);
+                bounds.extend(L.latLng(driver.latitude, driver.longitude));
+            } else if (driver.address) {
+                // Se não tem coordenadas mas tem endereço, faz geocoding
+                pendingGeocodes++;
+                geocodeAddress(geocoder, driver);
+            }
+        });
+
+        // Se todos os marcadores foram adicionados imediatamente (sem geocoding pendente)
+        if (pendingGeocodes === 0 && bounds.isValid()) {
+            driversMap.fitBounds(bounds, { padding: [50, 50] });
+        }
+
+        function geocodeAddress(geocoder, driver) {
+            geocoder.geocode({ 'address': driver.address }, function(results, status) {
+                pendingGeocodes--;
+                
+                if (status === 'OK' && results[0]) {
+                    const location = results[0].geometry.location;
+                    const lat = location.lat();
+                    const lng = location.lng();
+                    
+                    // Adiciona o marcador com as coordenadas obtidas
+                    addDriverMarker(driver, lat, lng);
+                    bounds.extend(L.latLng(lat, lng));
+                    
+                    // Se foi o último geocoding pendente, ajusta o zoom do mapa
+                    if (pendingGeocodes === 0 && bounds.isValid()) {
+                        driversMap.fitBounds(bounds, { padding: [50, 50] });
+                    }
+                } else {
+                    console.error('Geocode falhou para o endereço: ' + driver.address, status);
+                    // Pode adicionar um marcador com localização padrão ou ignorar
+                }
+            });
+        }
+
+        function addDriverMarker(driver, lat, lng) {
+            const latLng = L.latLng(lat, lng);
+            const marker = L.marker(latLng).addTo(driversMap);
+            
+            marker.bindPopup(`
+                <b>${driver.name}</b><br>
+                ${driver.address ? `Endereço: ${driver.address}<br>` : ''}
+                ${driver.phone ? `Tel: ${maskPhone(driver.phone)}<br>` : ''}
+                Status: ${getStatusLabel(driver.status)[0]}
+            `);
+        }
+    },
+    error: function(error) {
+        console.error('Erro ao carregar localizações:', error);
+        if (driversMap) {
+            L.popup()
+                .setLatLng(driversMap.getCenter())
+                .setContent('Erro ao carregar localizações')
+                .openOn(driversMap);
+        }
+    }
+});
 }
 
 function showDriversLocation() {
