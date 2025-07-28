@@ -1511,46 +1511,55 @@ function showDriversLocation() {
 
 
 function initializeMap() {
-    console.log('mapa inicializado');
-    const mapContainer = document.getElementById('driversMap');
+    console.log('Inicializando mapa...');
     
-   
-
+    // Verifica se o elemento existe e está visível
+    const mapElement = document.getElementById('driversMap');
+    if (!mapElement) {
+        console.error('Elemento #driversMap não encontrado no DOM');
+        return false;
+    }
+    
+    // Verifica se o Leaflet está disponível
+    if (typeof L === 'undefined') {
+        console.error('Leaflet não foi carregado corretamente');
+        return false;
+    }
+    
     try {
-        // Remove o mapa existente se houver
-        if (driversMap) {
-          //  driversMap.remove();
-          //  driversMap = null;
+        // Remove mapa existente
+        if (window.driversMap) {
+            window.driversMap.remove();
+            window.driversMap = null;
         }
         
         // Cria novo mapa
-        driversMap = L.map('driversMap', {
+        window.driversMap = L.map('driversMap', {
             preferCanvas: true,
             zoomControl: true,
             tap: false
         });
-
-        console.log('driversMap', driversMap);
-
-        driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM)
-
+        
+        console.log('Mapa criado:', window.driversMap);
+        
+        // Configura view padrão
+        window.driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+        
         // Adiciona tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 18
-        }).addTo(driversMap);
-
-        // Força redimensionamento após um pequeno delay
-        setTimeout(() => {
-            driversMap.invalidateSize(true);
-            loadDriverLocations();
-        }, 100);
+        }).addTo(window.driversMap);
         
+        return true;
     } catch (error) {
-        console.error('Map initialization error:', error);
-        toastr.error('Erro ao inicializar o mapa: ' + error.message);
+        console.error('Erro ao inicializar mapa:', error);
+        window.driversMap = null;
+        return false;
     }
 }
+
+
 
 
 function loadDriverLocations() {
