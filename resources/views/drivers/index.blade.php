@@ -1500,12 +1500,13 @@ function format(d) {
 
 // Map Functions
 function showDriversLocation() {
+    console.log('show drivers chamados');
     if (!driversLocationModal) {
         driversLocationModal = new bootstrap.Modal('#driversLocationModal');
         
         // Adiciona listener para quando o modal estiver totalmente mostrado
         $('#driversLocationModal').on('shown.bs.modal', function() {
-            initializeMap();
+            initializeMapWithRetry();
         });
     }
     
