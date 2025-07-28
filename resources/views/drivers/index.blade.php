@@ -1508,59 +1508,6 @@ function showDriversLocation() {
 }
 
 
-function initializeMapWithRetry() {
-    if (mapInitializationAttempts >= MAX_MAP_INIT_ATTEMPTS) {
-        console.error('Failed to initialize map after multiple attempts');
-        toastr.error('Não foi possível carregar o mapa após várias tentativas');
-        return;
-    }
-
-    mapInitializationAttempts++;
-    
-    const mapContainer = document.getElementById('driversMap');
-    
-    if (!mapContainer || !driversLocationModal._isShown || mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
-        console.log(`Map container not ready yet (attempt ${mapInitializationAttempts})`);
-        
-        if (mapInitializationAttempts < MAX_MAP_INIT_ATTEMPTS) {
-            setTimeout(initializeMapWithRetry, 300);
-        }
-        return;
-    }
-
-    try {
-        if (window.driversMap) {
-            window.driversMap.remove();
-            window.driversMap = null;
-        }
-        
-        window.driversMap = L.map('driversMap', {
-            preferCanvas: true,
-            zoomControl: true,
-            tap: false
-        }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
-
-        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-            attribution: '© OpenStreetMap contributors',
-            maxZoom: 18
-        }).addTo(window.driversMap);
-
-        setTimeout(() => {
-            window.driversMap.invalidateSize(true);
-        }, 100);
-        
-        loadDriverLocations();
-        
-    } catch (error) {
-        console.error('Map initialization error:', error);
-        
-        if (mapInitializationAttempts < MAX_MAP_INIT_ATTEMPTS) {
-            setTimeout(initializeMapWithRetry, 500);
-        } else {
-            toastr.error('Erro ao inicializar o mapa: ' + error.message);
-        }
-    }
-}
 
 
 function initializeMap() {
@@ -1572,8 +1519,8 @@ function initializeMap() {
     try {
         // Remove o mapa existente se houver
         if (driversMap) {
-            driversMap.remove();
-            driversMap = null;
+          //  driversMap.remove();
+          //  driversMap = null;
         }
         
         // Cria novo mapa
