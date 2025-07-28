@@ -1506,7 +1506,7 @@ function showDriversLocation() {
         
         // Adiciona listener para quando o modal estiver totalmente mostrado
         $('#driversLocationModal').on('shown.bs.modal', function() {
-            initializeMapWithRetry();
+            initializeMap();
         });
     }
     
