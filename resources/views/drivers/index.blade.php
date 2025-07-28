@@ -29,82 +29,11 @@
         min-height: 500px;
     }
     
-    /* Estilos para o mapa */
-    .driver-marker {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-    }
-    
-    .marker-container {
-        position: relative;
-        width: 30px;
-        height: 30px;
-    }
-    
-    .marker-container i {
-        position: relative;
-        z-index: 2;
-        font-size: 18px;
-        color: white;
-    }
-    
-    .marker-pulse {
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 30px;
-        height: 30px;
-        background-color: currentColor;
-        border-radius: 50%;
-        opacity: 0.7;
-        z-index: 1;
-        animation: pulse 2s infinite;
-    }
-    
-    @keyframes pulse {
-        0% {
-            transform: scale(0.8);
-            opacity: 0.7;
-        }
-        70% {
-            transform: scale(1.3);
-            opacity: 0;
-        }
-        100% {
-            transform: scale(0.8);
-            opacity: 0;
-        }
-    }
-    
-    .driver-popup {
-        max-width: 250px;
-    }
-    
-    .driver-popup h5 {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .driver-popup p {
-        margin-bottom: 0.3rem;
-        font-size: 0.85rem;
-    }
-    
-    .driver-popup .badge {
-        font-size: 0.75rem;
-    }
-    
     /* Responsividade */
     @media (max-width: 768px) {
         .driver-actions {
             flex-wrap: wrap;
             gap: 0.25rem;
-        }
-
-        #driversLocationModal .modal-dialog {
-            width: 95%;
-            margin: 0 auto;
         }
     }
 
@@ -220,7 +149,7 @@
 
     #driversMap {
         width: 100%;
-        height: calc(100% - 60px);
+        height: calc(100% - 60px); /* Account for header/footer */
         min-height: 500px;
         background: #f8f9fa;
     }
@@ -235,6 +164,36 @@
 
     #showDriversLocationBtn {
         white-space: nowrap;
+    }
+
+    @media (max-width: 768px) {
+        #transferModal .row {
+            flex-direction: column;
+        }
+        
+        #transferModal .col-md-4, 
+        #transferModal .col-md-8 {
+            width: 100%;
+        }
+        
+        .btn-group-sm {
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+        
+        .btn-group-sm .btn {
+            flex: 1 0 auto;
+        }
+
+        #driversLocationModal .modal-dialog {
+            max-width: 100%;
+            height: 100vh;
+            margin: 0;
+        }
+
+        #driversMap {
+            height: calc(100vh - 120px);
+        }
     }
 </style>
 @endsection
@@ -564,7 +523,6 @@
 <link href="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css" />
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/2.4.0/Control.FullScreen.min.css" />
 
 <!-- JavaScript -->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
@@ -573,7 +531,6 @@
 <script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/toastr.js/latest/toastr.min.js"></script>
 <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.fullscreen/2.4.0/Control.FullScreen.min.js"></script>
 
 <script>
 // Constants
@@ -585,6 +542,7 @@ const MARKER_ZOOM = 12;
 // Global variables
 let selectedDriverId = null;
 let driversMap = null;
+let googleMapsLoaded = false;
 let driversMarkers = [];
 
 // Utility Functions
@@ -1528,9 +1486,6 @@ function format(d) {
 }
 
 // Map Functions
-let googleMapsLoaded = false;
-
-// Função para carregar a API do Google Maps
 function loadGoogleMapsAPI(callback) {
     if (googleMapsLoaded) {
         callback();
@@ -1549,7 +1504,147 @@ function loadGoogleMapsAPI(callback) {
     };
 }
 
-// Modifique a função showDriversLocation para carregar a API primeiro
+function initializeMap() {
+    try {
+        const mapElement = document.getElementById('driversMap');
+        if (!mapElement) {
+            console.error('Elemento do mapa não encontrado');
+            return false;
+        }
+
+        if (driversMap) {
+            driversMap.remove();
+            driversMap = null;
+        }
+
+        driversMap = L.map('driversMap', {
+            preferCanvas: true,
+            zoomControl: true,
+            tap: false
+        }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(driversMap);
+
+        setTimeout(() => {
+            driversMap.invalidateSize(true);
+        }, 100);
+
+        return true;
+    } catch (error) {
+        console.error('Erro ao inicializar o mapa:', error);
+        return false;
+    }
+}
+
+function loadDriverLocations() {
+    if (!driversMap) {
+        console.error('Mapa não inicializado');
+        return;
+    }
+
+    // Clear existing markers
+    driversMarkers.forEach(marker => driversMap.removeLayer(marker));
+    driversMarkers = [];
+
+    $.ajax({
+        url: '/drivers/locations',
+        method: 'GET',
+        success: function(data) {
+            if (!data || data.length === 0) {
+                driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+                L.popup()
+                    .setLatLng(driversMap.getCenter())
+                    .setContent('Nenhuma localização disponível')
+                    .openOn(driversMap);
+                return;
+            }
+
+            const bounds = L.latLngBounds();
+
+            data.forEach(driver => {
+                if (driver.latitude && driver.longitude) {
+                    addDriverMarker(driver, driver.latitude, driver.longitude);
+                    bounds.extend([driver.latitude, driver.longitude]);
+                } else if (driver.address) {
+                    geocodeAddress(driver, bounds);
+                }
+            });
+
+            if (bounds.isValid()) {
+                driversMap.fitBounds(bounds, { padding: [50, 50] });
+            }
+        },
+        error: function(error) {
+            console.error('Erro ao carregar localizações:', error);
+            if (driversMap) {
+                L.popup()
+                    .setLatLng(driversMap.getCenter())
+                    .setContent('Erro ao carregar localizações')
+                    .openOn(driversMap);
+            }
+        }
+    });
+}
+
+function geocodeAddress(driver, bounds) {
+    if (!googleMapsLoaded) {
+        console.error('API do Google Maps não carregada');
+        return;
+    }
+
+    const geocoder = new google.maps.Geocoder();
+    geocoder.geocode({ 'address': driver.address }, function(results, status) {
+        if (status === 'OK' && results[0]) {
+            const location = results[0].geometry.location;
+            const lat = location.lat();
+            const lng = location.lng();
+            
+            addDriverMarker(driver, lat, lng);
+            bounds.extend([lat, lng]);
+            driversMap.fitBounds(bounds, { padding: [50, 50] });
+            updateDriverCoordinates(driver.id, lat, lng);
+        } else {
+            console.error('Geocode falhou para o endereço: ' + driver.address, status);
+            addDriverMarker(driver, DEFAULT_MAP_CENTER[0], DEFAULT_MAP_CENTER[1]);
+        }
+    });
+}
+
+function addDriverMarker(driver, lat, lng) {
+    const latLng = L.latLng(lat, lng);
+    const marker = L.marker(latLng).addTo(driversMap);
+    
+    marker.bindPopup(`
+        <b>${driver.name}</b><br>
+        ${driver.address ? `Endereço: ${driver.address}<br>` : ''}
+        ${driver.phone ? `Tel: ${maskPhone(driver.phone)}<br>` : ''}
+        Status: ${getStatusLabel(driver.status)[0]}
+    `);
+    
+    driversMarkers.push(marker);
+}
+
+function updateDriverCoordinates(driverId, lat, lng) {
+    $.ajax({
+        url: `/drivers/${driverId}/update-coordinates`,
+        method: 'POST',
+        data: {
+            latitude: lat,
+            longitude: lng,
+            _token: '{{ csrf_token() }}'
+        },
+        success: function(response) {
+            console.log('Coordenadas atualizadas para o motorista', driverId);
+        },
+        error: function(error) {
+            console.error('Erro ao atualizar coordenadas:', error);
+        }
+    });
+}
+
 function showDriversLocation() {
     const modalElement = document.getElementById('driversLocationModal');
     if (!modalElement) {
@@ -1581,73 +1676,6 @@ function showDriversLocation() {
 
     modal.show();
 }
-
-// Atualize a função geocodeAddress para verificar se a API está carregada
-function geocodeAddress(driver) {
-    if (!googleMapsLoaded) {
-        console.error('API do Google Maps não carregada');
-        return;
-    }
-
-    const geocoder = new google.maps.Geocoder();
-    geocoder.geocode({ 'address': driver.address }, function(results, status) {
-        if (status === 'OK' && results[0]) {
-            const location = results[0].geometry.location;
-            const lat = location.lat();
-            const lng = location.lng();
-            
-            addDriverMarker(driver, lat, lng);
-            bounds.extend([lat, lng]);
-            driversMap.fitBounds(bounds, { padding: [50, 50] });
-            updateDriverCoordinates(driver.id, lat, lng);
-        } else {
-            console.error('Geocode falhou para o endereço: ' + driver.address, status);
-            addDriverMarker(driver, DEFAULT_MAP_CENTER[0], DEFAULT_MAP_CENTER[1]);
-        }
-    });
-}
-
-
-
-
-function createDriverMarker(driver, latLng) {
-    const [statusText, statusClass] = getStatusLabel(driver.status);
-    
-    const marker = L.marker(latLng, {
-        icon: L.divIcon({
-            className: 'driver-marker',
-            html: `<div class="marker-container">
-                     <i class="fas fa-truck text-${statusClass}"></i>
-                     <div class="marker-pulse"></div>
-                   </div>`,
-            iconSize: [30, 30],
-            iconAnchor: [15, 15]
-        })
-    });
-
-    const popupContent = `
-        <div class="driver-popup">
-            <h5>${driver.name}</h5>
-            <p><strong>Status:</strong> <span class="badge bg-${statusClass}">${statusText}</span></p>
-            ${driver.address ? `<p><strong>Endereço:</strong> ${driver.address}</p>` : ''}
-            ${driver.phone ? `<p><strong>Telefone:</strong> ${maskPhone(driver.phone)}</p>` : ''}
-            ${driver.cpf ? `<p><strong>CPF:</strong> ${maskCPF(driver.cpf)}</p>` : ''}
-            <button class="btn btn-sm btn-primary w-100 mt-2" onclick="window.open('/drivers/${driver.id}', '_blank')">
-                <i class="fas fa-user me-1"></i> Ver Perfil
-            </button>
-        </div>
-    `;
-
-    marker.bindPopup(popupContent, {
-        maxWidth: 300,
-        className: 'driver-popup-container'
-    });
-
-    return marker;
-}
-
-
-
 
 // Main Document Ready Function
 $(document).ready(function () {
