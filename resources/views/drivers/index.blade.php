@@ -1505,9 +1505,9 @@ function showDriversLocation() {
         driversLocationModal = new bootstrap.Modal('#driversLocationModal');
         
         // Adiciona listener para quando o modal estiver totalmente mostrado
-        $('#driversLocationModal').on('shown.bs.modal', function() {
+       // $('#driversLocationModal').on('shown.bs.modal', function() {
             initializeMap();
-        });
+     //   });
     }
     
     driversLocationModal.show();
