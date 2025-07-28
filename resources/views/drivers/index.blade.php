@@ -512,7 +512,7 @@
 </div>
 
 <!-- Modal de Localização dos Motoristas -->
-<div class="modal fade" id="driversLocationModal" tabindex="-1">
+<div class="modal fade" id="driversLocationModal"  aria-modal="true" tabindex="-1">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
@@ -1500,11 +1500,49 @@ function format(d) {
 }
 
 // Map Functions
+// 1. Modifique a inicialização do modal
 function showDriversLocation() {
-    console.log('show drivers chamados');
-    initializeMap();
-   
-    driversLocationModal.show();
+    const modalElement = document.getElementById('driversLocationModal');
+    if (!modalElement) return;
+    
+    // Remove aria-hidden se existir
+    modalElement.removeAttribute('aria-hidden');
+    
+    // Configura o modal corretamente
+    const modal = new bootstrap.Modal(modalElement, {
+        focus: true,
+        keyboard: false
+    });
+    
+    // Event listeners para acessibilidade
+    modalElement.addEventListener('shown.bs.modal', function() {
+        // Garante que o modal não tenha aria-hidden
+        modalElement.removeAttribute('aria-hidden');
+        
+        // Foca no primeiro elemento interativo
+        const focusable = modalElement.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
+        if (focusable) focusable.focus();
+    });
+    
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        // Limpeza do mapa
+        if (window.driversMap) {
+            window.driversMap.remove();
+            window.driversMap = null;
+        }
+    });
+    
+    modal.show();
+    
+    // Inicializa o mapa após o modal estar visível
+    setTimeout(() => {
+        if (!initializeMap()) {
+            toastr.error('Não foi possível inicializar o mapa');
+            return;
+        }
+        window.driversMap.invalidateSize(true);
+        loadDriverLocations();
+    }, 300);
 }
 
 
