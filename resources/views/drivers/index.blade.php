@@ -1578,6 +1578,8 @@ function loadDriverLocations() {
                     .openOn(window.driversMap);
                 return;
             }
+
+            console.log('data', data)
             
             const markers = [];
             const bounds = L.latLngBounds();
