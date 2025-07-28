@@ -1685,6 +1685,8 @@ async function loadDriverLocations() {
         // Adiciona todos os marcadores ao mapa
         driversMarkers.forEach(marker => marker.addTo(driversMap));
 
+        console.log('driversMarkers', driversMarkers)
+
         // Ajusta a visualização do mapa
         if (bounds.isValid() && !bounds.getNorthEast().equals(bounds.getSouthWest())) {
             driversMap.fitBounds(bounds, { 
