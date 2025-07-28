@@ -1636,14 +1636,9 @@ async function loadDriverLocations() {
         const response = await fetch('/drivers/locations');
         const data = await response.json();
 
-        if (!data || data.length === 0) {
-            driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
-            L.popup()
-                .setLatLng(driversMap.getCenter())
-                .setContent('Nenhuma localização disponível')
-                .openOn(driversMap);
-            return;
-        }
+        console.log('data', data)
+
+       
 
         // Limpa marcadores existentes
         driversMarkers.forEach(marker => driversMap.removeLayer(marker));
