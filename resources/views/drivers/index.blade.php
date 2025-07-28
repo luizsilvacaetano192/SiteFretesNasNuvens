@@ -1536,6 +1536,7 @@ function loadDriverLocations() {
         url: '/drivers/locations',
         method: 'GET',
         success: function(data) {
+            console.log('data', data)
             if (!data || data.length === 0) {
                 driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
                 L.popup()
@@ -1544,6 +1545,7 @@ function loadDriverLocations() {
                     .openOn(driversMap);
                 return;
             }
+
 
             // Limpa marcadores existentes
             driversMap.eachLayer(layer => {
