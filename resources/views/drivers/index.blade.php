@@ -557,6 +557,7 @@ let selectedDriverId = null;
 let mapInitializationAttempts = 0;
 let driversLocationModal = null;
 let driversMap = null;
+window.driversMap = null;
 
 // Utility Functions
 function maskPhone(value) {
