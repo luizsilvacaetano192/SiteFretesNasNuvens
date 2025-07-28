@@ -1501,7 +1501,7 @@ function format(d) {
 // Map Functions
 function showDriversLocation() {
     console.log('show drivers chamados');
-    initializeMap();
+    initializeMapWithRetry();
     if (!driversLocationModal) {
         driversLocationModal = new bootstrap.Modal('#driversLocationModal');
         
@@ -1516,25 +1516,13 @@ function showDriversLocation() {
 
 
 function initializeMapWithRetry() {
-    if (mapInitializationAttempts >= MAX_MAP_INIT_ATTEMPTS) {
-        console.error('Failed to initialize map after multiple attempts');
-        toastr.error('Não foi possível carregar o mapa após várias tentativas');
-        return;
-    }
+   
 
     mapInitializationAttempts++;
     
     const mapContainer = document.getElementById('driversMap');
     
-    if (!mapContainer || !driversLocationModal._isShown || mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
-        console.log(`Map container not ready yet (attempt ${mapInitializationAttempts})`);
-        
-        if (mapInitializationAttempts < MAX_MAP_INIT_ATTEMPTS) {
-            setTimeout(initializeMapWithRetry, 300);
-        }
-        return;
-    }
-
+    
     try {
         if (window.driversMap) {
             window.driversMap.remove();
