@@ -1530,6 +1530,8 @@ function loadDriverLocations() {
         return;
     }
 
+    console.log('vai chamar o ajax');
+
     $.ajax({
         url: '/drivers/locations',
         method: 'GET',
