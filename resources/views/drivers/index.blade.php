@@ -1501,28 +1501,32 @@ function format(d) {
 // Map Functions
 function showDriversLocation() {
     console.log('show drivers chamados');
-    initializeMapWithRetry();
-    if (!driversLocationModal) {
-        driversLocationModal = new bootstrap.Modal('#driversLocationModal');
-        
-        // Adiciona listener para quando o modal estiver totalmente mostrado
-       // $('#driversLocationModal').on('shown.bs.modal', function() {
-            
-     //   });
-    }
-    
+    initializeMap();
+   
     driversLocationModal.show();
 }
 
 
 function initializeMapWithRetry() {
-   
+    if (mapInitializationAttempts >= MAX_MAP_INIT_ATTEMPTS) {
+        console.error('Failed to initialize map after multiple attempts');
+        toastr.error('Não foi possível carregar o mapa após várias tentativas');
+        return;
+    }
 
     mapInitializationAttempts++;
     
     const mapContainer = document.getElementById('driversMap');
     
-    
+    if (!mapContainer || !driversLocationModal._isShown || mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
+        console.log(`Map container not ready yet (attempt ${mapInitializationAttempts})`);
+        
+        if (mapInitializationAttempts < MAX_MAP_INIT_ATTEMPTS) {
+            setTimeout(initializeMapWithRetry, 300);
+        }
+        return;
+    }
+
     try {
         if (window.driversMap) {
             window.driversMap.remove();
@@ -1562,12 +1566,7 @@ function initializeMap() {
     console.log('mapa inicializado');
     const mapContainer = document.getElementById('driversMap');
     
-    // Verifica se o container está pronto
-    if (!mapContainer || mapContainer.offsetWidth === 0 || mapContainer.offsetHeight === 0) {
-        console.error('Map container not ready');
-        toastr.error('O container do mapa não está pronto');
-        return;
-    }
+   
 
     try {
         // Remove o mapa existente se houver
