@@ -152,7 +152,6 @@
         height: calc(100% - 60px); /* Account for header/footer */
         min-height: 500px;
         background: #f8f9fa;
-        transition: all 0.3s ease;
     }
 
     .leaflet-popup-content {
@@ -165,17 +164,6 @@
 
     #showDriversLocationBtn {
         white-space: nowrap;
-    }
-
-    /* Modal transition effects */
-    #driversLocationModal {
-        display: block !important;
-        opacity: 0;
-        transition: opacity 0.3s;
-    }
-
-    #driversLocationModal.show {
-        opacity: 1;
     }
 
     @media (max-width: 768px) {
@@ -512,11 +500,11 @@
 </div>
 
 <!-- Modal de Localização dos Motoristas -->
-<div class="modal fade" id="driversLocationModal"  aria-modal="true" tabindex="-1">
+<div class="modal fade" id="driversLocationModal" tabindex="-1" aria-labelledby="driversLocationModalLabel" aria-hidden="true" role="dialog">
   <div class="modal-dialog modal-xl modal-dialog-centered">
     <div class="modal-content">
       <div class="modal-header bg-primary text-white">
-        <h5 class="modal-title"><i class="fas fa-map-marked-alt me-2"></i>Localização dos Motoristas</h5>
+        <h5 class="modal-title" id="driversLocationModalLabel"><i class="fas fa-map-marked-alt me-2"></i>Localização dos Motoristas</h5>
         <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body p-0">
@@ -550,14 +538,10 @@ const AWS_BUCKET = 'fretes';
 const DEFAULT_MAP_CENTER = [-15.7889, -47.8799]; // Center of Brazil
 const DEFAULT_MAP_ZOOM = 4;
 const MARKER_ZOOM = 12;
-const MAX_MAP_INIT_ATTEMPTS = 5;
 
 // Global variables
 let selectedDriverId = null;
-let mapInitializationAttempts = 0;
-let driversLocationModal = null;
 let driversMap = null;
-window.driversMap = null;
 
 // Utility Functions
 function maskPhone(value) {
@@ -1500,130 +1484,77 @@ function format(d) {
 }
 
 // Map Functions
-// 1. Modifique a inicialização do modal
-function showDriversLocation() {
-    const modalElement = document.getElementById('driversLocationModal');
-    if (!modalElement) return;
-    
-    // Remove aria-hidden se existir
-    modalElement.removeAttribute('aria-hidden');
-    
-    // Configura o modal corretamente
-    const modal = new bootstrap.Modal(modalElement, {
-        focus: true,
-        keyboard: false
-    });
-    
-    // Event listeners para acessibilidade
-    modalElement.addEventListener('shown.bs.modal', function() {
-        // Garante que o modal não tenha aria-hidden
-        modalElement.removeAttribute('aria-hidden');
-        
-        // Foca no primeiro elemento interativo
-        const focusable = modalElement.querySelector('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])');
-        if (focusable) focusable.focus();
-    });
-    
-    modalElement.addEventListener('hidden.bs.modal', function() {
-        // Limpeza do mapa
-        if (window.driversMap) {
-            window.driversMap.remove();
-            window.driversMap = null;
-        }
-    });
-    
-    modal.show();
-    
-    // Inicializa o mapa após o modal estar visível
-    setTimeout(() => {
-        if (!initializeMap()) {
-            toastr.error('Não foi possível inicializar o mapa');
-            return;
-        }
-        window.driversMap.invalidateSize(true);
-        loadDriverLocations();
-    }, 300);
-}
-
-
-
-
 function initializeMap() {
-    console.log('Inicializando mapa...');
-    
-    // Verifica se o elemento existe e está visível
-    const mapElement = document.getElementById('driversMap');
-    if (!mapElement) {
-        console.error('Elemento #driversMap não encontrado no DOM');
-        return false;
-    }
-    
-    // Verifica se o Leaflet está disponível
-    if (typeof L === 'undefined') {
-        console.error('Leaflet não foi carregado corretamente');
-        return false;
-    }
-    
     try {
-        // Remove mapa existente
-        if (window.driversMap) {
-            window.driversMap.remove();
-            window.driversMap = null;
+        // Verifica se o elemento do mapa existe
+        const mapElement = document.getElementById('driversMap');
+        if (!mapElement) {
+            console.error('Elemento do mapa não encontrado');
+            return false;
         }
-        
+
+        // Remove o mapa existente se houver
+        if (driversMap) {
+            driversMap.remove();
+            driversMap = null;
+        }
+
         // Cria novo mapa
-        window.driversMap = L.map('driversMap', {
+        driversMap = L.map('driversMap', {
             preferCanvas: true,
             zoomControl: true,
             tap: false
-        });
-        
-        console.log('Mapa criado:', window.driversMap);
-        
-        // Configura view padrão
-        window.driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
-        
+        }).setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+
         // Adiciona tile layer
         L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
             attribution: '© OpenStreetMap contributors',
             maxZoom: 18
-        }).addTo(window.driversMap);
-        
-        loadDriverLocations();
+        }).addTo(driversMap);
+
+        // Força redimensionamento
+        setTimeout(() => {
+            driversMap.invalidateSize(true);
+        }, 100);
+
+        return true;
     } catch (error) {
-        console.error('Erro ao inicializar mapa:', error);
-        window.driversMap = null;
+        console.error('Erro ao inicializar o mapa:', error);
         return false;
     }
 }
 
-
-
-
 function loadDriverLocations() {
-    console.log('chegou aq');
+    if (!driversMap) {
+        console.error('Mapa não inicializado');
+        return;
+    }
+
     $.ajax({
         url: '/drivers/locations',
         method: 'GET',
         success: function(data) {
             if (!data || data.length === 0) {
-                window.driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
+                driversMap.setView(DEFAULT_MAP_CENTER, DEFAULT_MAP_ZOOM);
                 L.popup()
-                    .setLatLng(window.driversMap.getCenter())
+                    .setLatLng(driversMap.getCenter())
                     .setContent('Nenhuma localização disponível')
-                    .openOn(window.driversMap);
+                    .openOn(driversMap);
                 return;
             }
 
-            console.log('data', data)
-            
-            const markers = [];
+            // Limpa marcadores existentes
+            driversMap.eachLayer(layer => {
+                if (layer instanceof L.Marker) {
+                    driversMap.removeLayer(layer);
+                }
+            });
+
             const bounds = L.latLngBounds();
-            
             data.forEach(driver => {
                 if (driver.latitude && driver.longitude) {
                     const latLng = L.latLng(driver.latitude, driver.longitude);
-                    const marker = L.marker(latLng).addTo(window.driversMap);
+                    const marker = L.marker(latLng).addTo(driversMap);
                     
                     marker.bindPopup(`
                         <b>${driver.name}</b><br>
@@ -1632,33 +1563,61 @@ function loadDriverLocations() {
                         Status: ${getStatusLabel(driver.status)[0]}
                     `);
                     
-                    markers.push(marker);
                     bounds.extend(latLng);
                 }
             });
-            
-            if (markers.length > 0) {
-                if (markers.length === 1) {
-                    window.driversMap.setView(markers[0].getLatLng(), MARKER_ZOOM);
-                } else {
-                    window.driversMap.fitBounds(bounds.pad(0.2));
-                }
+
+            if (bounds.isValid()) {
+                driversMap.fitBounds(bounds, { padding: [50, 50] });
             }
         },
-        error: function() {
-            L.popup()
-                .setLatLng(window.driversMap.getCenter())
-                .setContent('Erro ao carregar localizações')
-                .openOn(window.driversMap);
+        error: function(error) {
+            console.error('Erro ao carregar localizações:', error);
+            if (driversMap) {
+                L.popup()
+                    .setLatLng(driversMap.getCenter())
+                    .setContent('Erro ao carregar localizações')
+                    .openOn(driversMap);
+            }
         }
     });
 }
 
+function showDriversLocation() {
+    const modalElement = document.getElementById('driversLocationModal');
+    if (!modalElement) {
+        console.error('Modal não encontrado');
+        return;
+    }
+
+    const modal = new bootstrap.Modal(modalElement, {
+        focus: true,
+        keyboard: true
+    });
+
+    // Configura eventos do modal
+    modalElement.addEventListener('shown.bs.modal', function() {
+        // Inicializa o mapa quando o modal é aberto
+        if (initializeMap()) {
+            loadDriverLocations();
+        } else {
+            toastr.error('Não foi possível inicializar o mapa');
+        }
+    });
+
+    modalElement.addEventListener('hidden.bs.modal', function() {
+        // Limpa o mapa quando o modal é fechado
+        if (driversMap) {
+            driversMap.remove();
+            driversMap = null;
+        }
+    });
+
+    modal.show();
+}
+
 // Main Document Ready Function
 $(document).ready(function () {
-    // Initialize modals
-    driversLocationModal = new bootstrap.Modal('#driversLocationModal');
-    
     // Initialize drivers table
     const table = $('#drivers-table').DataTable({
         processing: true,
@@ -1802,14 +1761,6 @@ $(document).ready(function () {
     $('#blockTransferBtn').click(() => updateDriverStatus(selectedDriverId, 'transfer_block'));
     $('#submitTransfer').click(submitTransfer);
     $('#showDriversLocationBtn').click(showDriversLocation);
-    
-    // Modal Cleanup
-    $('#driversLocationModal').on('hidden.bs.modal', function() {
-        if (window.driversMap) {
-            window.driversMap.remove();
-            window.driversMap = null;
-        }
-    });
 
     // Error handling
     window.onerror = function(message, source, lineno, colno, error) {
