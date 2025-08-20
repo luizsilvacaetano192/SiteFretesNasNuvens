@@ -56,11 +56,13 @@ Route::middleware(['guest', 'throttle:5,1'])->group(function () {
     Route::redirect('/', '/institucional');
 
     // Companies ciente
-    Route::prefix('companies/cliente')->group(function () {
+    
+
+});
+
+Route::prefix('companies/cliente')->group(function () {
         Route::post('/store', [CliCompanyController::class, 'store'])->name('companies.cliente.store');
  
-    });
-
 });
 
 Route::middleware(['auth'])->group(function () {

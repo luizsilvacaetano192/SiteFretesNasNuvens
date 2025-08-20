@@ -18,6 +18,7 @@ class CliCompanyController extends Controller
   
    public function store(Request $request)
 {
+    dd('chegou aq');
     $validatedData = $request->validate([
         // Dados da Empresa
         'name' => 'required|string|max:255',
