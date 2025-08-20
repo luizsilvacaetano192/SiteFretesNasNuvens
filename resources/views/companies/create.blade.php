@@ -368,7 +368,7 @@ window.initAutocomplete = initAutocomplete;
 </script>
 
 <!-- Load Google Maps API -->
-<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyB_yr1wIc9h3Nhabwg4TXxEIbdc1ivQ9kI&libraries=places&callback=initAutocomplete" async defer></script>
+<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCi-A7nNanHXhUiBS3_71XeLa6bE0aX9Ts&libraries=places&callback=initAutocomplete" async defer></script>
 
 <style>
     .card {
