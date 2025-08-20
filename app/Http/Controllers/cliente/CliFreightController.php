@@ -253,11 +253,12 @@ public function updateStatus(FreightsDriver $freightsDriver, Request $request)
     public function getDataTable(Request $request)
     {
 
-          // dd('ta aq');
-
+        dd(auth()->id());
         $query = Freight::with(['freightStatus',  'shipment', 'charge', 'freightsDriver.driver'])
         ->where('freights.company_id', auth()->id()) // Filtra pelo cliente logado        
         ->select('freights.*');
+
+      //  dd( $query);
     
         // Aplica os filtros antes de passar para o DataTables
         if ($request->status_filter) {
