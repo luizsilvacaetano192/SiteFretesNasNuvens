@@ -518,44 +518,56 @@ function initAutocomplete() {
 function fillInAddress() {
     const place = autocomplete.getPlace();
     
+    console.log('place', place);
+
     if (!place.geometry) {
         alert("Endereço não encontrado: '" + document.getElementById('autocomplete').value + "'");
         return;
     }
 
-    // Fill complete address
+    // Preenche endereço completo
     document.getElementById('address').value = place.formatted_address;
 
-    // Fill other fields automatically
+    // Preenche outros campos automaticamente
     for (const component of place.address_components) {
-        const componentType = component.types[0];
+        const types = component.types; // array de tipos
+        console.log('component.types', types, '=>', component.long_name);
 
-        switch (componentType) {
-            case "street_number":
-                document.getElementById('number').value = component.long_name;
-                break;
-            case "route":
-                // Already included in formatted_address
-                break;
-            case "sublocality_level_1":
-            case "neighborhood":
-                document.getElementById('neighborhood').value = component.long_name;
-                break;
-            case "administrative_area_level_2":
-                document.getElementById('city').value = component.long_name;
-                break;
-            case "administrative_area_level_1":
-                document.getElementById('state').value = component.short_name;
-                break;
-            case "postal_code":
-                document.getElementById('zip_code').value = component.long_name;
-                break;
+        if (types.includes("street_number")) {
+            document.getElementById('number').value = component.long_name;
+        }
+
+        if (types.includes("route")) {
+            // já incluso no formatted_address
+        }
+
+        if (
+            types.includes("sublocality") ||
+            types.includes("sublocality_level_1") ||
+            types.includes("sublocality_level_2") ||
+            types.includes("neighborhood")
+        ) {
+            document.getElementById('neighborhood').value = component.long_name;
+        }
+
+        if (types.includes("administrative_area_level_2")) {
+            document.getElementById('city').value = component.long_name;
+        }
+
+        if (types.includes("administrative_area_level_1")) {
+            document.getElementById('state').value = component.short_name;
+        }
+
+        if (types.includes("postal_code")) {
+            document.getElementById('zip_code').value = component.long_name;
         }
     }
     
-    // Focus on number field after autocomplete
+    // Foca no número após autocomplete
     document.getElementById('number').focus();
 }
+
+
 
 // Make function available globally
 window.initAutocomplete = initAutocomplete;
